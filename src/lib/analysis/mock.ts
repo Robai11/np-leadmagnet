@@ -53,7 +53,14 @@ export async function* runMockAnalysis(
   ctx: AnalysisContext,
   normalizedUrl: string,
 ): AsyncGenerator<AnalysisEvent> {
-  const order: PageType[] = ["home", "plp", "pdp", "cart", "checkout"];
+  const ALL: PageType[] = ["home", "plp", "pdp", "cart", "checkout"];
+  // Honor the user's per-stage selection when present; otherwise the full funnel.
+  const selectedTypes = (ctx.targets ?? [])
+    .filter((t) => t.selected && t.url.trim())
+    .map((t) => t.type);
+  const order: PageType[] = selectedTypes.length
+    ? ALL.filter((t) => selectedTypes.includes(t))
+    : ALL;
 
   yield {
     type: "meta",

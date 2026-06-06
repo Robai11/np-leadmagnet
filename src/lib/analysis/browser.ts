@@ -16,8 +16,9 @@ async function createConnectUrl(): Promise<string> {
   const bb = new Browserbase({ apiKey: env.browserbaseApiKey });
   const session = await bb.sessions.create({
     projectId: env.browserbaseProjectId ?? "",
-    // Stealth proxies help get past basic bot blocks on real shops.
-    proxies: true,
+    // Stealth proxies help past basic bot blocks on real shops, but are a
+    // PAID-plan feature. Gated behind BROWSERBASE_PROXIES so the free tier works.
+    proxies: env.browserbaseProxies,
   });
   return session.connectUrl;
 }

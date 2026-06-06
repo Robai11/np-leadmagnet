@@ -76,6 +76,76 @@ async function* asCompleted<T>(
   }
 }
 
+/**
+ * Resolve which pages to analyze: from the user's explicit targets when present,
+ * otherwise via auto-discovery from the primary URL (backward-compatible).
+ */
+async function resolvePlan(
+  ctx: AnalysisContext,
+  normalizedUrl: string,
+): Promise<{
+  readOnly: { url: string; type: PageType }[];
+  pdpUrl?: string;
+  wantCart: boolean;
+  wantCheckout: boolean;
+  cartUrl?: string;
+  checkoutUrl?: string;
+  note: string | null;
+}> {
+  const anySelected = (ctx.targets ?? []).some((t) => t.selected);
+
+  if (anySelected) {
+    const selected = (ctx.targets ?? []).filter(
+      (t) => t.selected && t.url.trim(),
+    );
+    const readOnly: { url: string; type: PageType }[] = [];
+    let cartUrl: string | undefined;
+    let checkoutUrl: string | undefined;
+    let wantCart = false;
+    let wantCheckout = false;
+    for (const t of ctx.targets ?? []) {
+      if (!t.selected) continue;
+      const url = t.url.trim();
+      if (t.type === "home" || t.type === "plp" || t.type === "pdp") {
+        if (url) readOnly.push({ url, type: t.type });
+      } else if (t.type === "cart") {
+        wantCart = true;
+        cartUrl = url || undefined;
+      } else if (t.type === "checkout") {
+        wantCheckout = true;
+        checkoutUrl = url || undefined;
+      }
+    }
+    return {
+      readOnly,
+      pdpUrl: selected.find((t) => t.type === "pdp")?.url.trim(),
+      wantCart,
+      wantCheckout,
+      cartUrl,
+      checkoutUrl,
+      note: "Seiten gemäß deiner Auswahl analysiert.",
+    };
+  }
+
+  // Fallback: discover page types from the primary URL.
+  const discovered = await withSession((browser) =>
+    discoverPages(browser, normalizedUrl),
+  ).catch(() => null);
+  const home = discovered?.home ?? normalizedUrl;
+  const readOnly: { url: string; type: PageType }[] = [{ url: home, type: "home" }];
+  if (discovered?.plp) readOnly.push({ url: discovered.plp, type: "plp" });
+  if (discovered?.pdp) readOnly.push({ url: discovered.pdp, type: "pdp" });
+  return {
+    readOnly,
+    pdpUrl: discovered?.pdp,
+    wantCart: Boolean(discovered?.pdp),
+    wantCheckout: Boolean(discovered?.pdp),
+    note: discovered
+      ? `Seiten ermittelt via ${discovered.method === "sitemap" ? "sitemap.xml" : discovered.method === "nav-fallback" ? "Navigation" : "nur Startseite"}.`
+      : null,
+  };
+}
+
 export async function* runRealAnalysis(
   ctx: AnalysisContext,
   normalizedUrl: string,
@@ -85,18 +155,12 @@ export async function* runRealAnalysis(
 
   yield { type: "progress", step: "Shop wird aufgerufen …", pct: 5 };
 
-  // ── Discovery ─────────────────────────────────────────────
-  const discovered = await withSession((browser) =>
-    discoverPages(browser, normalizedUrl),
-  ).catch(() => null);
+  const plan = await resolvePlan(ctx, normalizedUrl);
+  const { readOnly, pdpUrl, wantCart, wantCheckout, cartUrl, checkoutUrl } = plan;
 
-  const home = discovered?.home ?? normalizedUrl;
-  const readOnly: { url: string; type: PageType }[] = [{ url: home, type: "home" }];
-  if (discovered?.plp) readOnly.push({ url: discovered.plp, type: "plp" });
-  if (discovered?.pdp) readOnly.push({ url: discovered.pdp, type: "pdp" });
-
-  const analyzedIds = readOnly.map((r) => r.type);
-  if (discovered?.pdp) analyzedIds.push("cart", "checkout");
+  const analyzedIds: string[] = readOnly.map((r) => r.type);
+  if (wantCart) analyzedIds.push("cart");
+  if (wantCheckout) analyzedIds.push("checkout");
 
   yield {
     type: "meta",
@@ -109,64 +173,91 @@ export async function* runRealAnalysis(
       date: new Date().toISOString(),
     },
   };
-  if (discovered) {
-    yield {
-      type: "note",
-      note: `Seiten ermittelt via ${discovered.method === "sitemap" ? "sitemap.xml" : discovered.method === "nav-fallback" ? "Navigation" : "nur Startseite"}.`,
-    };
-  }
+  if (plan.note) yield { type: "note", note: plan.note };
 
   // ── Read-only pages in parallel, streamed as they complete ─
-  yield { type: "progress", step: "Seiten werden gerendert …", pct: 20 };
-  const tasks = readOnly.map((r) =>
-    readOnlyPage(r.url, r.type, ctx).catch((err) => {
-      notes.push(
-        `${PAGE_NAMES[r.type]}: nicht analysierbar (${err instanceof Error ? err.message : "Fehler"}).`,
-      );
-      return null;
-    }),
-  );
+  if (readOnly.length) {
+    yield { type: "progress", step: "Seiten werden gerendert …", pct: 20 };
+    const tasks = readOnly.map((r) =>
+      readOnlyPage(r.url, r.type, ctx).catch((err) => {
+        notes.push(
+          `${PAGE_NAMES[r.type]}: nicht analysierbar (${err instanceof Error ? err.message : "Fehler"}).`,
+        );
+        return null;
+      }),
+    );
 
-  let done = 0;
-  for await (const { value } of asCompleted(tasks)) {
-    done++;
-    if (value) {
-      pages.push(value);
-      yield { type: "page", page: value };
+    let done = 0;
+    for await (const { value } of asCompleted(tasks)) {
+      done++;
+      if (value) {
+        pages.push(value);
+        yield { type: "page", page: value };
+      }
+      yield {
+        type: "progress",
+        step: `${done}/${readOnly.length} Seiten analysiert`,
+        pct: 20 + Math.round((done / readOnly.length) * 50),
+      };
     }
-    yield {
-      type: "progress",
-      step: `${done}/${readOnly.length} Seiten analysiert`,
-      pct: 20 + Math.round((done / readOnly.length) * 50),
-    };
   }
 
-  // ── Stateful flow (cart, checkout) ────────────────────────
-  if (discovered?.pdp) {
-    yield { type: "progress", step: "Warenkorb & Checkout …", pct: 75 };
-    try {
-      const stateful = await withSession((browser) =>
-        runStatefulFlow(browser, discovered.pdp!),
-      );
-      notes.push(...stateful.notes);
-      for (const rendered of stateful.pages) {
+  // ── Cart / Checkout ───────────────────────────────────────
+  if (wantCart || wantCheckout) {
+    if (pdpUrl) {
+      // Realistic: drive the product → add-to-cart → cart → checkout flow.
+      yield { type: "progress", step: "Warenkorb & Checkout …", pct: 78 };
+      try {
+        const stateful = await withSession((browser) =>
+          runStatefulFlow(browser, pdpUrl),
+        );
+        notes.push(...stateful.notes);
+        for (const rendered of stateful.pages) {
+          if (rendered.type === "cart" && !wantCart) continue;
+          if (rendered.type === "checkout" && !wantCheckout) continue;
+          try {
+            const page = await analyzeRendered(rendered, ctx);
+            pages.push(page);
+            yield { type: "page", page };
+          } catch (err) {
+            notes.push(
+              `${rendered.name}: Analyse fehlgeschlagen (${err instanceof Error ? err.message : "Fehler"}).`,
+            );
+          }
+        }
+      } catch (err) {
+        notes.push(
+          `Warenkorb/Checkout nicht erreichbar (${err instanceof Error ? err.message : "Fehler"}).`,
+        );
+      }
+    } else {
+      // No product page → render any directly-provided cart/checkout URLs.
+      const direct: { type: PageType; url?: string }[] = [];
+      if (wantCart) direct.push({ type: "cart", url: cartUrl });
+      if (wantCheckout) direct.push({ type: "checkout", url: checkoutUrl });
+      for (const d of direct) {
+        if (!d.url) {
+          notes.push(
+            `${PAGE_NAMES[d.type]}: keine Produktseite und keine eigene URL angegeben — nicht analysiert.`,
+          );
+          continue;
+        }
         try {
-          const page = await analyzeRendered(rendered, ctx);
+          const page = await readOnlyPage(d.url, d.type, ctx);
           pages.push(page);
           yield { type: "page", page };
+          if (d.type === "cart") {
+            notes.push(
+              "Warenkorb direkt über URL gerendert — er kann leer sein, da ohne Produktseite kein Artikel hinzugefügt wurde.",
+            );
+          }
         } catch (err) {
           notes.push(
-            `${rendered.name}: Analyse fehlgeschlagen (${err instanceof Error ? err.message : "Fehler"}).`,
+            `${PAGE_NAMES[d.type]}: nicht analysierbar (${err instanceof Error ? err.message : "Fehler"}).`,
           );
         }
       }
-    } catch (err) {
-      notes.push(
-        `Warenkorb/Checkout nicht erreichbar (${err instanceof Error ? err.message : "Fehler"}).`,
-      );
     }
-  } else {
-    notes.push("Keine Produktseite gefunden — Warenkorb & Checkout nicht analysiert.");
   }
 
   for (const note of notes) yield { type: "note", note };

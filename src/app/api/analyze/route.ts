@@ -7,17 +7,37 @@ import { gateStream, eventsFromResult } from "@/lib/analysis/gate";
 import { encodeEvent, type AnalysisEvent } from "@/lib/analysis/events";
 import type { AnalysisContext } from "@/lib/types";
 
+const PAGE_TYPES = ["home", "plp", "pdp", "cart", "checkout"];
+
 function isValidContext(b: unknown): b is AnalysisContext {
   if (typeof b !== "object" || b === null) return false;
   const c = b as Record<string, unknown>;
-  return (
-    typeof c.url === "string" &&
-    typeof c.industry === "string" &&
-    c.industry.length > 0 &&
-    typeof c.device === "number" &&
-    Array.isArray(c.channels) &&
-    c.channels.length > 0
-  );
+  if (
+    typeof c.url !== "string" ||
+    typeof c.industry !== "string" ||
+    c.industry.length === 0 ||
+    typeof c.device !== "number" ||
+    !Array.isArray(c.channels) ||
+    c.channels.length === 0
+  ) {
+    return false;
+  }
+  // targets is optional; when present it must be well-formed.
+  if (c.targets !== undefined) {
+    if (!Array.isArray(c.targets)) return false;
+    const ok = c.targets.every((t) => {
+      if (typeof t !== "object" || t === null) return false;
+      const tt = t as Record<string, unknown>;
+      return (
+        typeof tt.type === "string" &&
+        PAGE_TYPES.includes(tt.type) &&
+        typeof tt.url === "string" &&
+        typeof tt.selected === "boolean"
+      );
+    });
+    if (!ok) return false;
+  }
+  return true;
 }
 
 const jsonError = (message: string, status: number) =>
@@ -57,6 +77,7 @@ export async function POST(req: NextRequest) {
     industry: body.industry,
     device: body.device,
     channels: body.channels,
+    targets: body.targets,
   };
 
   const cached = getCached(norm.normalized);

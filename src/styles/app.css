@@ -1198,3 +1198,37 @@
     font-size: 32px;
   }
 }
+
+/* ── Per-stage target rows (URL + checkbox per page type) ───────────── */
+.targets { display: flex; flex-direction: column; gap: 8px; }
+.target-row {
+  display: flex; align-items: center; gap: 10px;
+  border: 1.5px solid var(--color-line);
+  background: var(--color-paper-2);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  transition: border-color .12s, opacity .12s;
+}
+.target-row:not(.on) { opacity: .55; }
+.target-row.on { border-color: var(--color-ink); }
+.target-check {
+  display: flex; align-items: center; gap: 7px;
+  min-width: 132px; flex-shrink: 0;
+  font-weight: 600; font-size: 13px; cursor: pointer;
+}
+.target-check input { width: 16px; height: 16px; accent-color: var(--color-ink); cursor: pointer; }
+.target-url {
+  flex: 1; min-width: 0;
+  padding: 9px 11px;
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--radius);
+  font-size: 13px; font-family: var(--font-mono);
+  background: var(--color-paper);
+  color: var(--color-text);
+}
+.target-url:focus { outline: none; border-color: var(--color-ink); }
+.target-url:disabled { background: var(--color-paper-2); color: var(--color-text-mute); cursor: not-allowed; }
+.target-note {
+  display: block; margin-top: 9px;
+  font-size: 12px; color: var(--color-text-mute); line-height: 1.4;
+}

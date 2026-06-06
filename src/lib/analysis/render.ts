@@ -16,6 +16,47 @@ const VIEWPORTS: Record<Viewport, { width: number; height: number }> = {
 
 const NAV_TIMEOUT = 30_000;
 
+/** Wait for client-side redirects / hydration to settle before reading the DOM. */
+async function settlePage(page: Page): Promise<void> {
+  try {
+    await page.waitForLoadState("domcontentloaded", { timeout: 5_000 });
+  } catch {
+    /* ignore */
+  }
+  try {
+    await page.waitForLoadState("networkidle", { timeout: 8_000 });
+  } catch {
+    /* networkidle may never fire on chatty pages — fine */
+  }
+}
+
+/**
+ * page.evaluate that survives mid-read navigations. Real shops fire client-side
+ * redirects / lazy hydration that destroy the execution context; on that
+ * specific error we let the page settle and retry instead of failing the page.
+ */
+async function evalWithRetry<R>(
+  page: Page,
+  fn: () => R | Promise<R>,
+  tries = 3,
+): Promise<R> {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < tries; attempt++) {
+    try {
+      return await page.evaluate(fn);
+    } catch (err) {
+      lastErr = err;
+      const msg = err instanceof Error ? err.message : String(err);
+      if (/execution context was destroyed|navigation|frame was detached|target closed/i.test(msg)) {
+        await settlePage(page);
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastErr;
+}
+
 async function dismissConsent(page: Page): Promise<void> {
   // Best-effort: well-known accept buttons first, then text heuristics.
   const knownSelectors = [
@@ -51,23 +92,28 @@ async function dismissConsent(page: Page): Promise<void> {
 
 async function autoScroll(page: Page): Promise<void> {
   // Step to the bottom to trigger lazy-loaded content, then back to top.
-  await page.evaluate(async () => {
-    await new Promise<void>((resolve) => {
-      let total = 0;
-      const step = 600;
-      const timer = setInterval(() => {
-        window.scrollBy(0, step);
-        total += step;
-        if (total >= document.body.scrollHeight) {
-          clearInterval(timer);
-          resolve();
-        }
-      }, 120);
+  // Lazy-load is a bonus; if a navigation interrupts it, don't fail the page.
+  try {
+    await evalWithRetry(page, async () => {
+      await new Promise<void>((resolve) => {
+        let total = 0;
+        const step = 600;
+        const timer = setInterval(() => {
+          window.scrollBy(0, step);
+          total += step;
+          if (total >= document.body.scrollHeight) {
+            clearInterval(timer);
+            resolve();
+          }
+        }, 120);
+      });
     });
-  });
-  await page.waitForTimeout(600);
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await page.waitForTimeout(200);
+    await page.waitForTimeout(600);
+    await evalWithRetry(page, () => window.scrollTo(0, 0));
+    await page.waitForTimeout(200);
+  } catch {
+    /* scrolling is best-effort; proceed with whatever is loaded */
+  }
 }
 
 /** Runs in the browser: enumerate candidate elements + document dimensions. */
@@ -134,8 +180,9 @@ export async function captureView(
   page: Page,
   viewport: Viewport,
 ): Promise<RenderedView> {
+  await settlePage(page);
   await autoScroll(page);
-  const { docWidth, docHeight, elements } = await page.evaluate(enumerateInPage);
+  const { docWidth, docHeight, elements } = await evalWithRetry(page, enumerateInPage);
   // JPEG keeps the full-page payload small enough for the Vision API; the pin
   // overlay is positioned from real bounding boxes, so screenshot fidelity only
   // affects how well the model judges severity, not pin accuracy.
@@ -148,7 +195,7 @@ export async function captureView(
 }
 
 export const viewportSize = (v: Viewport) => VIEWPORTS[v];
-export { dismissConsent, NAV_TIMEOUT };
+export { dismissConsent, NAV_TIMEOUT, settlePage, evalWithRetry };
 
 export async function renderView(
   browser: Browser,
@@ -163,7 +210,10 @@ export async function renderView(
   const page = await context.newPage();
   try {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: NAV_TIMEOUT });
+    await settlePage(page);
     await dismissConsent(page);
+    // The consent click itself can trigger a navigation/reload — let it settle.
+    await settlePage(page);
     return await captureView(page, viewport);
   } finally {
     await context.close().catch(() => {});

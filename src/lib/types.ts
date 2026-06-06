@@ -13,9 +13,21 @@ export type LeverType = "cr" | "aov";
 export type Viewport = "desktop" | "mobile";
 export type PageType = "home" | "plp" | "pdp" | "cart" | "checkout";
 
+/**
+ * One page the user wants analyzed: its type, the exact URL, and whether it's
+ * selected. The user enters URLs per funnel stage and checks which to analyze
+ * (replaces fragile auto-discovery). cart/checkout are reached via the stateful
+ * add-to-cart flow when a product URL is selected; otherwise rendered directly.
+ */
+export interface PageTarget {
+  type: PageType;
+  url: string;
+  selected: boolean;
+}
+
 /** Context-Formular payload (Build-Spec §3.1). */
 export interface AnalysisContext {
-  /** Shop-URL (raw, as entered). */
+  /** Primary shop URL (raw) — used for the cache key, meta, and report header. */
   url: string;
   /** Branche — one of INDUSTRIES, no default. */
   industry: string;
@@ -23,6 +35,12 @@ export interface AnalysisContext {
   device: number;
   /** Wichtigste Traffic-Kanäle (multi-select). */
   channels: string[];
+  /**
+   * Explicit per-stage URLs + selection. When present, the pipeline analyzes
+   * exactly the selected targets (no auto-discovery). When absent, the pipeline
+   * falls back to discovering page types from `url`.
+   */
+  targets?: PageTarget[];
 }
 
 /** A single conversion lever bound to one real element. */
