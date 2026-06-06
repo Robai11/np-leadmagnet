@@ -1,0 +1,60 @@
+/*
+ * ConversionScan — Brand-Token-Layer (Schritt 0)
+ * =================================================
+ * DIES IST DIE EINZIGE STELLE, an der Marken-Werte definiert werden.
+ * Rebranding = Werte hier tauschen, sonst nichts. Kein Hex/Font irgendwo
+ * sonst im Code (Token-Vertrag, Build-Spec §2.1).
+ *
+ * Token-NAMEN sind verbindlich (Build-Spec §2.1). Die WERTE unten sind die
+ * Platzhalter aus dem Prototyp (cro-analyzer-prototype) — sie werden beim
+ * Rebranding durch die echten Brand-Werte ersetzt.
+ *
+ * Die font-family-Tokens referenzieren die von next/font optimierten
+ * Schriften (--font-bricolage / --font-hanken / --font-jetbrains, gesetzt in
+ * app/layout.tsx) und fallen sonst auf das jeweilige System-Pendant zurück.
+ */
+
+:root {
+  /* ── Farben — Marke ──────────────────────────────────────── */
+  --color-ink: #13161d; /* dunkler Grundton */
+  --color-ink-2: #1c212b; /* dunkel, erhöht */
+  --color-paper: #f5f3ee; /* helle Fläche */
+  --color-paper-2: #fbfaf6; /* hell, erhöht */
+  --color-line: #e3dfd4; /* Rahmen auf hell */
+  --color-line-ink: #2b313d; /* Rahmen auf dunkel */
+  --color-text: #1a1d24;
+  --color-text-mute: #6a7180;
+  --color-text-ink: #eceae3; /* Text auf dunkel */
+  --color-text-ink-mute: #9aa1ae;
+
+  /* ── Farben — App-semantisch, aus der Marke abgeleitet ───── */
+  --color-accent: #c2e63a; /* Signal / Uplift positiv / CTA */
+  --color-accent-deep: #a6c927;
+  --color-impact-high: #d6452c;
+  --color-impact-mid: #e0922a;
+  --color-impact-low: #7a8794;
+
+  /* ── Typografie ──────────────────────────────────────────── */
+  --font-display: var(--font-bricolage), "Bricolage Grotesque", sans-serif;
+  --font-body: var(--font-hanken), "Hanken Grotesk", sans-serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", monospace;
+
+  /* ── Form ────────────────────────────────────────────────── */
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 9999px;
+  --shadow-card: 0 8px 26px -12px rgba(19, 22, 29, 0.25);
+  --shadow-float: 0 30px 60px -28px rgba(19, 22, 29, 0.25);
+
+  /* ── Spacing-Skala (4px-Basis) ───────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+}
