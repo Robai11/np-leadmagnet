@@ -104,6 +104,11 @@ export function App() {
         <LoadingStage
           ctx={ctx}
           analyzedIds={state.pages.map((p) => p.id)}
+          selectedIds={
+            ctx.targets?.some((t) => t.selected)
+              ? ctx.targets.filter((t) => t.selected).map((t) => t.type)
+              : null
+          }
           progressPct={state.progress.pct}
           done={false}
         />
