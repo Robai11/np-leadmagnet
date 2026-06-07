@@ -396,8 +396,22 @@ async function buildPage(
   url: string,
 ): Promise<RenderedPage> {
   const desktop = await captureView(page, "desktop");
+  // Capture a MOBILE view of the SAME (still-populated) page by resizing the
+  // viewport in-session — so cart & checkout get both views like read-only
+  // pages do (the report frames them per the device split).
+  let mobile: RenderedView | undefined;
+  try {
+    await page.setViewportSize(viewportSize("mobile"));
+    await settlePage(page);
+    await page.waitForTimeout(500);
+    mobile = await captureView(page, "mobile");
+  } catch {
+    mobile = undefined; // mobile is a bonus dimension; never fail the page on it
+  } finally {
+    await page.setViewportSize(viewportSize("desktop")).catch(() => {});
+  }
   const content = desktop.elements.map((e) => e.text).filter(Boolean).join(" · ").slice(0, 4000);
-  return { id, type: id, name, url, desktop, content, reachable: true };
+  return { id, type: id, name, url, desktop, mobile, content, reachable: true };
 }
 
 /** Wrap an already-captured view (e.g. an off-canvas drawer) into a page. */
