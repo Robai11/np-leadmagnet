@@ -31,6 +31,19 @@ async function createConnectUrl(): Promise<string> {
 export async function withSession<T>(
   fn: (browser: Browser) => Promise<T>,
 ): Promise<T> {
+  const env = readEnv();
+
+  // Local mode: drive the machine's installed Chrome (no Browserbase, no cloud
+  // minutes). Great for development/testing; weaker against bot blocks.
+  if (env.browserMode === "local") {
+    const browser = await chromium.launch({ headless: true });
+    try {
+      return await fn(browser);
+    } finally {
+      await browser.close().catch(() => {});
+    }
+  }
+
   const connectUrl = await createConnectUrl();
   const browser = await chromium.connectOverCDP(connectUrl);
   try {

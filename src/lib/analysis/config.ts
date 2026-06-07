@@ -7,7 +7,11 @@
  * data URLs when no Blob token is present, which is fine for local dev).
  */
 
+export type BrowserMode = "browserbase" | "local";
+
 export interface PipelineEnv {
+  /** "local" drives the machine's installed Chrome; "browserbase" uses the cloud. */
+  browserMode: BrowserMode;
   browserbaseApiKey?: string;
   browserbaseProjectId?: string;
   // Stealth proxies help past bot blocks but are a PAID-plan feature on
@@ -21,6 +25,7 @@ export interface PipelineEnv {
 
 export function readEnv(): PipelineEnv {
   return {
+    browserMode: process.env.BROWSER_MODE === "local" ? "local" : "browserbase",
     browserbaseApiKey: process.env.BROWSERBASE_API_KEY || undefined,
     browserbaseProjectId: process.env.BROWSERBASE_PROJECT_ID || undefined,
     browserbaseProxies: /^(1|true|yes)$/i.test(process.env.BROWSERBASE_PROXIES || ""),
@@ -31,9 +36,15 @@ export function readEnv(): PipelineEnv {
   };
 }
 
-/** True when both the browser provider and Vision model are configured. */
+/**
+ * True when a browser provider AND the Vision model are configured. Local mode
+ * needs only the Anthropic key (the browser is on this machine); Browserbase
+ * mode additionally needs its API key.
+ */
 export function hasRealPipeline(env: PipelineEnv = readEnv()): boolean {
-  return Boolean(env.browserbaseApiKey && env.anthropicApiKey);
+  if (!env.anthropicApiKey) return false;
+  if (env.browserMode === "local") return true;
+  return Boolean(env.browserbaseApiKey);
 }
 
 export function hasBlob(env: PipelineEnv = readEnv()): boolean {
