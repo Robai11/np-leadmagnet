@@ -88,6 +88,9 @@ async function clickAddToCart(page: Page): Promise<boolean> {
     "button.btn-buy",
     "form[action*='line-item' i] button[type=submit]",
     "form[action*='line-item' i] button",
+    "form[action*='/cart/add' i] [type=submit]", // Shopify
+    "button[name='add']", // Shopify
+    ".product-form__submit", // Shopify
     ".product-detail-buy-container button",
     "[class*='add-to-cart' i]",
     "[class*='addtocart' i]",
@@ -113,53 +116,154 @@ async function clickAddToCart(page: Page): Promise<boolean> {
 }
 
 /**
- * Proceed from cart to checkout. The CTA is usually a LINK — navigate its href
- * directly rather than clicking, which bypasses marketing-popup overlays that
- * silently swallow the click (a real failure mode we hit on live shops).
+ * Heuristic: is the current page a NON-empty cart? Uses STRUCTURAL signals
+ * (line-item rows, quantity inputs, a checkout control) rather than body text,
+ * which on most shops is dominated by header/nav/skip-links and buries the
+ * real cart state. Explicit "empty cart" markers veto it.
  */
-async function clickToCheckout(page: Page): Promise<boolean> {
+async function isCartPopulated(page: Page): Promise<boolean> {
+  try {
+    const r = await page.evaluate(() => {
+      const n = (sel: string) => document.querySelectorAll(sel).length;
+      const lineItems = n(
+        "[class*='cart-item' i],[class*='line-item' i],tr.cart__row,[class*='cart__row' i],[data-line-item],.cart_item",
+      );
+      const qtyInputs = n(
+        "input[name='updates[]'],input[name*='quantity' i],[class*='quantity' i] input,input[type='number'][class*='qty' i]",
+      );
+      const checkoutCtl = n(
+        "a.begin-checkout-btn,button[name='checkout'],input[name='checkout'],a[href*='/checkout' i],[class*='checkout' i] button,[class*='checkout' i] a",
+      );
+      const emptyEl = n(
+        ".cart--empty,.cart__empty,[class*='cart' i][class*='empty' i],[class*='empty-cart' i]",
+      );
+      const emptyText =
+        /(dein warenkorb ist leer|warenkorb.{0,15}(ist )?leer|cart is empty|your (shopping )?cart is empty)/i.test(
+          (document.body.innerText || "").toLowerCase(),
+        );
+      return { lineItems, qtyInputs, checkoutCtl, emptyEl, emptyText };
+    });
+    if (r.emptyEl > 0 || r.emptyText) return false;
+    return r.lineItems > 0 || r.qtyInputs > 0 || r.checkoutCtl > 0;
+  } catch {
+    return false;
+  }
+}
+
+/** Re-open the off-canvas cart drawer (shops without a dedicated cart page). */
+async function openCartDrawer(page: Page, pdpUrl: string): Promise<boolean> {
+  try {
+    const origin = new URL(pdpUrl).origin;
+    if (!page.url().startsWith(origin)) {
+      await page.goto(pdpUrl, { waitUntil: "domcontentloaded", timeout: NAV_TIMEOUT });
+      await settlePage(page);
+    }
+    await dismissPopups(page);
+    const toggles = [
+      "[aria-label*='warenkorb' i]",
+      "[aria-label*='cart' i]",
+      "[class*='cart-icon' i]",
+      "[class*='cart' i][class*='toggle' i]",
+      "header a[href$='/cart' i]",
+      "a[href$='/cart' i]",
+    ];
+    for (const sel of toggles) {
+      try {
+        const el = page.locator(sel).first();
+        if ((await el.count()) && (await el.isVisible({ timeout: 700 }))) {
+          await el.click({ timeout: 1500, force: true });
+          break;
+        }
+      } catch {
+        /* next */
+      }
+    }
+    await page.waitForTimeout(1200);
+    const drawer = page
+      .locator(
+        "cart-drawer, [class*='cart-drawer' i], #CartDrawer, [class*='mini-cart' i], [class*='minicart' i], [class*='offcanvas' i][class*='cart' i], [class*='drawer' i][class*='cart' i]",
+      )
+      .first();
+    const visible = await drawer.isVisible({ timeout: 1500 }).catch(() => false);
+    if (!visible) return false;
+    // Hide the dimmed backdrop so the captured screenshot shows the cart cleanly.
+    await page
+      .addStyleTag({
+        content:
+          "[class*='overlay' i],[class*='backdrop' i],.drawer__overlay,[class*='drawer__overlay' i]{opacity:0!important;background:transparent!important;backdrop-filter:none!important}",
+      })
+      .catch(() => {});
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Proceed from cart to checkout. Strategies in order: link-href navigation
+ * (Shopware/Woo), form-submit (Shopify cart), then a direct /checkout hit
+ * (Shopify uses the cart cookie), then accessible-name as a last resort.
+ */
+async function clickToCheckout(page: Page, origin: string): Promise<boolean> {
   await dismissPopups(page);
-  // Link-based checkout CTAs (Shopware/Shopify/Woo): read href, navigate to it.
-  const linkSelectors = [
+  for (const sel of [
     "a.begin-checkout-btn",
     "a[href*='/checkout/confirm' i]",
     "a[href*='/checkout/register' i]",
     "a[href*='/checkout/onepage' i]",
-  ];
-  for (const sel of linkSelectors) {
+  ]) {
     try {
       const el = page.locator(sel).first();
       if (!(await el.count())) continue;
       const href = await el.getAttribute("href");
       if (href) {
-        const dest = new URL(href, page.url()).toString();
-        await page.goto(dest, { waitUntil: "domcontentloaded", timeout: NAV_TIMEOUT });
+        await page.goto(new URL(href, page.url()).toString(), {
+          waitUntil: "domcontentloaded",
+          timeout: NAV_TIMEOUT,
+        });
         await settlePage(page);
         return true;
       }
     } catch {
-      /* next selector */
+      /* next */
     }
   }
-  // Form-submit checkouts (no link href): click the submit control.
-  const btnSelectors = [
+  for (const sel of [
     "button[name='checkout']",
+    "input[name='checkout']",
+    "form[action*='/cart' i] button[type=submit]",
     "form[action*='checkout' i] button[type=submit]",
     ".checkout-aside-action button",
-  ];
-  for (const sel of btnSelectors) {
+  ]) {
     try {
       const el = page.locator(sel).first();
-      if (!(await el.count()) || !(await el.isVisible({ timeout: 1000 }))) continue;
+      if (!(await el.count()) || !(await el.isVisible({ timeout: 800 }))) continue;
       if (await robustClick(page, el)) {
         await settlePage(page);
         return true;
       }
     } catch {
-      /* next selector */
+      /* next */
     }
   }
-  // Last resort: a checkout control matched only by its accessible name.
+  // Platform fallback: go straight to /checkout (Shopify resolves via the cart
+  // cookie). Guarded so a redirect back to cart/home doesn't count as success.
+  try {
+    await page.goto(`${origin}/checkout`, {
+      waitUntil: "domcontentloaded",
+      timeout: NAV_TIMEOUT,
+    });
+    await settlePage(page);
+    const body = (await page.evaluate(() => document.body.innerText || "")).slice(0, 1200);
+    if (
+      /\/checkout/i.test(page.url()) ||
+      /(versand|lieferung|zahlung|rechnungsadresse|e-?mail|kontaktdaten|kasse)/i.test(body)
+    ) {
+      return true;
+    }
+  } catch {
+    /* fall through */
+  }
   return clickByText(page, GO_TO_CHECKOUT, 2500);
 }
 
@@ -202,19 +306,36 @@ export async function runStatefulFlow(
     // Strictly scoped to the product-detail configurator so we never touch the
     // shop's language/currency <select> (those submit and navigate away).
     try {
-      const swatch = page
-        .locator(
-          ".product-detail-configurator button, .product-detail-configurator select, .product-detail [class*='variant' i] button",
-        )
-        .first();
-      if (await swatch.isVisible({ timeout: 1200 })) {
-        const tag = await swatch.evaluate((el) => el.tagName.toLowerCase());
-        if (tag === "select") {
-          await swatch.selectOption({ index: 1 }).catch(() => {});
-        } else {
-          await swatch.click({ timeout: 1500 }).catch(() => {});
-        }
-      }
+      // Select ONE value per option group (Shopify needs a full variant before
+      // it will add). Radios grouped by name, plus any <select> options.
+      await page
+        .evaluate(() => {
+          const seen = new Set<string>();
+          document
+            .querySelectorAll<HTMLInputElement>(
+              "input[type=radio][name^='option' i], .product-form__input input[type=radio], fieldset[class*='variant' i] input[type=radio], .product-detail-configurator input[type=radio]",
+            )
+            .forEach((r) => {
+              if (seen.has(r.name)) return;
+              seen.add(r.name);
+              r.checked = true;
+              r.dispatchEvent(new Event("input", { bubbles: true }));
+              r.dispatchEvent(new Event("change", { bubbles: true }));
+              r.click();
+            });
+          document
+            .querySelectorAll<HTMLSelectElement>(
+              ".product-form select, select[name^='option' i], .product-detail-configurator select",
+            )
+            .forEach((s) => {
+              if (s.options.length > 1 && s.selectedIndex <= 0) {
+                s.selectedIndex = 1;
+                s.dispatchEvent(new Event("change", { bubbles: true }));
+              }
+            });
+        })
+        .catch(() => {});
+      await page.waitForTimeout(600);
     } catch {
       /* no variant selector — fine */
     }
@@ -224,45 +345,96 @@ export async function runStatefulFlow(
       notes.push("Warenkorb: Add-to-Cart nicht auffindbar (evtl. ausverkauft) — nicht analysiert.");
       return { pages, notes };
     }
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(1800);
+    await dismissPopups(page);
 
-    // Go to cart: prefer a checkout/cart control; else navigate to the cart path.
-    // Include the PDP's locale prefix (e.g. /de) — many shops mount cart under it.
     const pdpParsed = new URL(pdpUrl);
     const origin = pdpParsed.origin;
     const firstSeg = pdpParsed.pathname.split("/").filter(Boolean)[0] ?? "";
     const locale = /^[a-z]{2}(-[a-z]{2})?$/i.test(firstSeg) ? `/${firstSeg}` : "";
-    const cartPaths = [
-      `${locale}/checkout/cart`,
-      `${locale}/cart`,
-      `${locale}/warenkorb`,
-      "/checkout/cart",
-      "/cart",
-      "/warenkorb",
-    ];
-    // Reach the cart page deterministically — offcanvas links ("Zur Kasse" vs
-    // "Warenkorb anzeigen") are ambiguous and can skip straight to checkout.
-    let reachedCart = false;
-    for (const path of cartPaths) {
+
+    // Cart-page candidates: links surfaced by the open drawer/header first
+    // (e.g. Shopify "View cart" → /cart), then conventional paths. We accept the
+    // first that is actually a POPULATED cart — never an empty cart or a 404.
+    const drawerCartHrefs: string[] = await page
+      .evaluate(() => {
+        const out: string[] = [];
+        document.querySelectorAll("a[href]").forEach((a) => {
+          const h = (a as HTMLAnchorElement).getAttribute("href") || "";
+          if (/\/(cart|warenkorb|checkout\/cart)(\/|\?|$)/i.test(h) && !/add/i.test(h)) {
+            out.push((a as HTMLAnchorElement).href);
+          }
+        });
+        return out;
+      })
+      .catch(() => [] as string[]);
+
+    const cartCandidates = [
+      ...new Set([
+        ...drawerCartHrefs,
+        `${origin}${locale}/cart`,
+        `${origin}/cart`,
+        `${origin}${locale}/checkout/cart`,
+        `${origin}/checkout/cart`,
+        `${origin}${locale}/warenkorb`,
+        `${origin}/warenkorb`,
+      ]),
+    ].filter((u) => {
       try {
-        await page.goto(origin + path, { waitUntil: "domcontentloaded", timeout: NAV_TIMEOUT });
-        await settlePage(page);
-        reachedCart = true;
-        break;
+        return new URL(u).origin === origin;
       } catch {
-        /* try next */
+        return false;
+      }
+    });
+
+    let cartReached = false;
+    let sawEmptyCart = false;
+    for (const cu of cartCandidates) {
+      try {
+        await page.goto(cu, { waitUntil: "domcontentloaded", timeout: NAV_TIMEOUT });
+        await settlePage(page);
+        await dismissConsent(page);
+        await dismissPopups(page);
+        const empty = await page.evaluate(() =>
+          /(dein warenkorb ist leer|warenkorb.{0,15}(ist )?leer|cart is empty|your (shopping )?cart is empty)/i.test(
+            (document.body.innerText || "").toLowerCase(),
+          ),
+        );
+        if (empty) {
+          sawEmptyCart = true;
+          continue;
+        }
+        if (await isCartPopulated(page)) {
+          cartReached = true;
+          break;
+        }
+      } catch {
+        /* try next candidate */
       }
     }
-    if (!reachedCart) {
-      notes.push("Warenkorb: nicht erreichbar — nicht analysiert.");
-      return { pages, notes };
+
+    if (cartReached) {
+      pages.push(await buildPage(page, "cart", "Warenkorb", page.url()));
+    } else {
+      // No usable cart PAGE → try the off-canvas drawer (Shopify/Shopware).
+      const opened = await openCartDrawer(page, pdpUrl);
+      if (opened) {
+        notes.push(
+          "Warenkorb als Off-Canvas erfasst — dieser Shop hat keine eigene Warenkorb-Seite.",
+        );
+        pages.push(await buildPage(page, "cart", "Warenkorb", page.url()));
+      } else {
+        notes.push(
+          sawEmptyCart
+            ? "Warenkorb blieb leer — das Produkt ließ sich nicht hinzufügen (vermutlich Pflicht-Variante oder Personalisierung erforderlich). Warenkorb & Checkout nicht analysiert."
+            : "Warenkorb: weder Warenkorb-Seite noch Off-Canvas-Warenkorb erreichbar — nicht analysiert.",
+        );
+        return { pages, notes };
+      }
     }
-    await dismissConsent(page);
-    await dismissPopups(page);
-    pages.push(await buildPage(page, "cart", "Warenkorb", page.url()));
 
     // Proceed toward checkout — capture the FIRST checkout screen, no input.
-    const wentToCheckout = await clickToCheckout(page);
+    const wentToCheckout = await clickToCheckout(page, origin);
     if (!wentToCheckout) {
       notes.push("Checkout: kein „Zur Kasse“-Einstieg gefunden — nicht analysiert.");
       return { pages, notes };
