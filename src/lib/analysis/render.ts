@@ -57,20 +57,44 @@ async function evalWithRetry<R>(
   throw lastErr;
 }
 
+// Hosts/containers of the common consent CMPs — hidden as a fallback so the
+// banner never lands in the screenshot (Build-Spec §4 permits hiding it).
+const CONSENT_HIDE_CSS = `
+  #usercentrics-root, #usercentrics-cmp-ui, [id*='usercentrics' i],
+  #onetrust-consent-sdk, #onetrust-banner-sdk, .onetrust-pc-dark-filter,
+  #CybotCookiebotDialog, #CybotCookiebotDialogBodyUnderlay,
+  #cookiescript_injected, #cookiescript_injected_wrapper,
+  .cmplz-cookiebanner, #cmplz-cookiebanner-container, .cmplz-overlay,
+  .klaro, #klaro, .cookie-notice, #cookie-notice, #cookie-law-info-bar,
+  .cc-window, .cc-banner, [id^='sp_message_container'],
+  [class*='cookie-permission' i], [class*='cookie-banner' i], [id*='cookie-banner' i],
+  [class*='cookieconsent' i], [id*='cookieconsent' i], [class*='cookie-consent' i],
+  [aria-label*='cookie' i][role='dialog'], [aria-label*='consent' i][role='dialog'] {
+    display: none !important; visibility: hidden !important; pointer-events: none !important;
+  }
+  html, body { overflow: auto !important; }
+`;
+
 async function dismissConsent(page: Page): Promise<void> {
-  // Best-effort: well-known accept buttons first, then text heuristics.
-  const knownSelectors = [
+  // 1) Try to ACCEPT via known CMP buttons, then accessible-name heuristics.
+  const acceptSelectors = [
     "#onetrust-accept-btn-handler",
     "#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll",
-    "button[aria-label*='akzeptier' i]",
-    "button[aria-label*='accept' i]",
+    "#CybotCookiebotDialogBodyButtonAccept",
+    "#cookiescript_accept",
+    "[data-testid='uc-accept-all-button']",
+    ".cmplz-accept",
+    ".cookie-permission--accept-button",
+    ".js-cookie-permission-button",
+    "[aria-label*='akzeptier' i]",
+    "[aria-label*='accept all' i]",
   ];
-  for (const sel of knownSelectors) {
+  for (const sel of acceptSelectors) {
     try {
       const el = page.locator(sel).first();
-      if (await el.isVisible({ timeout: 800 })) {
-        await el.click({ timeout: 1500 });
-        return;
+      if (await el.isVisible({ timeout: 500 })) {
+        await el.click({ timeout: 1500, force: true });
+        break;
       }
     } catch {
       /* keep trying */
@@ -79,15 +103,19 @@ async function dismissConsent(page: Page): Promise<void> {
   try {
     const byText = page
       .getByRole("button", {
-        name: /(alle )?(akzeptieren|accept|zustimmen|einverstanden|verstanden|got it|allow all)/i,
+        name: /(alle(s)? )?(akzeptieren|annehmen|zustimmen|einverstanden|verstanden|allow all|accept all|accept|got it|agree)/i,
       })
       .first();
-    if (await byText.isVisible({ timeout: 800 })) {
-      await byText.click({ timeout: 1500 });
+    if (await byText.isVisible({ timeout: 500 })) {
+      await byText.click({ timeout: 1500, force: true }).catch(() => {});
     }
   } catch {
     /* none found — fine */
   }
+
+  // 2) Hide any consent UI still present and release scroll-lock, so the
+  //    screenshot is clean even when the accept button couldn't be matched.
+  await page.addStyleTag({ content: CONSENT_HIDE_CSS }).catch(() => {});
 }
 
 async function autoScroll(page: Page): Promise<void> {
