@@ -18,7 +18,7 @@ import { runStatefulFlow } from "@/lib/analysis/stateful";
 import { analyzePageVision } from "@/lib/analysis/vision";
 import { persistScreenshot } from "@/lib/analysis/blob";
 import { opportunityClass, opportunityScore, overallUplift } from "@/lib/scoring";
-import type { AnalysisContext, AnalyzedPage, PageType } from "@/lib/types";
+import type { AnalysisContext, AnalyzedPage, PageType, Viewport } from "@/lib/types";
 import type { RenderedPage } from "@/lib/analysis/pipeline-types";
 import type { AnalysisEvent } from "@/lib/analysis/events";
 
@@ -34,20 +34,52 @@ async function analyzeRendered(
   rendered: RenderedPage,
   ctx: AnalysisContext,
 ): Promise<AnalyzedPage> {
+  const hasMobile = Boolean(rendered.mobile);
+
+  // Choose the primary view by the device split: mobile-majority → mobile,
+  // desktop-majority → desktop, 50/50 → mobile primary + desktop secondary.
+  let primaryVp: Viewport;
+  let withSecondary = false;
+  if (ctx.device > 50 && hasMobile) {
+    primaryVp = "mobile";
+  } else if (ctx.device === 50 && hasMobile) {
+    primaryVp = "mobile";
+    withSecondary = true;
+  } else {
+    primaryVp = "desktop";
+  }
+
+  const primaryView = primaryVp === "mobile" ? rendered.mobile! : rendered.desktop;
+  const primaryLevers = await analyzePageVision(rendered, ctx, primaryVp);
   const screenshotUrl = await persistScreenshot(
-    rendered.desktop.screenshot,
-    rendered.type,
+    primaryView.screenshot,
+    `${rendered.type}-${primaryVp}`,
   );
-  const levers = await analyzePageVision(rendered, ctx);
-  return {
+
+  const page: AnalyzedPage = {
     id: rendered.id,
     type: rendered.type,
     name: rendered.name,
     screenshotUrl,
-    viewport: "desktop",
-    opportunity: opportunityClass(opportunityScore(rendered.type, levers)),
-    levers,
+    viewport: primaryVp,
+    opportunity: opportunityClass(opportunityScore(rendered.type, primaryLevers)),
+    levers: primaryLevers,
   };
+
+  if (withSecondary) {
+    const secLevers = await analyzePageVision(rendered, ctx, "desktop");
+    const secShot = await persistScreenshot(
+      rendered.desktop.screenshot,
+      `${rendered.type}-desktop`,
+    );
+    page.secondary = {
+      viewport: "desktop",
+      screenshotUrl: secShot,
+      levers: secLevers,
+    };
+  }
+
+  return page;
 }
 
 /** Render + analyze one read-only page in its own session. */

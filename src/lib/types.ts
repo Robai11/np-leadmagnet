@@ -67,16 +67,30 @@ export interface Lever {
   reachable?: boolean;
 }
 
-/** One analyzed funnel page. */
+/** One rendered view of a page (its screenshot + the levers pinned on it). */
+export interface PageScreen {
+  viewport: Viewport;
+  /** Persisted screenshot URL (Vercel Blob / data URL). Undefined → mock screen. */
+  screenshotUrl?: string;
+  levers: Lever[];
+}
+
+/**
+ * One analyzed funnel page. The PRIMARY view is chosen by the device split
+ * (mobile-majority → mobile, else desktop). At a 50/50 split a `secondary`
+ * view is added so the report can stack mobile on top and desktop below.
+ */
 export interface AnalyzedPage {
   id: string;
   type: PageType;
   name: string;
   opportunity: ImpactLevel;
-  /** Persisted screenshot URL (Vercel Blob). Undefined → render mock screen. */
+  /** Primary view shown first. */
   screenshotUrl?: string;
   viewport: Viewport;
   levers: Lever[];
+  /** Optional second view (only at a 50/50 device split). */
+  secondary?: PageScreen;
 }
 
 export interface AnalysisMeta {

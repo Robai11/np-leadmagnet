@@ -12,6 +12,7 @@
  */
 
 import { rankPages } from "@/lib/scoring";
+import { GATE_ENABLED } from "@/lib/flags";
 import type { AnalysisResult, AnalyzedPage, Lever } from "@/lib/types";
 import type { AnalysisEvent } from "@/lib/analysis/events";
 
@@ -21,7 +22,13 @@ function redactLever(l: Lever): Lever {
 }
 
 function redactPage(p: AnalyzedPage): AnalyzedPage {
-  return { ...p, levers: p.levers.map(redactLever) };
+  return {
+    ...p,
+    levers: p.levers.map(redactLever),
+    secondary: p.secondary
+      ? { ...p.secondary, levers: p.secondary.levers.map(redactLever) }
+      : undefined,
+  };
 }
 
 export async function* gateStream(
@@ -37,7 +44,8 @@ export async function* gateStream(
     switch (e.type) {
       case "page":
         fullPages.push(e.page);
-        yield { type: "page", page: redactPage(e.page) };
+        // Gate OFF → send full prose immediately; ON → redact until unlock.
+        yield { type: "page", page: GATE_ENABLED ? redactPage(e.page) : e.page };
         break;
       case "meta":
         meta = e.meta;
@@ -52,9 +60,12 @@ export async function* gateStream(
         yield e;
         break;
       case "done": {
-        const hero = rankPages(fullPages)[0];
-        const lever = hero?.levers[0];
-        if (hero && lever) yield { type: "teaser", pageId: hero.id, lever };
+        // Teaser only matters while the gate is on (one readable lever).
+        if (GATE_ENABLED) {
+          const hero = rankPages(fullPages)[0];
+          const lever = hero?.levers[0];
+          if (hero && lever) yield { type: "teaser", pageId: hero.id, lever };
+        }
         if (meta && overall) {
           onComplete({ meta, overall, pages: fullPages, notes });
         }

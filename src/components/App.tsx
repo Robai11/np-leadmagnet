@@ -8,6 +8,7 @@ import type {
   Lever,
 } from "@/lib/types";
 import { useAnalysis } from "@/lib/useAnalysis";
+import { GATE_ENABLED } from "@/lib/flags";
 import { InputStage } from "@/components/InputStage";
 import { LoadingStage } from "@/components/LoadingStage";
 import { ReportStage } from "@/components/ReportStage";
@@ -35,7 +36,8 @@ export function App() {
   const [ctx, setCtx] = useState<AnalysisContext | null>(null);
   const [full, setFull] = useState<AnalysisResult | null>(null);
 
-  const unlocked = full !== null;
+  // Gate OFF → always "unlocked" (every lever visible, no email field).
+  const unlocked = !GATE_ENABLED || full !== null;
 
   const onStart = (c: AnalysisContext) => {
     setCtx(c);

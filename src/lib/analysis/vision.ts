@@ -15,12 +15,29 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
+import sharp from "sharp";
 import { readEnv } from "@/lib/analysis/config";
 import { rangeFor, leverTypeFor } from "@/lib/rubric";
 import { CATEGORY_META, type LeverCategory } from "@/lib/taxonomy";
-import type { ImpactLevel } from "@/styles/tokens";
-import type { AnalysisContext, Lever } from "@/lib/types";
+import type { ImpactLevel, } from "@/styles/tokens";
+import type { AnalysisContext, Lever, Viewport } from "@/lib/types";
 import type { RenderedPage, RenderedView } from "@/lib/analysis/pipeline-types";
+
+// Anthropic rejects images whose longest side exceeds 8000px and processes
+// everything down to ~1568px anyway. Full-page screenshots of long shops blow
+// past that, so we downscale a COPY for the API. Pins are computed from real
+// document coordinates (percentages), so downscaling never shifts them.
+async function imageForVision(jpeg: Buffer): Promise<string> {
+  try {
+    const out = await sharp(jpeg)
+      .resize({ width: 1568, height: 1568, fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: 82 })
+      .toBuffer();
+    return out.toString("base64");
+  } catch {
+    return jpeg.toString("base64");
+  }
+}
 
 const CATEGORIES: LeverCategory[] = [
   "cta",
@@ -111,33 +128,29 @@ const TOOL: Anthropic.Tool = {
 };
 
 function buildUserContent(
+  view: RenderedView,
   page: RenderedPage,
   ctx: AnalysisContext,
+  imageB64: string,
 ): Anthropic.ContentBlockParam[] {
-  const view: RenderedView = page.desktop;
   const elementsText = view.elements
     .map((e) => `${e.id} <${e.tag}${e.role ? ` role=${e.role}` : ""}> "${e.text}"`)
     .join("\n");
-  const mobileNote = page.mobile
-    ? `\nMobile-Elemente (390px) zusätzlich vorhanden — gewichte mobile Befunde gemäß ${ctx.device}% Mobile-Traffic.`
-    : "";
+  const viewLabel =
+    view.viewport === "mobile" ? "Mobile (390px Breite)" : "Desktop (1280px Breite)";
 
   return [
     {
       type: "image",
-      source: {
-        type: "base64",
-        media_type: "image/jpeg",
-        data: view.screenshot.toString("base64"),
-      },
+      source: { type: "base64", media_type: "image/jpeg", data: imageB64 },
     },
     {
       type: "text",
       text:
-        `Seitentyp: ${page.type}\nBranche: ${ctx.industry}\nDevice-Split: ${ctx.device}% Mobile / ${100 - ctx.device}% Desktop\nKanäle: ${ctx.channels.join(", ")}\n` +
-        `Dokumentgröße: ${view.docWidth}×${view.docHeight}px${mobileNote}\n\n` +
+        `Seitentyp: ${page.type}\nAnsicht: ${viewLabel}\nBranche: ${ctx.industry}\nDevice-Split: ${ctx.device}% Mobile / ${100 - ctx.device}% Desktop\nKanäle: ${ctx.channels.join(", ")}\n` +
+        `Dokumentgröße: ${view.docWidth}×${view.docHeight}px\n\n` +
         `Gerenderte Elemente (elementId, Tag, Text):\n${elementsText}\n\n` +
-        `Analysiere diese Seite und rufe report_levers mit den 3–5 stärksten Hebeln auf.`,
+        `Analysiere diese ${view.viewport === "mobile" ? "Mobil" : "Desktop"}-Ansicht und rufe report_levers mit den 3–5 stärksten Hebeln auf.`,
     },
   ];
 }
@@ -145,18 +158,19 @@ function buildUserContent(
 /** Map a validated finding to a Lever, computing pin + range from ground truth. */
 function toLever(
   f: RawFinding,
-  page: RenderedPage,
+  view: RenderedView,
+  pageId: string,
   n: number,
 ): Lever | null {
-  const el = page.desktop.elements.find((e) => e.id === f.elementId);
+  const el = view.elements.find((e) => e.id === f.elementId);
   if (!el) return null; // no element → no finding (Build-Spec §6)
-  const { docWidth, docHeight } = page.desktop;
+  const { docWidth, docHeight } = view;
   const pin = {
     x: Math.round(((el.x + el.w / 2) / docWidth) * 1000) / 10,
     y: Math.round(((el.y + el.h / 2) / docHeight) * 1000) / 10,
   };
   return {
-    id: `${page.id}-${n}`,
+    id: `${pageId}-${view.viewport}-${n}`,
     n,
     elementId: el.id,
     pin,
@@ -173,12 +187,17 @@ function toLever(
   };
 }
 
+/** Analyze ONE view (desktop or mobile) of a page. Pins are relative to it. */
 export async function analyzePageVision(
   page: RenderedPage,
   ctx: AnalysisContext,
+  viewport: Viewport,
 ): Promise<Lever[]> {
+  const view: RenderedView =
+    (viewport === "mobile" ? page.mobile : page.desktop) ?? page.desktop;
   const env = readEnv();
   const client = new Anthropic({ apiKey: env.anthropicApiKey });
+  const imageB64 = await imageForVision(view.screenshot);
 
   const message = await client.messages.create({
     model: env.anthropicModel,
@@ -192,7 +211,7 @@ export async function analyzePageVision(
     ],
     tools: [TOOL],
     tool_choice: { type: "tool", name: "report_levers" },
-    messages: [{ role: "user", content: buildUserContent(page, ctx) }],
+    messages: [{ role: "user", content: buildUserContent(view, page, ctx, imageB64) }],
   });
 
   const toolUse = message.content.find(
@@ -203,7 +222,7 @@ export async function analyzePageVision(
   const raw = (toolUse.input as { levers?: RawFinding[] }).levers ?? [];
   const levers: Lever[] = [];
   for (const f of raw.slice(0, 5)) {
-    const lever = toLever(f, page, levers.length + 1);
+    const lever = toLever(f, view, page.id, levers.length + 1);
     if (lever) levers.push(lever);
   }
   return levers;

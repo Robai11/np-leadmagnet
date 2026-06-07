@@ -20,7 +20,12 @@ export function ReportStage({
   onUnlock: (email: string) => Promise<boolean>;
 }) {
   const { meta, overall, pages, notes } = result;
-  const totalLevers = pages.reduce((a, p) => a + p.levers.length, 0);
+  // A page may carry two views (mobile + desktop at a 50/50 split); count both.
+  const pageLevers = (p: (typeof pages)[number]) => [
+    ...p.levers,
+    ...(p.secondary?.levers ?? []),
+  ];
+  const totalLevers = pages.reduce((a, p) => a + pageLevers(p).length, 0);
 
   // Hero = highest-opportunity page; its first lever is the readable teaser.
   const heroPage = useMemo(() => rankPages(pages)[0] ?? pages[0], [pages]);
@@ -99,7 +104,7 @@ export function ReportStage({
               className="opp"
               style={{ background: opportunityVar(activePage.opportunity) }}
             />{" "}
-            {activePage.name} · {activePage.levers.length} Hebel
+            {activePage.name} · {pageLevers(activePage).length} Hebel
           </div>
           <Screenshot
             page={activePage}
@@ -117,7 +122,7 @@ export function ReportStage({
               Freischaltung.
             </div>
           )}
-          {activePage.levers.map((lv) => {
+          {pageLevers(activePage).map((lv) => {
             const isTeaserLever = lv.id === teaserLeverId;
             const locked = lockedNow && !isTeaserLever;
             return (

@@ -1249,3 +1249,43 @@
 @media (prefers-reduced-motion: reduce) {
   .bar.bar-busy::after, .steps li.active .step-dot { animation: none; }
 }
+
+/* ── Report screenshots: framed views (desktop chrome / phone mockup) ── */
+.shots { display: flex; flex-direction: column; gap: 22px; }
+.shots-stacked { gap: 26px; }
+.screen-wrap { display: flex; flex-direction: column; gap: 8px; }
+.screen-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 11px; color: var(--color-text-mute);
+}
+.screen-canvas { position: relative; width: 100%; }
+
+/* Real screenshots scroll inside their frame so the whole page is reachable
+   and the pins stay pinned to the image. */
+.shot-real .chrome-body { height: auto; max-height: 72vh; overflow-y: auto; overflow-x: hidden; }
+
+/* Phone mockup for the mobile view */
+.shot-mobile {
+  border: none; box-shadow: none; overflow: visible;
+  background: transparent; display: flex; justify-content: center;
+}
+.phone-frame {
+  width: 322px; max-width: 100%;
+  background: var(--color-ink); border-radius: 36px; padding: 13px;
+  box-shadow: var(--shadow-float); position: relative;
+}
+.phone-frame::before {
+  content: ""; position: absolute; top: 17px; left: 50%; transform: translateX(-50%);
+  width: 92px; height: 6px; border-radius: 6px; background: var(--color-line-ink); z-index: 3;
+}
+.phone-screen {
+  background: #fff; border-radius: 24px; overflow-y: auto; overflow-x: hidden;
+  max-height: 66vh; position: relative;
+}
+/* When both views are stacked, keep each a bit shorter. */
+.shots-stacked .phone-screen,
+.shots-stacked .shot-real .chrome-body { max-height: 52vh; }
+
+@media (max-width: 920px) {
+  .phone-frame { width: 300px; }
+}
