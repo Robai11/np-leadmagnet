@@ -8,8 +8,19 @@
 
 import type { Browser, Page, Locator } from "playwright-core";
 import type { PageType } from "@/lib/types";
-import type { RenderedPage } from "@/lib/analysis/pipeline-types";
-import { captureView, dismissConsent, viewportSize, NAV_TIMEOUT, settlePage } from "@/lib/analysis/render";
+import type { RenderedPage, RenderedView } from "@/lib/analysis/pipeline-types";
+import {
+  captureView,
+  captureElementView,
+  dismissConsent,
+  viewportSize,
+  NAV_TIMEOUT,
+  settlePage,
+} from "@/lib/analysis/render";
+
+/** Off-canvas / mini-cart drawer containers across the common platforms. */
+const DRAWER_SELECTOR =
+  "cart-drawer, [class*='cart-drawer' i], #CartDrawer, [class*='mini-cart' i], [class*='minicart' i], [class*='offcanvas' i][class*='cart' i], [class*='drawer' i][class*='cart' i], [class*='cart' i][class*='drawer' i], .offcanvas-cart, .cart-offcanvas";
 
 export interface StatefulResult {
   pages: RenderedPage[];
@@ -389,6 +400,17 @@ async function buildPage(
   return { id, type: id, name, url, desktop, content, reachable: true };
 }
 
+/** Wrap an already-captured view (e.g. an off-canvas drawer) into a page. */
+function buildPageFromView(
+  view: RenderedView,
+  id: PageType,
+  name: string,
+  url: string,
+): RenderedPage {
+  const content = view.elements.map((e) => e.text).filter(Boolean).join(" · ").slice(0, 4000);
+  return { id, type: id, name, url, desktop: view, content, reachable: true };
+}
+
 export async function runStatefulFlow(
   browser: Browser,
   pdpUrl: string,
@@ -528,15 +550,22 @@ export async function runStatefulFlow(
     }
 
     if (cartReached) {
+      // A real, populated cart PAGE (the richest, cleanest cart view).
       pages.push(await buildPage(page, "cart", "Warenkorb", page.url()));
     } else {
-      // No usable cart PAGE → try the off-canvas drawer (Shopify/Shopware).
+      // No usable cart PAGE → true off-canvas-only shop. Re-open the drawer and
+      // capture JUST the drawer panel cleanly (element screenshot), so the cart
+      // is analyzed as the real off-canvas UX — not a dimmed full-page split.
       const opened = await openCartDrawer(page, pdpUrl);
       if (opened) {
-        notes.push(
-          "Warenkorb als Off-Canvas erfasst — dieser Shop hat keine eigene Warenkorb-Seite.",
-        );
-        pages.push(await buildPage(page, "cart", "Warenkorb", page.url()));
+        const dv = await captureElementView(page, DRAWER_SELECTOR, "desktop");
+        if (dv && dv.elements.length >= 4) {
+          notes.push("Warenkorb als Off-Canvas erfasst — dieser Shop hat keine eigene Warenkorb-Seite.");
+          pages.push(buildPageFromView(dv, "cart", "Warenkorb", page.url()));
+        } else {
+          notes.push("Warenkorb (Off-Canvas) erfasst.");
+          pages.push(await buildPage(page, "cart", "Warenkorb", page.url()));
+        }
       } else {
         notes.push(
           sawEmptyCart

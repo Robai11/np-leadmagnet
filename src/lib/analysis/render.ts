@@ -222,6 +222,93 @@ export async function captureView(
   return { viewport, screenshot, docWidth, docHeight, elements };
 }
 
+/**
+ * Capture ONE element (e.g. an off-canvas cart drawer) as a clean screenshot +
+ * enumerate the candidate elements WITHIN it, with bounding boxes relative to
+ * the element. Used to analyze off-canvas carts as the real cart UX instead of
+ * a dimmed full-page split.
+ */
+export async function captureElementView(
+  page: Page,
+  selector: string,
+  viewport: Viewport,
+): Promise<RenderedView | null> {
+  const el = page.locator(selector).first();
+  if (!(await el.count())) return null;
+  if (!(await el.isVisible({ timeout: 1000 }).catch(() => false))) return null;
+  await el.scrollIntoViewIfNeeded({ timeout: 1500 }).catch(() => {});
+
+  const meta = await el
+    .evaluate((root: Element) => {
+      const rect = root.getBoundingClientRect();
+      const priceRe = /(\d{1,4}[.,]\d{2})\s*(€|eur|chf|\$)|(€|chf|\$)\s*\d/i;
+      const cands = new Set<Element>();
+      root
+        .querySelectorAll(
+          "a,button,[role=button],input,select,textarea,h1,h2,h3,img,[class*='price' i],[class*='cta' i],[class*='checkout' i],[class*='cart' i]",
+        )
+        .forEach((e) => cands.add(e));
+      root.querySelectorAll("span,div,p,strong,b").forEach((e) => {
+        const t = (e as HTMLElement).innerText || "";
+        if (t.length < 40 && priceRe.test(t)) cands.add(e);
+      });
+      const out: {
+        id: string;
+        tag: string;
+        role?: string;
+        text: string;
+        x: number;
+        y: number;
+        w: number;
+        h: number;
+      }[] = [];
+      let i = 0;
+      cands.forEach((e) => {
+        const r = e.getBoundingClientRect();
+        if (r.width < 8 || r.height < 8) return;
+        const st = getComputedStyle(e);
+        if (st.visibility === "hidden" || st.display === "none") return;
+        if (r.bottom < rect.top || r.top > rect.bottom) return; // outside visible drawer box
+        const he = e as HTMLElement;
+        let text = (he.innerText || he.textContent || "").trim().replace(/\s+/g, " ");
+        if (!text) {
+          text =
+            he.getAttribute("aria-label") ||
+            he.getAttribute("alt") ||
+            he.getAttribute("placeholder") ||
+            "";
+        }
+        out.push({
+          id: `el-${i++}`,
+          tag: e.tagName.toLowerCase(),
+          role: e.getAttribute("role") ?? undefined,
+          text: text.slice(0, 140),
+          x: Math.round(r.left - rect.left),
+          y: Math.round(r.top - rect.top),
+          w: Math.round(r.width),
+          h: Math.round(r.height),
+        });
+      });
+      out.sort((a, b) => b.w * b.h - a.w * a.h);
+      return {
+        docWidth: Math.round(rect.width),
+        docHeight: Math.round(rect.height),
+        elements: out.slice(0, 40),
+      };
+    })
+    .catch(() => null);
+  if (!meta) return null;
+
+  const screenshot = (await el.screenshot({ type: "jpeg", quality: 82 })) as Buffer;
+  return {
+    viewport,
+    screenshot,
+    docWidth: meta.docWidth,
+    docHeight: meta.docHeight,
+    elements: meta.elements,
+  };
+}
+
 export const viewportSize = (v: Viewport) => VIEWPORTS[v];
 export { dismissConsent, NAV_TIMEOUT, settlePage, evalWithRetry };
 
