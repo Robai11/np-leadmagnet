@@ -116,11 +116,122 @@ async function clickAddToCart(page: Page): Promise<boolean> {
 }
 
 /**
- * Heuristic: is the current page a NON-empty cart? Uses STRUCTURAL signals
+ * Fill REQUIRED non-sensitive product options (engraving/personalization/name)
+ * with a neutral placeholder so add-to-cart isn't blocked. Strictly scoped to
+ * the product/buy form — never touches search, coupon, quantity, or anything on
+ * checkout/login (those data fields remain off-limits per Build-Spec §6).
+ */
+async function fillProductOptions(page: Page): Promise<void> {
+  try {
+    await page.evaluate(() => {
+      const scopeSel = [
+        "form[action*='/cart/add' i]",
+        "form[action*='line-item' i]",
+        ".product-form",
+        ".product-detail-buy",
+        ".product-detail-configurator",
+        "[class*='product-detail' i] form",
+      ].join(",");
+      const roots = Array.from(document.querySelectorAll(scopeSel));
+      const visible = (el: HTMLElement) =>
+        el.offsetParent !== null && getComputedStyle(el).visibility !== "hidden";
+      const SKIP = /search|suche|gutschein|coupon|voucher|qty|menge|quantity|email|e-mail|plz|zip/i;
+      const PERSONAL =
+        /personalis|gravur|wunsch|beschriftung|name|text|message|nachricht|monogramm|aufdruck/i;
+      for (const root of roots) {
+        root.querySelectorAll("input, textarea").forEach((node) => {
+          const el = node as HTMLInputElement;
+          const type = (el.getAttribute("type") || el.tagName).toLowerCase();
+          const isText =
+            el.tagName === "TEXTAREA" || ["text", ""].includes(type);
+          const ident = `${el.name || ""} ${el.id || ""} ${el.getAttribute("placeholder") || ""}`;
+          if (isText && !SKIP.test(ident)) {
+            const required =
+              el.required || el.getAttribute("aria-required") === "true";
+            if ((required || PERSONAL.test(ident)) && !el.value && visible(el)) {
+              el.value = "Muster";
+              el.dispatchEvent(new Event("input", { bubbles: true }));
+              el.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+          } else if (type === "checkbox") {
+            if (el.required && !el.checked && visible(el)) {
+              el.checked = true;
+              el.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+          }
+        });
+      }
+    });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * Some shops gate add-to-cart behind a personalization MODAL (e.g. enter an
+ * engraving name, then confirm). After the add click, if such a modal opened,
+ * fill its non-sensitive text fields and confirm so the product is added.
+ */
+async function fillPersonalizationModal(page: Page): Promise<void> {
+  try {
+    await page.waitForTimeout(900);
+    const modal = page
+      .locator(
+        "[role=dialog], dialog[open], [class*='modal' i], [class*='popup' i], [class*='personali' i], [class*='customiz' i]",
+      )
+      .filter({ has: page.locator("input[type=text], input:not([type]), textarea") })
+      .first();
+    if (!(await modal.count())) return;
+    if (!(await modal.isVisible({ timeout: 800 }).catch(() => false))) return;
+
+    const fields = modal.locator("input[type=text], input:not([type]), textarea");
+    const count = await fields.count();
+    for (let i = 0; i < Math.min(count, 6); i++) {
+      try {
+        const f = fields.nth(i);
+        if ((await f.isVisible().catch(() => false)) && !(await f.inputValue().catch(() => "x"))) {
+          await f.fill("Muster", { timeout: 1500 }).catch(() => {});
+        }
+      } catch {
+        /* next */
+      }
+    }
+    // Required selects / checkboxes inside the modal.
+    await modal
+      .evaluate((root) => {
+        root.querySelectorAll("select").forEach((s) => {
+          const sel = s as HTMLSelectElement;
+          if (sel.options.length > 1 && sel.selectedIndex <= 0) {
+            sel.selectedIndex = 1;
+            sel.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        });
+        root.querySelectorAll("input[type=checkbox]").forEach((c) => {
+          const cb = c as HTMLInputElement;
+          if (cb.required && !cb.checked) {
+            cb.checked = true;
+            cb.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        });
+      })
+      .catch(() => {});
+
+    // Confirm the modal (its own add/apply button).
+    await clickByText(
+      page,
+      /(in den warenkorb|add to cart|hinzufügen|übernehmen|anwenden|speichern|fertig|bestätigen|weiter|ok)/i,
+      2500,
+    );
+    await page.waitForTimeout(800);
+  } catch {
+    /* best-effort */
+  }
+}
+
+/** Heuristic: is the current page a NON-empty cart? Uses STRUCTURAL signals
  * (line-item rows, quantity inputs, a checkout control) rather than body text,
  * which on most shops is dominated by header/nav/skip-links and buries the
- * real cart state. Explicit "empty cart" markers veto it.
- */
+ * real cart state. Explicit "empty cart" markers veto it. */
 async function isCartPopulated(page: Page): Promise<boolean> {
   try {
     const r = await page.evaluate(() => {
@@ -340,11 +451,14 @@ export async function runStatefulFlow(
       /* no variant selector — fine */
     }
 
+    await fillProductOptions(page);
     const added = await clickAddToCart(page);
     if (!added) {
       notes.push("Warenkorb: Add-to-Cart nicht auffindbar (evtl. ausverkauft) — nicht analysiert.");
       return { pages, notes };
     }
+    // Some shops open a personalization modal on add — fill + confirm it.
+    await fillPersonalizationModal(page);
     await page.waitForTimeout(1800);
     await dismissPopups(page);
 
