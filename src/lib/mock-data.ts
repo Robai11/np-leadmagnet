@@ -282,14 +282,18 @@ export const TOTAL_LEVERS = Object.values(LEVERS).reduce(
 
 export const OVERALL = { low: 11, high: 24 };
 
+// Die zehn wichtigsten E-Commerce-Branchen (+ Auffangoption für Nischen).
 export const INDUSTRIES = [
   "Mode & Bekleidung",
-  "Haushalt & Geräte",
-  "Elektronik",
+  "Elektronik & Technik",
+  "Haushalt & Haushaltsgeräte",
   "Beauty & Kosmetik",
-  "Sport & Outdoor",
-  "Lebensmittel",
+  "Drogerie & Gesundheit",
   "Möbel & Wohnen",
+  "Sport & Outdoor",
+  "Lebensmittel & Getränke",
+  "Spielzeug, Baby & Kind",
+  "Heimwerken, Garten & Baumarkt",
   "Sonstiges",
 ];
 

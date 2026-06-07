@@ -151,12 +151,15 @@ export function InputStage({
           <label>Traffic-Verteilung</label>
           <div className="device">
             <Smartphone size={16} />
+            {/* Thumb position = Desktop share (Monitor is on the right), so
+                dragging toward the monitor increases Desktop. `device` stays
+                the Mobile %, which the rest of the app expects. */}
             <input
               type="range"
               min={0}
               max={100}
-              value={device}
-              onChange={(e) => setDevice(Number(e.target.value))}
+              value={100 - device}
+              onChange={(e) => setDevice(100 - Number(e.target.value))}
             />
             <Monitor size={16} />
           </div>
