@@ -23,19 +23,36 @@ import type { ImpactLevel, } from "@/styles/tokens";
 import type { AnalysisContext, Lever, Viewport } from "@/lib/types";
 import type { RenderedPage, RenderedView } from "@/lib/analysis/pipeline-types";
 
-// Anthropic rejects images whose longest side exceeds 8000px and processes
-// everything down to ~1568px anyway. Full-page screenshots of long shops blow
-// past that, so we downscale a COPY for the API. Pins are computed from real
-// document coordinates (percentages), so downscaling never shifts them.
-async function imageForVision(jpeg: Buffer): Promise<string> {
+// Anthropic downscales any image to ~1568px on the long edge. A full-page
+// screenshot of a long (esp. mobile) shop becomes an unreadable sliver that way
+// → the model finds nothing. So we slice tall pages into READABLE vertical
+// tiles (each ≤1568px tall, native width kept) and send them as one sequence.
+// Pins come from real element coordinates, so tiling never shifts them.
+async function imagesForVision(jpeg: Buffer): Promise<string[]> {
   try {
-    const out = await sharp(jpeg)
-      .resize({ width: 1568, height: 1568, fit: "inside", withoutEnlargement: true })
-      .jpeg({ quality: 82 })
-      .toBuffer();
-    return out.toString("base64");
+    const meta = await sharp(jpeg).metadata();
+    const w = meta.width ?? 0;
+    const h = meta.height ?? 0;
+    // Short enough to stay readable as a single image.
+    if (!w || !h || (h <= 1568 && w <= 1568)) {
+      const out = await sharp(jpeg)
+        .resize({ width: 1568, height: 1568, fit: "inside", withoutEnlargement: true })
+        .jpeg({ quality: 82 })
+        .toBuffer();
+      return [out.toString("base64")];
+    }
+    const TILE = 1500; // < 1568 long edge → Anthropic keeps native width (readable)
+    const MAX_TILES = 6; // bound cost; covers the first ~9000px of the page
+    const tiles: string[] = [];
+    for (let top = 0, i = 0; top < h && i < MAX_TILES; top += TILE, i++) {
+      const th = Math.min(TILE, h - top);
+      let pipe = sharp(jpeg).extract({ left: 0, top, width: w, height: th });
+      if (w > 1568) pipe = pipe.resize({ width: 1568, withoutEnlargement: true });
+      tiles.push((await pipe.jpeg({ quality: 82 }).toBuffer()).toString("base64"));
+    }
+    return tiles;
   } catch {
-    return jpeg.toString("base64");
+    return [jpeg.toString("base64")];
   }
 }
 
@@ -131,24 +148,30 @@ function buildUserContent(
   view: RenderedView,
   page: RenderedPage,
   ctx: AnalysisContext,
-  imageB64: string,
+  images: string[],
 ): Anthropic.ContentBlockParam[] {
   const elementsText = view.elements
     .map((e) => `${e.id} <${e.tag}${e.role ? ` role=${e.role}` : ""}> "${e.text}"`)
     .join("\n");
   const viewLabel =
     view.viewport === "mobile" ? "Mobile (390px Breite)" : "Desktop (1280px Breite)";
+  const tileNote =
+    images.length > 1
+      ? `Der Screenshot ist in ${images.length} Ausschnitte aufgeteilt (von oben nach unten) — betrachte sie als EINE durchgehende Seite.\n`
+      : "";
+
+  const imageBlocks: Anthropic.ContentBlockParam[] = images.map((data) => ({
+    type: "image",
+    source: { type: "base64", media_type: "image/jpeg", data },
+  }));
 
   return [
-    {
-      type: "image",
-      source: { type: "base64", media_type: "image/jpeg", data: imageB64 },
-    },
+    ...imageBlocks,
     {
       type: "text",
       text:
         `Seitentyp: ${page.type}\nAnsicht: ${viewLabel}\nBranche: ${ctx.industry}\nDevice-Split: ${ctx.device}% Mobile / ${100 - ctx.device}% Desktop\nKanäle: ${ctx.channels.join(", ")}\n` +
-        `Dokumentgröße: ${view.docWidth}×${view.docHeight}px\n\n` +
+        `Dokumentgröße: ${view.docWidth}×${view.docHeight}px\n${tileNote}\n` +
         `Gerenderte Elemente (elementId, Tag, Text):\n${elementsText}\n\n` +
         `Analysiere diese ${view.viewport === "mobile" ? "Mobil" : "Desktop"}-Ansicht und rufe report_levers mit den 3–5 stärksten Hebeln auf.`,
     },
@@ -197,7 +220,7 @@ export async function analyzePageVision(
     (viewport === "mobile" ? page.mobile : page.desktop) ?? page.desktop;
   const env = readEnv();
   const client = new Anthropic({ apiKey: env.anthropicApiKey });
-  const imageB64 = await imageForVision(view.screenshot);
+  const images = await imagesForVision(view.screenshot);
 
   const message = await client.messages.create({
     model: env.anthropicModel,
@@ -211,7 +234,7 @@ export async function analyzePageVision(
     ],
     tools: [TOOL],
     tool_choice: { type: "tool", name: "report_levers" },
-    messages: [{ role: "user", content: buildUserContent(view, page, ctx, imageB64) }],
+    messages: [{ role: "user", content: buildUserContent(view, page, ctx, images) }],
   });
 
   const toolUse = message.content.find(
