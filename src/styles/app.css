@@ -1261,9 +1261,9 @@
 }
 .screen-canvas { position: relative; width: 100%; }
 
-/* Real screenshots scroll inside their frame so the whole page is reachable
-   and the pins stay pinned to the image. */
-.shot-real .chrome-body { height: auto; max-height: 72vh; overflow-y: auto; overflow-x: hidden; }
+/* Real screenshots show at FULL height so every pin is visible (no inner
+   scroll that would hide pins below the fold). */
+.shot-real .chrome-body { height: auto; overflow: visible; }
 
 /* Phone mockup for the mobile view */
 .shot-mobile {
@@ -1280,12 +1280,9 @@
   width: 92px; height: 6px; border-radius: 6px; background: var(--color-line-ink); z-index: 3;
 }
 .phone-screen {
-  background: #fff; border-radius: 24px; overflow-y: auto; overflow-x: hidden;
-  max-height: 66vh; position: relative;
+  background: #fff; border-radius: 24px; overflow: hidden;
+  position: relative; /* full height — every pin stays visible */
 }
-/* When both views are stacked, keep each a bit shorter. */
-.shots-stacked .phone-screen,
-.shots-stacked .shot-real .chrome-body { max-height: 52vh; }
 
 @media (max-width: 920px) {
   .phone-frame { width: 300px; }
@@ -1301,3 +1298,12 @@
 .shots { min-width: 0; }
 .shot-desktop { max-width: 100%; }
 .screen-label { align-self: flex-start; }
+
+/* ── Lever cards grouped by viewport (Mobile / Desktop) ─────────────── */
+.lever-group { display: flex; flex-direction: column; gap: 12px; }
+.lever-group + .lever-group { margin-top: 10px; }
+.lever-group-head {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--color-text-mute);
+}

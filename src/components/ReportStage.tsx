@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowRight, TrendingUp } from "lucide-react";
+import { ArrowRight, TrendingUp, Smartphone, Monitor } from "lucide-react";
 import { opportunityVar } from "@/styles/tokens";
 import { rankPages } from "@/lib/scoring";
 import type { AnalysisResult } from "@/lib/types";
@@ -122,20 +122,45 @@ export function ReportStage({
               Freischaltung.
             </div>
           )}
-          {pageLevers(activePage).map((lv) => {
-            const isTeaserLever = lv.id === teaserLeverId;
-            const locked = lockedNow && !isTeaserLever;
-            return (
-              <LeverCard
-                key={lv.id}
-                lv={lv}
-                locked={locked}
-                hovered={hovered}
-                setHovered={setHovered}
-                onUnlock={scrollToGate}
-              />
-            );
-          })}
+          {[
+            { viewport: activePage.viewport, levers: activePage.levers },
+            ...(activePage.secondary
+              ? [
+                  {
+                    viewport: activePage.secondary.viewport,
+                    levers: activePage.secondary.levers,
+                  },
+                ]
+              : []),
+          ]
+            .filter((g) => g.levers.length > 0)
+            .map((g) => (
+              <div className="lever-group" key={g.viewport}>
+                <div className="lever-group-head">
+                  {g.viewport === "mobile" ? (
+                    <Smartphone size={14} />
+                  ) : (
+                    <Monitor size={14} />
+                  )}
+                  {g.viewport === "mobile" ? "Mobile" : "Desktop"} · {g.levers.length}{" "}
+                  {g.levers.length === 1 ? "Hebel" : "Hebel"}
+                </div>
+                {g.levers.map((lv) => {
+                  const isTeaserLever = lv.id === teaserLeverId;
+                  const locked = lockedNow && !isTeaserLever;
+                  return (
+                    <LeverCard
+                      key={lv.id}
+                      lv={lv}
+                      locked={locked}
+                      hovered={hovered}
+                      setHovered={setHovered}
+                      onUnlock={scrollToGate}
+                    />
+                  );
+                })}
+              </div>
+            ))}
 
           {!unlocked && (
             <div className="gate" id="gate">
