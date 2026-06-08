@@ -222,31 +222,37 @@ export async function analyzePageVision(
   const client = new Anthropic({ apiKey: env.anthropicApiKey });
   const images = await imagesForVision(view.screenshot);
 
-  const message = await client.messages.create({
-    model: env.anthropicModel,
-    max_tokens: 4000,
-    system: [
-      {
-        type: "text",
-        text: SYSTEM_PROMPT,
-        cache_control: { type: "ephemeral" }, // stable rubric — cache across pages/runs
-      },
-    ],
-    tools: [TOOL],
-    tool_choice: { type: "tool", name: "report_levers" },
-    messages: [{ role: "user", content: buildUserContent(view, page, ctx, images) }],
-  });
+  const attempt = async (): Promise<Lever[]> => {
+    const message = await client.messages.create({
+      model: env.anthropicModel,
+      max_tokens: 4000,
+      system: [
+        {
+          type: "text",
+          text: SYSTEM_PROMPT,
+          cache_control: { type: "ephemeral" }, // stable rubric — cache across pages/runs
+        },
+      ],
+      tools: [TOOL],
+      tool_choice: { type: "tool", name: "report_levers" },
+      messages: [{ role: "user", content: buildUserContent(view, page, ctx, images) }],
+    });
+    const toolUse = message.content.find(
+      (b): b is Anthropic.ToolUseBlock => b.type === "tool_use",
+    );
+    if (!toolUse) return [];
+    const raw = (toolUse.input as { levers?: RawFinding[] }).levers ?? [];
+    const out: Lever[] = [];
+    for (const f of raw.slice(0, 5)) {
+      const lever = toLever(f, view, page.id, out.length + 1);
+      if (lever) out.push(lever);
+    }
+    return out;
+  };
 
-  const toolUse = message.content.find(
-    (b): b is Anthropic.ToolUseBlock => b.type === "tool_use",
-  );
-  if (!toolUse) return [];
-
-  const raw = (toolUse.input as { levers?: RawFinding[] }).levers ?? [];
-  const levers: Lever[] = [];
-  for (const f of raw.slice(0, 5)) {
-    const lever = toLever(f, view, page.id, levers.length + 1);
-    if (lever) levers.push(lever);
-  }
+  // Sonnet occasionally returns an empty set on a perfectly good page; one
+  // retry makes the per-page result reliable.
+  let levers = await attempt();
+  if (levers.length === 0) levers = await attempt();
   return levers;
 }

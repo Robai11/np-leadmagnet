@@ -210,6 +210,24 @@ export async function captureView(
 ): Promise<RenderedView> {
   await settlePage(page);
   await autoScroll(page);
+  // Wait for (lazy-loaded) images to finish so the screenshot has real content
+  // — a half-loaded page makes the Vision model find fewer/no levers.
+  await evalWithRetry(page, () =>
+    Promise.all(
+      Array.from(document.images)
+        .filter((img) => !img.complete)
+        .slice(0, 50)
+        .map(
+          (img) =>
+            new Promise<void>((res) => {
+              img.addEventListener("load", () => res(), { once: true });
+              img.addEventListener("error", () => res(), { once: true });
+              setTimeout(res, 2500);
+            }),
+        ),
+    ).then(() => undefined),
+  ).catch(() => {});
+  await page.waitForTimeout(300);
   const { docWidth, docHeight, elements } = await evalWithRetry(page, enumerateInPage);
   // JPEG keeps the full-page payload small enough for the Vision API; the pin
   // overlay is positioned from real bounding boxes, so screenshot fidelity only
