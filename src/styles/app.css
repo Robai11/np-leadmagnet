@@ -1291,12 +1291,13 @@
   .phone-frame { width: 300px; }
 }
 
-/* ── Tighter report screenshots (avoid over-wide stretch) ───────────── */
+/* ── Report screenshots: keep frames inside their grid column ───────── */
 .cards-col { min-width: 0; }
 .screen-canvas { min-width: 0; }
-.screen-canvas img { max-width: 100%; }
-/* Cap the desktop screenshot frame so it doesn't stretch the full column on
-   wide screens; center it (mobile phone mockup is already centered). */
-.shot-desktop { max-width: 760px; margin-inline: auto; }
-.screen-wrap { align-items: center; }
+.screen-canvas img { max-width: 100%; display: block; }
+/* Frames fill (and never exceed) their column — prevents the desktop shot from
+   overflowing into the lever-card column. The mobile phone mockup centers
+   itself internally (.shot-mobile is a flex container). */
+.shots { min-width: 0; }
+.shot-desktop { max-width: 100%; }
 .screen-label { align-self: flex-start; }
