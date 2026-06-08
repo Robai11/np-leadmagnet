@@ -1,4 +1,6 @@
-import type { CSSProperties } from "react";
+"use client";
+
+import { useEffect, useRef, type CSSProperties } from "react";
 import { Lock } from "lucide-react";
 import { impactVar } from "@/styles/tokens";
 import { CATEGORY_META } from "@/lib/taxonomy";
@@ -30,10 +32,19 @@ export function LeverCard({
   const active = hovered === lv.id;
   const Icon = CATEGORY_META[lv.category].icon;
   const cVar = { "--c": impactVar(lv.impact) } as CSSProperties;
+  const ref = useRef<HTMLDivElement>(null);
+
+  // When this lever becomes active (e.g. its pin in the screenshot is hovered),
+  // scroll this card into view. `block: nearest` makes it a no-op when the card
+  // is already visible (i.e. when the hover started on the card itself).
+  useEffect(() => {
+    if (active) ref.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [active]);
 
   if (locked) {
     return (
       <div
+        ref={ref}
         className={`card locked ${active ? "active" : ""}`}
         onMouseEnter={() => setHovered(lv.id)}
         onMouseLeave={() => setHovered(null)}
@@ -60,6 +71,7 @@ export function LeverCard({
 
   return (
     <div
+      ref={ref}
       className={`card ${active ? "active" : ""}`}
       onMouseEnter={() => setHovered(lv.id)}
       onMouseLeave={() => setHovered(null)}
