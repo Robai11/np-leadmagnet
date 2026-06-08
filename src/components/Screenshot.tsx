@@ -47,21 +47,28 @@ function Screen({
   const scrollRef = useRef<HTMLDivElement>(null);
   const Mock = MOCK_SCREENS[pageId];
 
-  const scrollToPin = (lev: Lever | undefined, smooth: boolean) => {
+  // Center the pin for `id` in this frame, using the pin's REAL rendered
+  // position (robust against image height / DOM nesting). No-op if the pin
+  // isn't in this frame (e.g. a desktop card hovered while this is mobile).
+  const scrollToPin = (id: string | undefined, smooth: boolean) => {
     const c = scrollRef.current;
-    if (!c || !lev) return;
-    const top = (lev.pin.y / 100) * c.scrollHeight - c.clientHeight / 2;
+    if (!c || !id) return;
+    const pinEl = c.querySelector<HTMLElement>(`[data-pin="${CSS.escape(id)}"]`);
+    if (!pinEl) return;
+    const cRect = c.getBoundingClientRect();
+    const pRect = pinEl.getBoundingClientRect();
+    const top =
+      c.scrollTop + (pRect.top - cRect.top) - c.clientHeight / 2 + pRect.height / 2;
     c.scrollTo({ top: Math.max(0, top), behavior: smooth ? "smooth" : "auto" });
   };
 
-  // Hover a lever card → scroll its pin into view (image already loaded by now).
+  // Hover a lever card (or pin) → scroll its pin into view.
   useEffect(() => {
-    if (!hovered) return;
-    scrollToPin(levers.find((l) => l.id === hovered), true);
-  }, [hovered, levers]);
+    if (hovered) scrollToPin(hovered, true);
+  }, [hovered]);
 
   // Initial scroll-to-first-pin runs on IMAGE LOAD (onLoad below), not on mount,
-  // so scrollHeight is correct (data-URL images decode asynchronously).
+  // so the pin's position is final (data-URL images decode asynchronously).
 
   const body = (
     <div
@@ -75,7 +82,7 @@ function Screen({
             src={screenshotUrl}
             alt={`${name} – analysierte Seite`}
             style={{ width: "100%", display: "block" }}
-            onLoad={() => scrollToPin(levers[0], false)}
+            onLoad={() => scrollToPin(levers[0]?.id, false)}
           />
         ) : Mock ? (
           <Mock />
@@ -84,6 +91,7 @@ function Screen({
           {levers.map((lv) => (
             <button
               key={lv.id}
+              data-pin={lv.id}
               className={`pin ${hovered === lv.id ? "active" : ""}`}
               style={
                 {
