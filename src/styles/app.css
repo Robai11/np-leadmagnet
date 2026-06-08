@@ -1261,9 +1261,10 @@
 }
 .screen-canvas { position: relative; width: 100%; }
 
-/* Real screenshots show at FULL height so every pin is visible (no inner
-   scroll that would hide pins below the fold). */
-.shot-real .chrome-body { height: auto; overflow: visible; }
+/* Scrollable frame; hovering a lever card scrolls its pin into view (see
+   Screenshot.tsx), so the frame stays a realistic size and pins stay reachable. */
+.screen-scroll { overflow-y: auto; overflow-x: hidden; }
+.desk-scroll { max-height: 70vh; background: var(--color-paper-2); }
 
 /* Phone mockup for the mobile view */
 .shot-mobile {
@@ -1280,9 +1281,13 @@
   width: 92px; height: 6px; border-radius: 6px; background: var(--color-line-ink); z-index: 3;
 }
 .phone-screen {
-  background: #fff; border-radius: 24px; overflow: hidden;
-  position: relative; /* full height — every pin stays visible */
+  background: #fff; border-radius: 24px;
+  overflow-y: auto; overflow-x: hidden;
+  max-height: 600px; position: relative;
 }
+/* A touch shorter when mobile + desktop are stacked at a 50/50 split. */
+.shots-stacked .phone-screen { max-height: 520px; }
+.shots-stacked .desk-scroll { max-height: 56vh; }
 
 @media (max-width: 920px) {
   .phone-frame { width: 300px; }
