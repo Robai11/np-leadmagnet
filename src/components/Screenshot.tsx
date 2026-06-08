@@ -47,14 +47,21 @@ function Screen({
   const scrollRef = useRef<HTMLDivElement>(null);
   const Mock = MOCK_SCREENS[pageId];
 
-  useEffect(() => {
+  const scrollToPin = (lev: Lever | undefined, smooth: boolean) => {
     const c = scrollRef.current;
-    if (!c) return;
-    const lev = hovered ? levers.find((l) => l.id === hovered) : levers[0];
-    if (!lev) return;
+    if (!c || !lev) return;
     const top = (lev.pin.y / 100) * c.scrollHeight - c.clientHeight / 2;
-    c.scrollTo({ top: Math.max(0, top), behavior: hovered ? "smooth" : "auto" });
+    c.scrollTo({ top: Math.max(0, top), behavior: smooth ? "smooth" : "auto" });
+  };
+
+  // Hover a lever card → scroll its pin into view (image already loaded by now).
+  useEffect(() => {
+    if (!hovered) return;
+    scrollToPin(levers.find((l) => l.id === hovered), true);
   }, [hovered, levers]);
+
+  // Initial scroll-to-first-pin runs on IMAGE LOAD (onLoad below), not on mount,
+  // so scrollHeight is correct (data-URL images decode asynchronously).
 
   const body = (
     <div
@@ -68,6 +75,7 @@ function Screen({
             src={screenshotUrl}
             alt={`${name} – analysierte Seite`}
             style={{ width: "100%", display: "block" }}
+            onLoad={() => scrollToPin(levers[0], false)}
           />
         ) : Mock ? (
           <Mock />
