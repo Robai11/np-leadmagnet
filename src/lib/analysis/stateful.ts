@@ -243,6 +243,22 @@ async function fillPersonalizationModal(page: Page): Promise<void> {
  * (line-item rows, quantity inputs, a checkout control) rather than body text,
  * which on most shops is dominated by header/nav/skip-links and buries the
  * real cart state. Explicit "empty cart" markers veto it. */
+/** True if the current page is a 404 / "page not found" error page. */
+async function isErrorPage(page: Page): Promise<boolean> {
+  try {
+    const title = (await page.title()).toLowerCase();
+    const h1 = (
+      await page.evaluate(() => document.querySelector("h1")?.textContent || "")
+    ).toLowerCase();
+    const hay = `${title} ${h1}`;
+    return /\b404\b|seite (wurde )?nicht gefunden|\bnicht gefunden\b|page not found|not found|fehler 404/.test(
+      hay,
+    );
+  } catch {
+    return false;
+  }
+}
+
 async function isCartPopulated(page: Page): Promise<boolean> {
   try {
     const r = await page.evaluate(() => {
@@ -597,6 +613,15 @@ export async function runStatefulFlow(
       return { pages, notes };
     }
     await page.waitForTimeout(1500);
+
+    // Don't present a 404 / error page as the checkout (some shops route a bad
+    // /checkout guess to a not-found page). Report it honestly instead.
+    if (await isErrorPage(page)) {
+      notes.push(
+        "Checkout: führte auf eine Fehlerseite (404) — nicht erreichbar, nicht analysiert.",
+      );
+      return { pages, notes };
+    }
 
     const bodyText = (await page.evaluate(() => document.body.innerText || "")).slice(0, 5000);
     const hasPasswordField = await page.locator("input[type=password]").count();

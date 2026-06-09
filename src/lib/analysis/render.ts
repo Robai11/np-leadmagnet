@@ -119,26 +119,46 @@ async function dismissConsent(page: Page): Promise<void> {
 }
 
 async function autoScroll(page: Page): Promise<void> {
-  // Step to the bottom to trigger lazy-loaded content, then back to top.
-  // Lazy-load is a bonus; if a navigation interrupts it, don't fail the page.
+  // Slowly scroll to the bottom to trigger lazy-loaded sections (SPAs render on
+  // IntersectionObserver), waiting until the page height stops growing so
+  // content has time to render. Best-effort — never fail the page on it.
   try {
     await evalWithRetry(page, async () => {
       await new Promise<void>((resolve) => {
-        let total = 0;
-        const step = 600;
+        const step = 500;
+        let lastH = 0;
+        let stable = 0;
         const timer = setInterval(() => {
           window.scrollBy(0, step);
-          total += step;
-          if (total >= document.body.scrollHeight) {
+          const h = document.body.scrollHeight;
+          const atBottom = window.scrollY + window.innerHeight >= h - 5;
+          if (h === lastH) stable += 1;
+          else {
+            stable = 0;
+            lastH = h;
+          }
+          // Done when we're at the bottom AND the height has settled.
+          if (atBottom && stable >= 3) {
             clearInterval(timer);
             resolve();
           }
-        }, 120);
+        }, 220);
+        // Hard cap so a never-settling page (infinite scroll) can't hang.
+        setTimeout(() => {
+          clearInterval(timer);
+          resolve();
+        }, 14000);
       });
     });
-    await page.waitForTimeout(600);
+    // Let just-revealed content finish loading, then return to the top.
+    try {
+      await page.waitForLoadState("networkidle", { timeout: 5000 });
+    } catch {
+      /* chatty page — fine */
+    }
+    await page.waitForTimeout(400);
     await evalWithRetry(page, () => window.scrollTo(0, 0));
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(400);
   } catch {
     /* scrolling is best-effort; proceed with whatever is loaded */
   }
