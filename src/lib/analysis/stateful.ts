@@ -259,6 +259,31 @@ async function isErrorPage(page: Page): Promise<boolean> {
   }
 }
 
+/**
+ * True if the current page is a REAL checkout entry (not a 404, not the cart,
+ * not an empty cart). Accepts a login/register wall — that IS the checkout
+ * entry for guest-gated shops. Strong signals only, so the cart page (which
+ * may carry header login links / a "Zur Kasse" label) is not misread.
+ */
+async function isCheckoutPage(page: Page): Promise<boolean> {
+  if (await isErrorPage(page)) return false;
+  try {
+    return await page.evaluate(() => {
+      const url = location.href.toLowerCase();
+      const body = (document.body.innerText || "").toLowerCase();
+      if (/(warenkorb ist leer|dein warenkorb ist leer|cart is empty|warenkorb.{0,12}leer)/.test(body.slice(0, 500)))
+        return false;
+      const urlOk = /checkout|\/kasse|onepage|\/order|confirm|\/buy\/(checkout|address|payment|delivery)/.test(url);
+      const formFields = document.querySelectorAll(
+        "input[type=email],input[name*='mail' i],input[type=password],input[name*='street' i],input[name*='strasse' i],input[name*='zip' i],input[name*='plz' i],input[name*='postal' i],input[autocomplete*='address' i],input[autocomplete*='postal' i]",
+      ).length;
+      return urlOk || formFields > 0;
+    });
+  } catch {
+    return false;
+  }
+}
+
 async function isCartPopulated(page: Page): Promise<boolean> {
   try {
     const r = await page.evaluate(() => {
@@ -337,72 +362,109 @@ async function openCartDrawer(page: Page, pdpUrl: string): Promise<boolean> {
   }
 }
 
+const CHECKOUT_CTA =
+  /(zur kasse(?: gehen)?|weiter zur kasse|zur kassa|zum checkout|checkout|jetzt bezahlen|bezahlen|kostenpflichtig bestellen|proceed to checkout|go to checkout)/i;
+
 /**
- * Proceed from cart to checkout. Strategies in order: link-href navigation
- * (Shopware/Woo), form-submit (Shopify cart), then a direct /checkout hit
- * (Shopify uses the cart cookie), then accessible-name as a last resort.
+ * Reach the checkout from the cart — robust across shop systems:
+ *  1. Click the visible "Zur Kasse" CTA (Playwright getByRole/getByText pierce
+ *     OPEN shadow DOM, so this works for most SPAs), then known selectors.
+ *  2. Navigate the checkout link's href.
+ *  3. Platform path guesses (/checkout, /checkout/confirm, /buy/checkout …).
+ * EVERY attempt is verified with isCheckoutPage(); a 404 / cart / empty page is
+ * rejected and the next strategy is tried. Returns true only on a real checkout
+ * (incl. a login wall — the valid entry for guest-gated shops).
  */
 async function clickToCheckout(page: Page, origin: string): Promise<boolean> {
+  const cartUrl = page.url();
+  const seg = new URL(cartUrl).pathname.split("/").filter(Boolean)[0] ?? "";
+  const locale = /^[a-z]{2}(-[a-z]{2})?$/i.test(seg) ? `/${seg}` : "";
+  const backToCart = async () => {
+    try {
+      await page.goto(cartUrl, { waitUntil: "domcontentloaded", timeout: NAV_TIMEOUT });
+      await settlePage(page);
+      await dismissPopups(page);
+    } catch {
+      /* ignore */
+    }
+  };
+  const tryClick = async (el: Locator): Promise<boolean> => {
+    if (!(await el.count())) return false;
+    if (!(await el.isVisible({ timeout: 1000 }).catch(() => false))) return false;
+    if (!(await robustClick(page, el))) return false;
+    await page.waitForTimeout(1500);
+    await settlePage(page);
+    return isCheckoutPage(page);
+  };
+
   await dismissPopups(page);
+
+  // 1) Click a visible "proceed to checkout" CTA (role/text pierce open shadow).
+  const finders: (() => Locator)[] = [
+    () => page.getByRole("button", { name: CHECKOUT_CTA }).first(),
+    () => page.getByRole("link", { name: CHECKOUT_CTA }).first(),
+    () => page.locator("a.begin-checkout-btn, button[name='checkout'], input[name='checkout']").first(),
+    () => page.locator("form[action*='/cart' i] [type=submit], form[action*='checkout' i] [type=submit]").first(),
+    () => page.locator("[class*='checkout' i] button, [class*='checkout' i] a[href], .checkout-aside-action button").first(),
+  ];
+  for (const f of finders) {
+    try {
+      if (await tryClick(f())) return true;
+      await backToCart();
+    } catch {
+      /* next */
+    }
+  }
+
+  // 2) Navigate the checkout link's href directly (skip cart links).
   for (const sel of [
     "a.begin-checkout-btn",
     "a[href*='/checkout/confirm' i]",
     "a[href*='/checkout/register' i]",
-    "a[href*='/checkout/onepage' i]",
+    "a[href*='/checkout' i]",
+    "a[href*='/kasse' i]",
   ]) {
     try {
-      const el = page.locator(sel).first();
-      if (!(await el.count())) continue;
-      const href = await el.getAttribute("href");
-      if (href) {
-        await page.goto(new URL(href, page.url()).toString(), {
-          waitUntil: "domcontentloaded",
-          timeout: NAV_TIMEOUT,
-        });
-        await settlePage(page);
-        return true;
-      }
+      const href = await page.locator(sel).first().getAttribute("href").catch(() => null);
+      if (!href || /\/(cart|warenkorb)(\/|\?|$)/i.test(href)) continue;
+      await page.goto(new URL(href, cartUrl).toString(), {
+        waitUntil: "domcontentloaded",
+        timeout: NAV_TIMEOUT,
+      });
+      await settlePage(page);
+      if (await isCheckoutPage(page)) return true;
+      await backToCart();
     } catch {
       /* next */
     }
   }
-  for (const sel of [
-    "button[name='checkout']",
-    "input[name='checkout']",
-    "form[action*='/cart' i] button[type=submit]",
-    "form[action*='checkout' i] button[type=submit]",
-    ".checkout-aside-action button",
-  ]) {
+
+  // 3) Platform path guesses — each verified (a 404 never counts as success).
+  const paths = [
+    `${locale}/checkout/confirm`,
+    "/checkout/confirm",
+    `${locale}/checkout`,
+    "/checkout",
+    "/buy/checkout",
+    `${locale}/checkout/onepage`,
+    "/onepage",
+    `${locale}/kasse`,
+    "/kasse",
+  ];
+  for (const p of paths) {
     try {
-      const el = page.locator(sel).first();
-      if (!(await el.count()) || !(await el.isVisible({ timeout: 800 }))) continue;
-      if (await robustClick(page, el)) {
-        await settlePage(page);
-        return true;
-      }
+      const r = await page.goto(origin + p, {
+        waitUntil: "domcontentloaded",
+        timeout: NAV_TIMEOUT,
+      });
+      await settlePage(page);
+      if (r && r.status() < 400 && (await isCheckoutPage(page))) return true;
     } catch {
       /* next */
     }
   }
-  // Platform fallback: go straight to /checkout (Shopify resolves via the cart
-  // cookie). Guarded so a redirect back to cart/home doesn't count as success.
-  try {
-    await page.goto(`${origin}/checkout`, {
-      waitUntil: "domcontentloaded",
-      timeout: NAV_TIMEOUT,
-    });
-    await settlePage(page);
-    const body = (await page.evaluate(() => document.body.innerText || "")).slice(0, 1200);
-    if (
-      /\/checkout/i.test(page.url()) ||
-      /(versand|lieferung|zahlung|rechnungsadresse|e-?mail|kontaktdaten|kasse)/i.test(body)
-    ) {
-      return true;
-    }
-  } catch {
-    /* fall through */
-  }
-  return clickByText(page, GO_TO_CHECKOUT, 2500);
+  await backToCart();
+  return false;
 }
 
 async function buildPage(
@@ -410,21 +472,23 @@ async function buildPage(
   id: PageType,
   name: string,
   url: string,
+  needMobile: boolean,
 ): Promise<RenderedPage> {
   const desktop = await captureView(page, "desktop");
-  // Capture a MOBILE view of the SAME (still-populated) page by resizing the
-  // viewport in-session — so cart & checkout get both views like read-only
-  // pages do (the report frames them per the device split).
+  // Only capture the MOBILE view (a viewport resize of the same populated page)
+  // when the device split actually needs it — saves a full render otherwise.
   let mobile: RenderedView | undefined;
-  try {
-    await page.setViewportSize(viewportSize("mobile"));
-    await settlePage(page);
-    await page.waitForTimeout(500);
-    mobile = await captureView(page, "mobile");
-  } catch {
-    mobile = undefined; // mobile is a bonus dimension; never fail the page on it
-  } finally {
-    await page.setViewportSize(viewportSize("desktop")).catch(() => {});
+  if (needMobile) {
+    try {
+      await page.setViewportSize(viewportSize("mobile"));
+      await settlePage(page);
+      await page.waitForTimeout(500);
+      mobile = await captureView(page, "mobile");
+    } catch {
+      mobile = undefined; // mobile is a bonus dimension; never fail the page on it
+    } finally {
+      await page.setViewportSize(viewportSize("desktop")).catch(() => {});
+    }
   }
   const content = desktop.elements.map((e) => e.text).filter(Boolean).join(" · ").slice(0, 4000);
   return { id, type: id, name, url, desktop, mobile, content, reachable: true };
@@ -444,9 +508,12 @@ function buildPageFromView(
 export async function runStatefulFlow(
   browser: Browser,
   pdpUrl: string,
+  device: number,
 ): Promise<StatefulResult> {
   const notes: string[] = [];
   const pages: RenderedPage[] = [];
+  // Mobile view is needed when mobile is the primary (>50%) or it's a 50/50 split.
+  const needMobile = device >= 50;
 
   const ctx = await browser.newContext({
     viewport: viewportSize("desktop"),
@@ -581,7 +648,7 @@ export async function runStatefulFlow(
 
     if (cartReached) {
       // A real, populated cart PAGE (the richest, cleanest cart view).
-      pages.push(await buildPage(page, "cart", "Warenkorb", page.url()));
+      pages.push(await buildPage(page, "cart", "Warenkorb", page.url(), needMobile));
     } else {
       // No usable cart PAGE → true off-canvas-only shop. Re-open the drawer and
       // capture JUST the drawer panel cleanly (element screenshot), so the cart
@@ -594,7 +661,7 @@ export async function runStatefulFlow(
           pages.push(buildPageFromView(dv, "cart", "Warenkorb", page.url()));
         } else {
           notes.push("Warenkorb (Off-Canvas) erfasst.");
-          pages.push(await buildPage(page, "cart", "Warenkorb", page.url()));
+          pages.push(await buildPage(page, "cart", "Warenkorb", page.url(), needMobile));
         }
       } else {
         notes.push(
@@ -609,7 +676,9 @@ export async function runStatefulFlow(
     // Proceed toward checkout — capture the FIRST checkout screen, no input.
     const wentToCheckout = await clickToCheckout(page, origin);
     if (!wentToCheckout) {
-      notes.push("Checkout: kein „Zur Kasse“-Einstieg gefunden — nicht analysiert.");
+      notes.push(
+        "Checkout: nicht erreichbar — der Kassen-Einstieg ist JS-/Login-gesteuert und nicht automatisch ansteuerbar. Nicht analysiert.",
+      );
       return { pages, notes };
     }
     await page.waitForTimeout(1500);
@@ -629,7 +698,7 @@ export async function runStatefulFlow(
       notes.push("Checkout: nur nach Login/Kontoerstellung erreichbar — vor Dateneingabe gestoppt.");
     }
     // Capture the checkout entry screen WITHOUT entering any data.
-    pages.push(await buildPage(page, "checkout", "Checkout", page.url()));
+    pages.push(await buildPage(page, "checkout", "Checkout", page.url(), needMobile));
 
     return { pages, notes };
   } catch (err) {

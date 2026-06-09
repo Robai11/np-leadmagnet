@@ -241,7 +241,7 @@ export async function* runRealAnalysis(
       yield { type: "progress", step: "Warenkorb & Checkout …", pct: 78 };
       try {
         const stateful = await withSession((browser) =>
-          runStatefulFlow(browser, pdpUrl),
+          runStatefulFlow(browser, pdpUrl, ctx.device),
         );
         notes.push(...stateful.notes);
         for (const rendered of stateful.pages) {
