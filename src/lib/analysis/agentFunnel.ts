@@ -200,7 +200,11 @@ export async function runAgentFunnel(pdpUrl: string, device: number): Promise<Ag
       const exec = async (instr: string): Promise<AgentRunResult> => {
         try {
           return (await withTimeout(
-            agent.execute({ instruction: instr, maxSteps }),
+            // toolTimeout 90s (default 45s): heavy pages over the residential
+            // proxy can take >45s for a single click/screenshot — at 45s the op
+            // aborts and the session can cascade into death. The outer withTimeout
+            // still bounds the whole step so nothing runs away.
+            agent.execute({ instruction: instr, maxSteps, toolTimeout: 90_000 }),
             timeoutMs,
             "agent.execute",
           )) as AgentRunResult;
@@ -248,6 +252,7 @@ export async function runAgentFunnel(pdpUrl: string, device: number): Promise<Ag
         instruction:
           "Open the shopping cart so its full contents are visible: open the cart drawer/off-canvas, or navigate to the cart page. Do not proceed to checkout yet.",
         maxSteps: 5,
+        toolTimeout: 90_000,
       }),
       90_000,
       "agent.execute(cart)",
