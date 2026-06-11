@@ -246,12 +246,14 @@ export async function runAgentFunnel(pdpUrl: string, device: number): Promise<Ag
       return { pages, notes };
     }
 
-    // 2) Make the cart fully visible (drawer or cart page) and capture it.
+    // 2) Open the FULL cart PAGE (not just the off-canvas mini-cart) and capture it.
+    //    Many shops only expose the checkout button on the dedicated cart page —
+    //    the off-canvas drawer is a dead end for reaching checkout.
     await withTimeout(
       agent.execute({
         instruction:
-          "Open the shopping cart so its full contents are visible: open the cart drawer/off-canvas, or navigate to the cart page. Do not proceed to checkout yet.",
-        maxSteps: 5,
+          "Open the FULL shopping cart PAGE so all line items are visible. Navigate to the dedicated cart/basket page — click the cart icon and then 'Warenkorb anzeigen' / 'Zum Warenkorb' / 'View cart', or open the cart URL directly. A small off-canvas mini-cart drawer is NOT enough: many shops only offer the checkout button on the full cart page. Do not proceed to checkout yet.",
+        maxSteps: 6,
         toolTimeout: 90_000,
       }),
       90_000,
@@ -263,10 +265,10 @@ export async function runAgentFunnel(pdpUrl: string, device: number): Promise<Ag
 
     // 3) Proceed to the checkout entry screen (NO data entry) and capture it.
     const checkout = await runStep(
-      "Goal: reach the checkout entry screen. If the cart/drawer is no longer visible, first re-open the cart (cart icon or cart page). Then click the 'Zur Kasse' / 'Checkout' / 'Proceed to checkout' button. Stop at the FIRST checkout screen (or the login/guest selection if the shop forces it). Do NOT enter any data and do NOT log in.",
+      "Goal: reach the checkout entry screen. CRITICAL: make sure you are on the FULL cart PAGE, not the small off-canvas mini-cart drawer — many shops only show the checkout button on the full cart page. If only a drawer is open, click 'Warenkorb anzeigen' / 'Zum Warenkorb' / 'View cart' or navigate to the cart page first. Then click the 'Zur Kasse' / 'Checkout' / 'Proceed to checkout' button. Stop at the FIRST checkout screen (or the login/guest selection if the shop forces it). Do NOT enter any data and do NOT log in.",
       10,
       140_000,
-      "The previous attempt failed: re-open the cart (cart icon or navigate to the cart page), then look again for the checkout button and click it.",
+      "The previous attempt failed — the checkout button is probably NOT in the off-canvas drawer: navigate to the FULL cart page ('Warenkorb anzeigen' / 'Zum Warenkorb' / the cart URL), then click the checkout button there.",
     );
     if (checkout?.success) {
       await wait(1500);
