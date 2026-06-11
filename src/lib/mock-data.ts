@@ -40,7 +40,7 @@ export interface MockPage {
 
 export const PAGES: MockPage[] = [
   { id: "home", name: "Startseite", opportunity: "mid" },
-  { id: "plp", name: "Kategorie", opportunity: "low" },
+  { id: "plp", name: "Produktlisting-Page", opportunity: "low" },
   { id: "pdp", name: "Produktseite", opportunity: "high" },
   { id: "cart", name: "Warenkorb", opportunity: "high" },
   { id: "checkout", name: "Checkout", opportunity: "high" },
@@ -285,16 +285,20 @@ export const OVERALL = { low: 11, high: 24 };
 // Die zehn wichtigsten E-Commerce-Branchen (+ Auffangoption für Nischen).
 export const INDUSTRIES = [
   "Mode & Bekleidung",
-  "Elektronik & Technik",
-  "Haushalt & Haushaltsgeräte",
-  "Beauty & Kosmetik",
-  "Drogerie & Gesundheit",
-  "Möbel & Wohnen",
-  "Sport & Outdoor",
+  "Consumer Electronics & Technik",
+  "Haushalt, Wohnen & Möbel",
+  "Beauty & Körperpflege",
+  "Gesundheit & Pharma",
   "Lebensmittel & Getränke",
-  "Spielzeug, Baby & Kind",
-  "Heimwerken, Garten & Baumarkt",
-  "Sonstiges",
+  "Sport, Fitness & Outdoor",
+  "Heimwerken, Baumarkt & Garten",
+  "Auto, Motorrad & Ersatzteile",
+  "Baby, Kind & Spielzeug",
+  "Haustierbedarf",
+  "Schmuck, Uhren & Luxus",
+  "Medien, Games & Software",
+  "Büro, Industrie & B2B",
+  "Hobby, Kunst & DIY-Crafts",
 ];
 
 export const CHANNELS = [

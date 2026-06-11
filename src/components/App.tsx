@@ -8,6 +8,7 @@ import type {
   Lever,
 } from "@/lib/types";
 import { useAnalysis } from "@/lib/useAnalysis";
+import { useReturnNudge } from "@/lib/useReturnNudge";
 import { GATE_ENABLED } from "@/lib/flags";
 import { InputStage } from "@/components/InputStage";
 import { LoadingStage } from "@/components/LoadingStage";
@@ -36,10 +37,17 @@ export function App() {
   const [ctx, setCtx] = useState<AnalysisContext | null>(null);
   const [full, setFull] = useState<AnalysisResult | null>(null);
 
+  // Rückhol-Signal (Chime + Hintergrund-Tab-Titel) an die echte Stream-
+  // Transition gekoppelt: `done`, sobald der Stream fertig ist. Hier auf App-
+  // Ebene, weil die LoadingStage beim Abschluss gegen die ReportStage getauscht
+  // (unmountet) wird — App bleibt durchgehend gemountet.
+  const { arm, muted, toggleMuted } = useReturnNudge(state.status === "done");
+
   // Gate OFF → always "unlocked" (every lever visible, no email field).
   const unlocked = !GATE_ENABLED || full !== null;
 
   const onStart = (c: AnalysisContext) => {
+    arm(); // Audio innerhalb der Nutzergeste „scharf machen" (Autoplay-Policy)
     setCtx(c);
     setFull(null);
     start(c);
@@ -113,6 +121,8 @@ export function App() {
           }
           progressPct={state.progress.pct}
           done={false}
+          muted={muted}
+          onToggleMuted={toggleMuted}
         />
       )}
 

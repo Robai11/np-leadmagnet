@@ -6,19 +6,28 @@ import { MOCK_SCREENS } from "@/components/MockScreens";
 import { impactVar } from "@/styles/tokens";
 import type { AnalyzedPage, Lever, Viewport } from "@/lib/types";
 
-function ChromeBar({ url }: { url?: string }) {
+/** iOS status-bar icons (signal · wifi · battery) as crisp inline SVG. */
+function PhoneStatusIcons() {
   return (
-    <div className="chrome-bar">
-      <span className="dot" style={{ background: "#E5685A" }} />
-      <span className="dot" style={{ background: "#E8B73B" }} />
-      <span className="dot" style={{ background: "#5BC07A" }} />
-      <div className="chrome-url">{url || "example-shop.de"}</div>
-    </div>
+    <svg width="64" height="14" viewBox="0 0 64 14" fill="none" aria-hidden="true">
+      <g fill="#000">
+        <rect x="0" y="8.5" width="3" height="5.5" rx="1" />
+        <rect x="5" y="6" width="3" height="8" rx="1" />
+        <rect x="10" y="3.5" width="3" height="10.5" rx="1" />
+        <rect x="15" y="1" width="3" height="13" rx="1" />
+      </g>
+      <path d="M23.5 5.6a8 8 0 0 1 11 0" stroke="#000" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M26 8.2a4.4 4.4 0 0 1 6 0" stroke="#000" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="29" cy="11.2" r="1.2" fill="#000" />
+      <rect x="45" y="3" width="15" height="8" rx="2.4" stroke="#000" strokeWidth="1.2" />
+      <rect x="46.5" y="4.5" width="10.5" height="5" rx="1.1" fill="#000" />
+      <rect x="61" y="5.4" width="1.7" height="3.2" rx="0.8" fill="#000" />
+    </svg>
   );
 }
 
 /**
- * One framed, SCROLLABLE view (phone mockup for mobile, browser chrome for
+ * One framed, SCROLLABLE view (iPhone mockup for mobile, MacBook mockup for
  * desktop). The frame stays a realistic size; hovering a lever card scrolls the
  * frame so that lever's pin comes into view (and on mount it rests on the first
  * pin), so pins are always reachable without an endless page.
@@ -29,7 +38,6 @@ function Screen({
   viewport,
   screenshotUrl,
   levers,
-  url,
   showLabel,
   hovered,
   setHovered,
@@ -39,7 +47,6 @@ function Screen({
   viewport: Viewport;
   screenshotUrl?: string;
   levers: Lever[];
-  url?: string;
   showLabel: boolean;
   hovered: string | null;
   setHovered: (id: string | null) => void;
@@ -124,7 +131,24 @@ function Screen({
       <div className="screen-wrap">
         {label}
         <div className="shot shot-mobile">
-          <div className="phone-frame">{body}</div>
+          <div className="phone-frame">
+            <span className="phone-btn phone-btn-mute" />
+            <span className="phone-btn phone-btn-volup" />
+            <span className="phone-btn phone-btn-voldn" />
+            <span className="phone-btn phone-btn-power" />
+            <div className="phone-bezel">
+              <div className="phone-glass">
+                <span className="phone-island" />
+                <div className="phone-statusbar">
+                  <span className="phone-time">08:00</span>
+                  <span className="phone-status-icons">
+                    <PhoneStatusIcons />
+                  </span>
+                </div>
+                {body}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -133,8 +157,17 @@ function Screen({
     <div className="screen-wrap">
       {label}
       <div className="shot shot-desktop">
-        <ChromeBar url={url} />
-        {body}
+        <div className="macbook">
+          <div className="macbook-lid">
+            <div className="macbook-bezel">
+              <span className="macbook-notch" />
+              {body}
+            </div>
+          </div>
+          <div className="macbook-base">
+            <span className="macbook-groove" />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -142,11 +175,12 @@ function Screen({
 
 export function Screenshot({
   page,
-  url,
   hovered,
   setHovered,
 }: {
   page: AnalyzedPage;
+  /** Kept for API compatibility (ReportStage passes meta.url); unused now that
+   *  the desktop frame is a MacBook mockup without a browser URL bar. */
   url?: string;
   hovered: string | null;
   setHovered: (id: string | null) => void;
@@ -160,7 +194,6 @@ export function Screenshot({
         viewport={page.viewport}
         screenshotUrl={page.screenshotUrl}
         levers={page.levers}
-        url={url}
         showLabel={hasTwo}
         hovered={hovered}
         setHovered={setHovered}
@@ -172,7 +205,6 @@ export function Screenshot({
           viewport={page.secondary.viewport}
           screenshotUrl={page.secondary.screenshotUrl}
           levers={page.secondary.levers}
-          url={url}
           showLabel
           hovered={hovered}
           setHovered={setHovered}

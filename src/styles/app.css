@@ -101,9 +101,9 @@
 }
 
 .stage {
-  max-width: 1180px;
+  max-width: 1760px;
   margin: 0 auto;
-  padding: 40px 28px 60px;
+  padding: 40px 40px 60px;
 }
 
 /* input */
@@ -158,6 +158,92 @@
   outline: none;
   border-color: var(--color-ink);
 }
+/* Status line below URL input (discovering / done / error) */
+.url-wrap { display: flex; flex-direction: column; gap: 7px; }
+.url-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; line-height: 1.4;
+}
+.url-status.discovering { color: var(--color-text-mute); }
+.url-status.ok  { color: #2a7a44; }
+.url-status.err { color: #b84040; }
+
+/* ── Step 2: URL confirmation/correction ────────────────────────────── */
+.step2-stage {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 8px 0 40px;
+}
+.step2-head {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 28px;
+}
+.step2-back {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 13px; font-weight: 500; color: var(--color-text-mute);
+  background: none; border: none; cursor: pointer; padding: 0;
+  transition: color .12s;
+}
+.step2-back:hover { color: var(--color-text); }
+.step2-progress {
+  font-size: 12px; font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--color-text-mute);
+}
+.step2-title {
+  font-size: 26px; font-weight: 800;
+  margin: 0 0 8px;
+}
+.step2-sub {
+  font-size: 15px; color: var(--color-text-mute);
+  margin: 0 0 28px; line-height: 1.55; max-width: 56ch;
+}
+.step2-rows {
+  display: flex; flex-direction: column; gap: 12px;
+  margin-bottom: 24px;
+}
+.step2-row {
+  display: flex; flex-direction: column; gap: 7px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--radius);
+  background: var(--color-paper-2);
+  transition: border-color .12s, opacity .12s;
+}
+.step2-row.on  { border-color: var(--color-ink); }
+.step2-row.off { opacity: .5; }
+.step2-check {
+  display: flex; align-items: center; gap: 9px; cursor: pointer;
+}
+.step2-check input[type="checkbox"] {
+  width: 16px; height: 16px; flex-shrink: 0;
+  accent-color: var(--color-ink); cursor: pointer;
+}
+.step2-label {
+  font-size: 13.5px; font-weight: 600;
+}
+.step2-badge {
+  margin-left: auto;
+  font-size: 11px; font-weight: 500;
+  color: var(--color-text-mute);
+  background: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 99px; padding: 2px 8px;
+  white-space: nowrap;
+}
+.step2-url {
+  width: 100%; box-sizing: border-box;
+  padding: 9px 12px;
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--radius);
+  font-size: 13px; font-family: var(--font-mono);
+  background: var(--color-paper);
+  color: var(--color-text);
+  transition: border-color .12s;
+}
+.step2-url:focus { outline: none; border-color: var(--color-ink); }
+.step2-url.disabled { background: var(--color-paper-2); color: var(--color-text-mute); cursor: not-allowed; }
+.step2-url.muted::placeholder { font-style: italic; }
+.step2-actions { margin-top: 8px; }
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -568,8 +654,8 @@
 /* report body */
 .report-body {
   display: grid;
-  grid-template-columns: 1fr 0.92fr;
-  gap: 26px;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 30px;
   align-items: start;
 }
 .shot-col {
@@ -1200,39 +1286,67 @@
   }
 }
 
-/* ── Per-stage target rows (URL + checkbox per page type) ───────────── */
-.targets { display: flex; flex-direction: column; gap: 8px; }
-.target-row {
-  display: flex; align-items: center; gap: 10px;
-  border: 1.5px solid var(--color-line);
-  background: var(--color-paper-2);
-  border-radius: var(--radius);
-  padding: 8px 10px;
-  transition: border-color .12s, opacity .12s;
+/* ── Auto-discover row (single URL + "Seiten erkennen" button) ──────── */
+.discover-row {
+  display: flex; gap: 8px; align-items: stretch;
 }
-.target-row:not(.on) { opacity: .55; }
-.target-row.on { border-color: var(--color-ink); }
-.target-check {
-  display: flex; align-items: center; gap: 7px;
-  min-width: 132px; flex-shrink: 0;
-  font-weight: 600; font-size: 13px; cursor: pointer;
-}
-.target-check input { width: 16px; height: 16px; accent-color: var(--color-ink); cursor: pointer; }
-.target-url {
+.discover-input {
   flex: 1; min-width: 0;
-  padding: 9px 11px;
+  padding: 10px 12px;
   border: 1.5px solid var(--color-line);
   border-radius: var(--radius);
-  font-size: 13px; font-family: var(--font-mono);
+  font-size: 13.5px; font-family: var(--font-mono);
   background: var(--color-paper);
   color: var(--color-text);
+  transition: border-color .12s;
 }
-.target-url:focus { outline: none; border-color: var(--color-ink); }
-.target-url:disabled { background: var(--color-paper-2); color: var(--color-text-mute); cursor: not-allowed; }
-.target-note {
-  display: block; margin-top: 9px;
-  font-size: 12px; color: var(--color-text-mute); line-height: 1.4;
+.discover-input:focus { outline: none; border-color: var(--color-ink); }
+.discover-input:disabled { background: var(--color-paper-2); color: var(--color-text-mute); }
+.discover-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 10px 16px;
+  border: 1.5px solid var(--color-ink);
+  border-radius: var(--radius);
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-size: 13px; font-weight: 600; white-space: nowrap;
+  cursor: pointer; transition: opacity .12s;
 }
+.discover-btn:hover:not(:disabled) { opacity: .85; }
+.discover-btn:disabled { opacity: .45; cursor: not-allowed; }
+.discover-note {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 8px;
+  font-size: 12.5px; line-height: 1.4;
+}
+.discover-note.ok { color: #2a7a44; }
+.discover-note.err { color: #b84040; }
+/* Spinner on the "Wird erkannt …" button */
+@keyframes cs-spin { to { transform: rotate(360deg); } }
+.spin { animation: cs-spin .8s linear infinite; }
+
+/* ── Page-type selection chips (after auto-discovery) ───────────────── */
+.page-chips {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.page-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--color-line);
+  border-radius: 99px;
+  background: var(--color-paper-2);
+  font-size: 13.5px; font-weight: 500;
+  color: var(--color-text-mute);
+  cursor: pointer; transition: border-color .12s, background .12s, color .12s, opacity .12s;
+  user-select: none;
+}
+.page-chip:hover:not(.dim) { border-color: var(--color-ink); color: var(--color-text); }
+.page-chip.on {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+.page-chip.dim { opacity: .38; cursor: default; }
 
 /* ── Loading: motion + reassurance during real render/vision ────────── */
 .bar.bar-busy { position: relative; overflow: hidden; }
@@ -1251,6 +1365,84 @@
   .bar.bar-busy::after, .steps li.active .step-dot { animation: none; }
 }
 
+/* ── Return-Nudge: Kopfzeile + dezenter Stummschalt-Schalter ────────── */
+.load-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.mute-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-paper);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--color-text-mute);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.mute-toggle:hover {
+  color: var(--color-text);
+  border-color: var(--color-text-mute);
+}
+.mute-toggle[aria-pressed="true"] {
+  color: var(--color-text-mute);
+  opacity: 0.75;
+}
+.mute-toggle:focus-visible {
+  outline: 2px solid var(--color-accent-deep);
+  outline-offset: 2px;
+}
+
+/* ── Skeleton-Loader: Shimmer-Grid als Hingucker während der Wartezeit ─ */
+.skeleton { margin-top: 24px; }
+.sk-shot {
+  height: 96px;
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+}
+.sk-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.sk-card {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.sk-line { height: 9px; border-radius: var(--radius-pill); display: block; }
+.sk-line-sm { width: 35%; }
+.sk-line-md { width: 60%; }
+.sk-line-lg { width: 90%; }
+/* Gemeinsame Shimmer-Fläche: heller Streifen wandert über den Grundton. */
+.sk-shot, .sk-line {
+  background: linear-gradient(
+    90deg,
+    var(--color-line) 0%,
+    var(--color-paper) 50%,
+    var(--color-line) 100%
+  );
+  background-size: 200% 100%;
+  animation: cs-skeleton 1.4s ease-in-out infinite;
+}
+@keyframes cs-skeleton {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sk-shot, .sk-line { animation: none; background: var(--color-line); }
+}
+
 /* ── Report screenshots: framed views (desktop chrome / phone mockup) ── */
 .shots { display: flex; flex-direction: column; gap: 22px; }
 .shots-stacked { gap: 26px; }
@@ -1264,33 +1456,72 @@
 /* Scrollable frame; hovering a lever card scrolls its pin into view (see
    Screenshot.tsx), so the frame stays a realistic size and pins stay reachable. */
 .screen-scroll { overflow-y: auto; overflow-x: hidden; }
-.desk-scroll { max-height: 70vh; background: var(--color-paper-2); }
+/* Landscape laptop screen (16:10) so the MacBook never looks portrait/tablet;
+   the full-page screenshot scrolls inside it. */
+.desk-scroll { aspect-ratio: 16 / 10; background: var(--color-paper-2); }
 
 /* Phone mockup for the mobile view */
 .shot-mobile {
   border: none; box-shadow: none; overflow: visible;
   background: transparent; display: flex; justify-content: center;
 }
+/* iPhone 16 Pro Max style: titanium rail → black bezel → glass, with a
+   Dynamic Island, iOS status bar and side buttons. */
 .phone-frame {
-  width: 322px; max-width: 100%;
-  background: var(--color-ink); border-radius: 36px; padding: 13px;
-  box-shadow: var(--shadow-float); position: relative;
+  width: 390px; max-width: 100%;
+  position: relative;
+  border-radius: 58px;
+  padding: 4px; /* titanium rail thickness */
+  background: linear-gradient(135deg, #e9e9ec 0%, #bcbcc0 20%, #8d8d92 50%, #c8c8cc 80%, #ececef 100%);
+  box-shadow: var(--shadow-float);
 }
-.phone-frame::before {
-  content: ""; position: absolute; top: 17px; left: 50%; transform: translateX(-50%);
-  width: 92px; height: 6px; border-radius: 6px; background: var(--color-line-ink); z-index: 3;
+.phone-bezel {
+  background: #0a0a0c;
+  border-radius: 54px;
+  padding: 11px;
 }
+.phone-glass {
+  position: relative;
+  background: #fff;
+  border-radius: 43px;
+  overflow: hidden;
+}
+/* Dynamic Island */
+.phone-island {
+  position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+  width: 116px; height: 32px; background: #000; border-radius: 17px; z-index: 6;
+}
+/* iOS status bar (sits above the scrolling screenshot, doesn't scroll) */
+.phone-statusbar {
+  position: relative; z-index: 5;
+  height: 46px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 26px 0 30px; background: #fff; color: #000;
+}
+.phone-time {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 600; font-size: 15px; letter-spacing: .2px;
+}
+.phone-status-icons { display: inline-flex; align-items: center; }
+/* the scrollable screenshot, below the status bar */
 .phone-screen {
-  background: #fff; border-radius: 24px;
-  overflow-y: auto; overflow-x: hidden;
-  max-height: 600px; position: relative;
+  background: #fff; overflow-y: auto; overflow-x: hidden;
+  min-height: 480px; max-height: 680px; position: relative;
 }
 /* A touch shorter when mobile + desktop are stacked at a 50/50 split. */
-.shots-stacked .phone-screen { max-height: 520px; }
-.shots-stacked .desk-scroll { max-height: 56vh; }
+.shots-stacked .phone-screen { max-height: 600px; }
+.shots-stacked .desk-scroll { aspect-ratio: 16 / 10; }
+/* Side buttons on the titanium rail */
+.phone-btn {
+  position: absolute; z-index: 0; border-radius: 2px;
+  background: linear-gradient(90deg, #8d8d92, #cacace);
+}
+.phone-btn-mute  { left: -2px; top: 120px; width: 4px; height: 26px; }
+.phone-btn-volup { left: -2px; top: 162px; width: 4px; height: 54px; }
+.phone-btn-voldn { left: -2px; top: 228px; width: 4px; height: 54px; }
+.phone-btn-power { right: -2px; top: 178px; width: 4px; height: 86px; }
 
 @media (max-width: 920px) {
-  .phone-frame { width: 300px; }
+  .phone-frame { width: 340px; }
 }
 
 /* ── Report screenshots: keep frames inside their grid column ───────── */
@@ -1301,8 +1532,55 @@
    overflowing into the lever-card column. The mobile phone mockup centers
    itself internally (.shot-mobile is a flex container). */
 .shots { min-width: 0; }
-.shot-desktop { max-width: 100%; }
 .screen-label { align-self: flex-start; }
+
+/* ── MacBook Pro mockup for the desktop view ─────────────────────────── */
+.shot-desktop {
+  max-width: 100%;
+  border: none; box-shadow: none; overflow: visible; background: transparent;
+  display: flex; flex-direction: column; align-items: center;
+}
+.macbook { width: 100%; }
+/* Lid: aluminium rail → black bezel → screen */
+.macbook-lid {
+  background: linear-gradient(180deg, #d8d8dc, #c1c1c5);
+  border-radius: 16px 16px 0 0;
+  padding: 11px 11px 0;
+  box-shadow: var(--shadow-float);
+  position: relative;
+}
+.macbook-bezel {
+  background: #050507;
+  border-radius: 8px 8px 0 0;
+  padding: 11px 11px 13px;
+  position: relative;
+}
+.macbook-notch {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 33%; max-width: 190px; height: 19px;
+  background: #050507; border-radius: 0 0 10px 10px; z-index: 6;
+}
+.macbook-notch::after { /* camera */
+  content: ""; position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+  width: 5px; height: 5px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #33485c, #0a0f15 70%);
+}
+/* Base: a slightly wider aluminium slab with a central finger groove */
+.macbook-base {
+  width: calc(100% + 22px); margin-left: -11px;
+  height: 15px;
+  background: linear-gradient(180deg, #cdcdd1 0%, #e8e8ec 36%, #b2b2b6 74%, #97979b 100%);
+  border-radius: 2px 2px 12px 12px;
+  box-shadow: var(--shadow-float);
+  position: relative;
+}
+.macbook-groove {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 13%; height: 7px; background: #b4b4b8; border-radius: 0 0 8px 8px;
+}
+@media (max-width: 920px) {
+  .macbook-base { width: calc(100% + 16px); margin-left: -8px; }
+}
 
 /* ── Lever cards grouped by viewport (Mobile / Desktop) ─────────────── */
 .lever-group { display: flex; flex-direction: column; gap: 12px; }

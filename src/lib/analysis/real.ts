@@ -15,6 +15,7 @@ import { withSession } from "@/lib/analysis/browser";
 import { discoverPages } from "@/lib/analysis/discovery";
 import { renderPage } from "@/lib/analysis/render";
 import { runStatefulFlow } from "@/lib/analysis/stateful";
+import { runAgentFunnel } from "@/lib/analysis/agentFunnel";
 import { analyzePageVision } from "@/lib/analysis/vision";
 import { persistScreenshot } from "@/lib/analysis/blob";
 import { opportunityClass, opportunityScore, overallUplift } from "@/lib/scoring";
@@ -24,7 +25,7 @@ import type { AnalysisEvent } from "@/lib/analysis/events";
 
 const PAGE_NAMES: Record<PageType, string> = {
   home: "Startseite",
-  plp: "Kategorie",
+  plp: "Produktlisting-Page",
   pdp: "Produktseite",
   cart: "Warenkorb",
   checkout: "Checkout",
@@ -238,11 +239,18 @@ export async function* runRealAnalysis(
   if (wantCart || wantCheckout) {
     if (pdpUrl) {
       // Realistic: drive the product → add-to-cart → cart → checkout flow.
+      // Primary path is the AI agent (Stagehand) — it handles ANY shop like a
+      // human. If it yields nothing (e.g. agent/transport unavailable), fall
+      // back to the heuristic flow so we still try the easy shops.
       yield { type: "progress", step: "Warenkorb & Checkout …", pct: 78 };
       try {
-        const stateful = await withSession((browser) =>
-          runStatefulFlow(browser, pdpUrl, ctx.device),
-        );
+        let stateful = await runAgentFunnel(pdpUrl, ctx.device);
+        if (stateful.pages.length === 0) {
+          const heuristic = await withSession((browser) =>
+            runStatefulFlow(browser, pdpUrl, ctx.device),
+          ).catch(() => null);
+          if (heuristic && heuristic.pages.length > 0) stateful = heuristic;
+        }
         notes.push(...stateful.notes);
         for (const rendered of stateful.pages) {
           if (rendered.type === "cart" && !wantCart) continue;

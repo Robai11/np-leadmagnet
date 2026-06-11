@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Volume2, VolumeX } from "lucide-react";
 import type { AnalysisContext } from "@/lib/types";
+import { SkeletonGrid } from "@/components/SkeletonGrid";
 
 // Funnel order; only the steps the user actually selected are shown. `done` is
 // driven by the real stream (which pages have arrived), not a fixed timer.
 const PAGE_STEPS: { id: string; label: string }[] = [
   { id: "home", label: "Startseite gerendert · Elemente erkannt" },
-  { id: "plp", label: "Kategorieseite analysiert" },
+  { id: "plp", label: "Produktlisting-Page analysiert" },
   { id: "pdp", label: "Produktseite · Mobile + Desktop gerendert" },
   { id: "cart", label: "Warenkorb · Artikel hinzugefügt" },
   { id: "checkout", label: "Checkout bis zur Zahlungswand gelesen" },
@@ -20,6 +21,8 @@ export function LoadingStage({
   selectedIds,
   progressPct,
   done,
+  muted,
+  onToggleMuted,
 }: {
   ctx: AnalysisContext;
   analyzedIds: string[];
@@ -27,6 +30,10 @@ export function LoadingStage({
   selectedIds: string[] | null;
   progressPct: number;
   done: boolean;
+  /** Stummschalt-Zustand des Abschluss-Chimes. */
+  muted?: boolean;
+  /** Schaltet den Chime stumm/laut (Schalter neben dem Kicker). */
+  onToggleMuted?: () => void;
 }) {
   const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
@@ -53,7 +60,25 @@ export function LoadingStage({
   return (
     <div className="stage loading-stage">
       <div className="load-card">
-        <span className="kicker">Analyse läuft</span>
+        <div className="load-head">
+          <span className="kicker">Analyse läuft</span>
+          {onToggleMuted && (
+            <button
+              type="button"
+              className="mute-toggle"
+              onClick={onToggleMuted}
+              aria-pressed={muted}
+              title={
+                muted
+                  ? "Abschluss-Ton ist aus — zum Aktivieren klicken"
+                  : "Abschluss-Ton ist an — zum Stummschalten klicken"
+              }
+            >
+              {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+              <span>{muted ? "Ton aus" : "Ton an"}</span>
+            </button>
+          )}
+        </div>
         <h2>{ctx.url}</h2>
         <div className={`bar ${done ? "" : "bar-busy"}`}>
           <div className="bar-fill" style={{ width: `${pct}%` }} />
@@ -76,6 +101,7 @@ export function LoadingStage({
           das dauert pro Seite rund 30–60&nbsp;Sekunden.{" "}
           <span className="load-elapsed">läuft seit {elapsed}s</span>
         </p>
+        <SkeletonGrid />
       </div>
     </div>
   );
