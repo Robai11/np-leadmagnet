@@ -233,11 +233,11 @@ export async function runAgentFunnel(pdpUrl: string, device: number): Promise<Ag
       "First clear anything that blocks interaction: accept the cookie/consent banner, and CLOSE any newsletter, promo or app-install popup. " +
         "If the shop asks for a country/region/language or a store selection, choose Germany / the default option so you can shop. " +
         "If the current page is NOT a single product page (e.g. a homepage, category or search/listing), navigate to any clearly in-stock product first (open a category, then a product). " +
-        "On the product page, if a size, colour or other variant must be chosen, select any available (in-stock) option. Then add the product to the shopping cart. " +
-        "Verify that the cart counter increases / the item actually appears in the cart. If add-to-cart fails, pick a different available variant or product and try again.",
+        "On the product page, select EVERY required option before adding to cart: work through ALL variant groups (size, colour, material, length/dimensions, model, delivery/pickup choice, quantity, etc.) and pick an available value for EACH one. The 'add to cart' button often stays DISABLED/greyed out until all required selections are made — if it looks disabled or clicking does nothing, find the remaining unselected options and choose them, then try again. Then add the product to the shopping cart. " +
+        "Verify that the cart counter increases / the item actually appears in the cart. If add-to-cart still fails, pick a different available variant or product and try again.",
       18,
       180_000,
-      "The previous attempt failed: pick a DIFFERENT, clearly in-stock product (open another category or product), select any required variant, and add it to the cart.",
+      "The previous attempt failed: make sure EVERY required option/dropdown is selected so the add-to-cart button becomes active. If it stays blocked, pick a DIFFERENT, simpler in-stock product (open another category or product) and add it to the cart.",
     );
     if (!added?.success) {
       notes.push(
