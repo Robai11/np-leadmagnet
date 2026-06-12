@@ -19,6 +19,7 @@ import { runAgentFunnel } from "@/lib/analysis/agentFunnel";
 import { analyzePageVision } from "@/lib/analysis/vision";
 import { persistScreenshot } from "@/lib/analysis/blob";
 import { opportunityClass, opportunityScore, overallUplift } from "@/lib/scoring";
+import { appendAnalysisLog } from "@/lib/analysis/log";
 import type { AnalysisContext, AnalyzedPage, PageType, Viewport } from "@/lib/types";
 import type { RenderedPage } from "@/lib/analysis/pipeline-types";
 import type { AnalysisEvent } from "@/lib/analysis/events";
@@ -61,6 +62,7 @@ async function analyzeRendered(
     id: rendered.id,
     type: rendered.type,
     name: rendered.name,
+    url: rendered.url,
     screenshotUrl,
     viewport: primaryVp,
     opportunity: opportunityClass(opportunityScore(rendered.type, primaryLevers)),
@@ -185,6 +187,7 @@ export async function* runRealAnalysis(
 ): AsyncGenerator<AnalysisEvent> {
   const notes: string[] = [];
   const pages: AnalyzedPage[] = [];
+  const startedAt = Date.now();
 
   yield { type: "progress", step: "Shop wird aufgerufen …", pct: 5 };
 
@@ -304,6 +307,28 @@ export async function* runRealAnalysis(
 
   // ── Score + finish ────────────────────────────────────────
   yield { type: "progress", step: "Hebel werden bewertet und priorisiert …", pct: 95 };
+
+  // Best-effort analysis log (which URLs were analyzed) — for the /admin view.
+  // Never blocks or breaks the result.
+  await appendAnalysisLog({
+    date: new Date().toISOString(),
+    shopUrl: ctx.url,
+    normalizedUrl,
+    industry: ctx.industry,
+    device: ctx.device,
+    channels: ctx.channels,
+    planned: analyzedIds,
+    pages: pages.map((p) => ({
+      type: p.type,
+      name: p.name,
+      url: p.url ?? "",
+      opportunity: p.opportunity,
+    })),
+    notes,
+    durationMs: Date.now() - startedAt,
+    ok: pages.length > 0,
+  });
+
   if (pages.length === 0) {
     yield { type: "error", message: "Keine Seite konnte analysiert werden." };
     return;
