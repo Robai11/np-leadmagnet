@@ -62,7 +62,6 @@ async function analyzeRendered(
     id: rendered.id,
     type: rendered.type,
     name: rendered.name,
-    url: rendered.url,
     screenshotUrl,
     viewport: primaryVp,
     opportunity: opportunityClass(opportunityScore(rendered.type, primaryLevers)),
@@ -187,7 +186,6 @@ export async function* runRealAnalysis(
 ): AsyncGenerator<AnalysisEvent> {
   const notes: string[] = [];
   const pages: AnalyzedPage[] = [];
-  const startedAt = Date.now();
 
   yield { type: "progress", step: "Shop wird aufgerufen …", pct: 5 };
 
@@ -308,24 +306,11 @@ export async function* runRealAnalysis(
   // ── Score + finish ────────────────────────────────────────
   yield { type: "progress", step: "Hebel werden bewertet und priorisiert …", pct: 95 };
 
-  // Best-effort analysis log (which URLs were analyzed) — for the /admin view.
-  // Never blocks or breaks the result.
+  // Best-effort analysis log — records only the main shop URL (+ time, status)
+  // for the /admin view. Never blocks or breaks the result.
   await appendAnalysisLog({
     date: new Date().toISOString(),
     shopUrl: ctx.url,
-    normalizedUrl,
-    industry: ctx.industry,
-    device: ctx.device,
-    channels: ctx.channels,
-    planned: analyzedIds,
-    pages: pages.map((p) => ({
-      type: p.type,
-      name: p.name,
-      url: p.url ?? "",
-      opportunity: p.opportunity,
-    })),
-    notes,
-    durationMs: Date.now() - startedAt,
     ok: pages.length > 0,
   });
 

@@ -84,8 +84,6 @@ export interface AnalyzedPage {
   id: string;
   type: PageType;
   name: string;
-  /** Exact URL the render/agent actually loaded for this page (for the log/admin view). */
-  url?: string;
   opportunity: ImpactLevel;
   /** Primary view shown first. */
   screenshotUrl?: string;

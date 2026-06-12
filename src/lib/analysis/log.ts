@@ -11,38 +11,15 @@
 
 import { promises as fs } from "fs";
 import path from "path";
-import type { PageType } from "@/lib/types";
 
 const LOG_DIR = path.join(process.cwd(), ".data");
 const LOG_FILE = path.join(LOG_DIR, "analyses.jsonl");
 
-export interface LoggedPage {
-  type: PageType;
-  name: string;
-  url: string;
-  /** Opportunity level the page scored (low/medium/high), for a quick glance. */
-  opportunity?: string;
-}
-
 export interface AnalysisLogEntry {
   /** ISO-8601 timestamp when the analysis finished. */
   date: string;
-  /** The shop URL the user entered (raw). */
+  /** The main shop URL the user entered — the only URL we record. */
   shopUrl: string;
-  /** Normalized form used as the cache key. */
-  normalizedUrl: string;
-  industry: string;
-  /** Traffic split: percent mobile (0–100). */
-  device: number;
-  channels: string[];
-  /** Page types that were planned/attempted. */
-  planned: string[];
-  /** Pages that were actually analyzed, each with its real URL. */
-  pages: LoggedPage[];
-  /** Honest notes (failures, fallbacks, agent diagnostics). */
-  notes: string[];
-  /** Wall-clock duration of the pipeline in ms. */
-  durationMs: number;
   /** True when at least one page was analyzed. */
   ok: boolean;
 }
