@@ -1601,3 +1601,192 @@
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--color-text-mute);
 }
+
+/* ============================================================================
+   HERO — "Dark cinematic" Einstieg (Design-Handoff, NP-Marken-Adaption)
+   Vollbild-Overlay; driftende Shop-Wand + Vignette + Glas-Pill-CTA.
+   Markenfarben via Token; Layout-px wörtlich aus dem Handoff.
+   ========================================================================== */
+.hero {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow: hidden;
+  background: #07171f; /* tiefe Navy-Bühne (cinematic) */
+  font-family: var(--font-display);
+}
+
+/* Ebene 0 — driftende Wand */
+.hero-wall {
+  position: absolute;
+  top: -26%;
+  left: -16%;
+  width: 132%;
+  height: 158%;
+  transform: rotate(-8deg);
+  transform-origin: center;
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  z-index: 0;
+}
+.hero-col {
+  width: 212px;
+  overflow: hidden;
+}
+.hero-col-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  will-change: transform;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes hero-drift-up {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+@keyframes hero-drift-down {
+  from { transform: translateY(-50%); }
+  to   { transform: translateY(0); }
+}
+
+/* Ebene 1 — Scrims/Vignette (navy-getönt) */
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.hero-scrim--radial {
+  background: radial-gradient(ellipse 60% 55% at 50% 46%,
+    rgba(7, 23, 31, 0.80) 0%, rgba(7, 23, 31, 0.34) 45%, rgba(7, 23, 31, 0.66) 100%);
+}
+.hero-scrim--vert {
+  background: linear-gradient(180deg,
+    rgba(7, 23, 31, 0.92) 0%, transparent 16%, transparent 84%, rgba(7, 23, 31, 0.97) 100%);
+}
+
+/* Ebene 3 — Inhalt */
+.hero-content {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+.hero-brand {
+  position: absolute;
+  top: 26px;
+  left: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+.hero-logo {
+  height: 24px;
+  width: auto;
+  display: block;
+}
+.hero-headline-block {
+  margin-top: 8.5vh;
+  text-align: center;
+  max-width: 860px;
+  padding: 0 24px;
+}
+.hero-headline {
+  color: #fff;
+  font-weight: 800;
+  font-size: clamp(30px, 4vw, 54px);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.6);
+  margin: 0;
+}
+.hero-sub {
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 500;
+  font-size: clamp(16px, 1.7vw, 22px);
+  letter-spacing: -0.01em;
+}
+
+/* Glas-Pill-CTA */
+.hero-form {
+  margin: auto 0;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(560px, 90vw);
+  padding: 8px 8px 8px 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.hero-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+.hero-input::placeholder { color: inherit; opacity: 0.5; }
+.hero-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 14px 26px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: var(--color-accent);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  transition: background var(--transition, 180ms) ease;
+}
+.hero-submit:hover:not(:disabled) { background: var(--color-accent-deep); }
+.hero-submit:disabled { opacity: 0.7; cursor: default; }
+.hero-status {
+  pointer-events: none;
+  margin-bottom: 7vh;
+  min-height: 18px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hero-status .ok { color: #7fe3bd; }
+.hero-status .err { color: #ff9f97; }
+
+/* Reduced Motion — Drift anhalten */
+@media (prefers-reduced-motion: reduce) {
+  .hero-col-stack { animation: none !important; }
+}
+
+/* Mobile — Wand dichter beschneiden, weniger Spalten */
+@media (max-width: 700px) {
+  .hero-wall { left: -34%; width: 168%; gap: 14px; }
+  .hero-col:nth-child(n + 6) { display: none; }
+  .hero-brand { top: 18px; left: 18px; }
+  .hero-headline-block { margin-top: 12vh; }
+}
