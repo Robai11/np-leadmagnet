@@ -1790,3 +1790,18 @@
   .hero-brand { top: 18px; left: 18px; }
   .hero-headline-block { margin-top: 12vh; }
 }
+
+/* Hero-Kacheln = echte Shop-Screenshots (oben zugeschnitten) */
+.hero-tile {
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+}
+.hero-tile img {
+  display: block;
+  width: 100%;
+  height: 340px;
+  object-fit: cover;
+  object-position: top;
+}

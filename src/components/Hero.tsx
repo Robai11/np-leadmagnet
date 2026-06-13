@@ -3,23 +3,41 @@
  * Variante 01), adaptiert auf die Netzproduzenten-Marke (Navy-Bühne, NP-Logo,
  * Gantari, grüner CTA). Vollbild-Overlay (position:fixed) über der App-Topbar.
  *
- * Effekt: eine leicht gekippte Wand aus driftenden Shop-Screenshot-Kacheln,
- * darüber Vignette/Scrim für Lesbarkeit, zentrale Headline + Glas-Pill mit
- * URL-Feld und "Analysieren". Drift pausiert bei prefers-reduced-motion (CSS).
+ * Effekt: eine leicht gekippte Wand aus driftenden ECHTEN Shop-Screenshots
+ * (public/hero/*.jpg), darüber Vignette/Scrim für Lesbarkeit, zentrale Headline
+ * + Glas-Pill mit URL-Feld und "Analysieren". Drift pausiert bei
+ * prefers-reduced-motion (CSS).
  */
 
+/* eslint-disable @next/next/no-img-element -- statische lokale Bilder (Logo + Screenshot-Kacheln); next/image bringt hier keinen Vorteil */
+
 import { Loader2 } from "lucide-react";
-import { ShopTile, SHOP_KEYS } from "@/components/ShopTile";
+
+// Echte Shop-Screenshots (oben zugeschnitten, optimiert). Mischung aus
+// Startseite / Produktseite / Checkout und Desktop / Mobile.
+const HERO_SHOTS = [
+  "/hero/nikin-home-d.jpg",
+  "/hero/leds24-pdp-m.jpg",
+  "/hero/electropapa-checkout-m.jpg",
+  "/hero/ringladen-pdp-d.jpg",
+  "/hero/brandible-home-m.jpg",
+  "/hero/nikin-checkout-m.jpg",
+  "/hero/leds24-pdp-d.jpg",
+  "/hero/wunderwunsch-pdp-m.jpg",
+  "/hero/ringladen-home-d.jpg",
+  "/hero/leds24-checkout-m.jpg",
+  "/hero/nikin-checkout-d.jpg",
+];
 
 // Leicht unterschiedliche Tempi je Spalte → lebendiger Parallax (Handoff).
 const DURATIONS = [52, 44, 60, 47, 56, 42, 58, 50];
 const TILES_PER_COL = 5;
 
 function Column({ index }: { index: number }) {
-  // Pro Spalte eine versetzte Preset-Folge; Liste DOPPELT rendern → nahtlose Schleife.
+  // Pro Spalte eine versetzte Screenshot-Folge; Liste DOPPELT rendern → nahtlose Schleife.
   const tiles = Array.from(
     { length: TILES_PER_COL },
-    (_, i) => SHOP_KEYS[(index * 2 + i) % SHOP_KEYS.length],
+    (_, i) => HERO_SHOTS[(index * 3 + i) % HERO_SHOTS.length],
   );
   const seq = [...tiles, ...tiles];
   const up = index % 2 === 0;
@@ -32,8 +50,10 @@ function Column({ index }: { index: number }) {
           animationDuration: `${DURATIONS[index % DURATIONS.length]}s`,
         }}
       >
-        {seq.map((shop, i) => (
-          <ShopTile key={i} shop={shop} />
+        {seq.map((src, i) => (
+          <div className="hero-tile" key={i}>
+            <img src={src} alt="" loading="lazy" draggable={false} />
+          </div>
         ))}
       </div>
     </div>
@@ -66,7 +86,6 @@ export function Hero({ value, onChange, onSubmit, busy, status }: HeroProps) {
       {/* Ebene 3 — Inhalt */}
       <div className="hero-content">
         <div className="hero-brand">
-          {/* eslint-disable-next-line @next/next/no-img-element -- statisches SVG-Markenlogo */}
           <img
             className="hero-logo"
             src="/brand/netzproduzenten-logo-weiss.svg"
