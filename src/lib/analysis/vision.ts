@@ -18,6 +18,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import sharp from "sharp";
 import { readEnv } from "@/lib/analysis/config";
 import { rangeFor, leverTypeFor } from "@/lib/rubric";
+import { knowledgePromptBlock } from "@/lib/knowledge";
 import { CATEGORY_META, type LeverCategory } from "@/lib/taxonomy";
 import type { ImpactLevel, } from "@/styles/tokens";
 import type { AnalysisContext, Lever, Viewport } from "@/lib/types";
@@ -73,20 +74,13 @@ Arbeitsweise — erst Fakten, dann Urteil:
 1. Lies die bereitgestellten Elemente und den Screenshot. Stütze dich nur auf das, was du tatsächlich siehst.
 2. Identifiziere die 3–5 STÄRKSTEN Conversion-Hebel dieser Seite. Lieber wenige treffsichere als viele schwache.
 
-Hebel-Taxonomie (genau diese Kategorien):
-- cta: Primärer CTA — vorhanden, above the fold, visuelle Dominanz, Label, sticky/Mobile.
-- price: Preis & Preis-Psychologie — Prominenz, Ankerpreis, bezifferte Ersparnis, Versandkostentransparenz.
-- trust: Trust & Risikoreduktion — Bewertungen, Badges, Rückgabe, Lieferzeit, Nähe zum CTA.
-- product: Entscheidungssicherheit / Produktinfo — echtes Bild, Galerie, Specs, Beschreibung.
-- atf: Above-the-Fold-Komposition — Bild + Preis + CTA gemeinsam im ersten Viewport, Ablenker.
-- crosssell: Cross-/Up-Sell — Bundle-/Zubehör-Modul. WIRKT AUF AOV, NICHT auf die CR.
-- friction: Friction & Usability — Zwangsregistrierung, Popups, Cookie-Layer, zu viele Felder, Tap-Targets.
-- tech: Technische Performance — LCP, CLS, Bildgewicht (nur wenn klar erkennbar).
+${knowledgePromptBlock()}
 
 Eiserne Regeln:
 - JEDER Befund ist an genau EIN Element aus der mitgelieferten Liste gebunden (elementId). Findest du kein passendes Element, gib den Befund NICHT aus. Kein Element → kein Befund.
 - Du wählst NUR Kategorie und Schweregrad (severity: high/mid/low). Impact-Range und Pin-Position werden NICHT von dir gesetzt.
-- Erfinde nichts, was nicht im Screenshot/Elementen belegt ist. Kontext (Branche, Device-Split, Kanäle) gewichtet und rahmt Befunde — erfindet sie nie.
+- Erfinde nichts, was nicht im Screenshot/Elementen belegt ist. Kontext (Branche, Device-Split, Kanäle) gewichtet und rahmt Befunde — erfindet sie nie. Technische Performance (tech) NUR melden, wenn im Bild klar erkennbar (z.B. Ladeplatzhalter) — niemals Ladezeiten raten.
+- mechanism soll das verletzte Fachprinzip widerspiegeln (das WARUM aus dem Prüfraster), bleibt aber an der konkreten Beobachtung verankert.
 - Schreibqualität: observation = was konkret beobachtet (element-verankert), mechanism = warum das die Conversion kostet, test = ein konkreter, umsetzbarer Testvorschlag. Deutsch, prägnant, kein Marketing-Sprech.
 - Markiere mobile-spezifische Probleme mit isMobileIssue=true.`;
 
