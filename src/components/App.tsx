@@ -99,7 +99,7 @@ export function App() {
         <div className="brand">
           <span className="brand-mark" />
           CONVERSIONSCAN
-          <span className="brand-sub">by deiner Agentur</span>
+          <span className="brand-sub">by Netzproduzenten</span>
         </div>
         {(ready || state.status === "error") && (
           <button className="restart" onClick={restart}>

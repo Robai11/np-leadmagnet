@@ -5,46 +5,46 @@
  * Rebranding = Werte hier tauschen, sonst nichts. Kein Hex/Font irgendwo
  * sonst im Code (Token-Vertrag, Build-Spec §2.1).
  *
- * Token-NAMEN sind verbindlich (Build-Spec §2.1). Die WERTE unten sind die
- * Platzhalter aus dem Prototyp (cro-analyzer-prototype) — sie werden beim
- * Rebranding durch die echten Brand-Werte ersetzt.
+ * BRAND: Netzproduzenten-Design-System (netzproduzenten.de, Stand 2026-06-13).
+ * Navy #092737, Grün #3dc091, Slate #5a6677, Rot #e23c34 (nur Probleme),
+ * Schrift Gantari. Werte gespiegelt aus netzproduzenten-design-system/tokens.css.
  *
- * Die font-family-Tokens referenzieren die von next/font optimierten
- * Schriften (--font-bricolage / --font-hanken / --font-jetbrains, gesetzt in
- * app/layout.tsx) und fallen sonst auf das jeweilige System-Pendant zurück.
+ * Die font-family-Tokens referenzieren die von next/font optimierte Schrift
+ * (--font-gantari, gesetzt in app/layout.tsx) und fallen sonst auf Gantari/
+ * System-Schriften zurück.
  */
 
 :root {
-  /* ── Farben — Marke ──────────────────────────────────────── */
-  --color-ink: #13161d; /* dunkler Grundton */
-  --color-ink-2: #1c212b; /* dunkel, erhöht */
-  --color-paper: #f5f3ee; /* helle Fläche */
-  --color-paper-2: #fbfaf6; /* hell, erhöht */
-  --color-line: #e3dfd4; /* Rahmen auf hell */
-  --color-line-ink: #2b313d; /* Rahmen auf dunkel */
-  --color-text: #1a1d24;
-  --color-text-mute: #6a7180;
-  --color-text-ink: #eceae3; /* Text auf dunkel */
-  --color-text-ink-mute: #9aa1ae;
+  /* ── Farben — Marke (Netzproduzenten) ────────────────────── */
+  --color-ink: #092737; /* Navy — dunkle Basis (Header, dunkle Sektionen) */
+  --color-ink-2: #143a4c; /* Navy, erhöht */
+  --color-paper: #f2f5fb; /* helle Fläche (NP blue-50) */
+  --color-paper-2: #ffffff; /* weiß, erhöht */
+  --color-line: #e1e4ea; /* Rahmen auf hell */
+  --color-line-ink: rgba(255, 255, 255, 0.14); /* Rahmen auf dunkel */
+  --color-text: #092737; /* Navy — Headlines / starker Text */
+  --color-text-mute: #5a6677; /* Slate — Fließtext / sekundär */
+  --color-text-ink: #ffffff; /* Text auf dunkel */
+  --color-text-ink-mute: #a1b9c4; /* gedämpft auf dunkel */
 
   /* ── Farben — App-semantisch, aus der Marke abgeleitet ───── */
-  --color-accent: #c2e63a; /* Signal / Uplift positiv / CTA */
-  --color-accent-deep: #a6c927;
-  --color-impact-high: #d6452c;
-  --color-impact-mid: #e0922a;
-  --color-impact-low: #7a8794;
+  --color-accent: #3dc091; /* Brand-Grün — Signal / Uplift positiv / CTA */
+  --color-accent-deep: #34a87f; /* Grün hover/aktiv */
+  --color-impact-high: #e23c34; /* Rot — hohe Opportunity / Problem-Signal */
+  --color-impact-mid: #e0922a; /* Amber — funktionale Heat-Stufe (Daten) */
+  --color-impact-low: #8097a2; /* Slate — niedrige Opportunity */
 
-  /* ── Typografie ──────────────────────────────────────────── */
-  --font-display: var(--font-bricolage), "Bricolage Grotesque", sans-serif;
-  --font-body: var(--font-hanken), "Hanken Grotesk", sans-serif;
-  --font-mono: var(--font-jetbrains), "JetBrains Mono", monospace;
+  /* ── Typografie (Gantari) ────────────────────────────────── */
+  --font-display: var(--font-gantari), "Gantari", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: var(--font-gantari), "Gantari", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "JetBrains Mono", Menlo, monospace;
 
-  /* ── Form ────────────────────────────────────────────────── */
-  --radius: 8px;
-  --radius-lg: 12px;
+  /* ── Form (NP: Buttons knapp, Karten weicher; navy-getönte Schatten) ── */
+  --radius: 6px;
+  --radius-lg: 14px;
   --radius-pill: 9999px;
-  --shadow-card: 0 8px 26px -12px rgba(19, 22, 29, 0.25);
-  --shadow-float: 0 30px 60px -28px rgba(19, 22, 29, 0.25);
+  --shadow-card: 0 8px 24px rgba(9, 39, 55, 0.08);
+  --shadow-float: 0 18px 50px rgba(9, 39, 55, 0.12);
 
   /* ── Spacing-Skala (4px-Basis) ───────────────────────────── */
   --space-1: 4px;

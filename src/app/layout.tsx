@@ -1,23 +1,14 @@
 import type { Metadata } from "next";
-import {
-  Bricolage_Grotesque,
-  Hanken_Grotesk,
-  JetBrains_Mono,
-} from "next/font/google";
+import { Gantari, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 // next/font self-hosts these and exposes each as a CSS variable. The brand
-// tokens in tokens.css reference those variables (--font-display etc.), so the
-// font wiring and the token contract meet without a mapping layer.
-const display = Bricolage_Grotesque({
+// tokens in tokens.css reference those variables (--font-display/-body/-mono),
+// so the font wiring and the token contract meet without a mapping layer.
+// Brand font: Gantari (Netzproduzenten-Design-System) for display AND body.
+const gantari = Gantari({
   subsets: ["latin"],
-  variable: "--font-bricolage",
-  display: "swap",
-});
-
-const body = Hanken_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-hanken",
+  variable: "--font-gantari",
   display: "swap",
 });
 
@@ -41,7 +32,7 @@ export default function RootLayout({
   return (
     <html
       lang="de"
-      className={`${display.variable} ${body.variable} ${mono.variable}`}
+      className={`${gantari.variable} ${mono.variable}`}
     >
       <body>{children}</body>
     </html>

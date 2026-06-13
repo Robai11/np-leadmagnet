@@ -32,7 +32,7 @@ function isHttp(url: string): boolean {
 
 const cell: React.CSSProperties = {
   padding: "10px 14px",
-  borderTop: "1px solid #f3f4f6",
+  borderTop: "1px solid #eef2f8",
   fontSize: 14,
   verticalAlign: "middle",
 };
@@ -47,17 +47,17 @@ export default async function AdminPage() {
         margin: "0 auto",
         padding: "40px 24px 80px",
         fontFamily:
-          "var(--font-hanken), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        color: "#111827",
+          "var(--font-gantari), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        color: "#092737",
       }}
     >
       <div style={{ display: "flex", alignItems: "baseline", gap: 14, marginBottom: 6 }}>
         <h1 style={{ fontSize: 26, margin: 0 }}>Analyse-Protokoll</h1>
-        <Link href="/" style={{ fontSize: 14, color: "#2563eb" }}>
+        <Link href="/" style={{ fontSize: 14, color: "#2f9b78" }}>
           ← zur Startseite
         </Link>
       </div>
-      <p style={{ color: "#6b7280", fontSize: 14, marginTop: 0 }}>
+      <p style={{ color: "#5a6677", fontSize: 14, marginTop: 0 }}>
         {entries.length === 0
           ? "Noch keine Analysen protokolliert."
           : `${entries.length} Analyse${entries.length === 1 ? "" : "n"} · neueste zuerst`}
@@ -66,16 +66,16 @@ export default async function AdminPage() {
       {entries.length === 0 ? (
         <div
           style={{
-            border: "1px dashed #d1d5db",
+            border: "1px dashed #cdd5e0",
             borderRadius: 12,
             padding: 28,
             textAlign: "center",
-            color: "#6b7280",
+            color: "#5a6677",
             marginTop: 20,
           }}
         >
           Starte eine Analyse auf der{" "}
-          <Link href="/" style={{ color: "#2563eb" }}>
+          <Link href="/" style={{ color: "#2f9b78" }}>
             Startseite
           </Link>
           . Jede analysierte Shop-URL wird hier aufgelistet.
@@ -86,21 +86,21 @@ export default async function AdminPage() {
             width: "100%",
             borderCollapse: "collapse",
             marginTop: 18,
-            border: "1px solid #e5e7eb",
+            border: "1px solid #e1e4ea",
             borderRadius: 12,
             overflow: "hidden",
             background: "#fff",
           }}
         >
           <thead>
-            <tr style={{ background: "#f9fafb", textAlign: "left" }}>
-              <th style={{ ...cell, borderTop: "none", color: "#6b7280", fontWeight: 600, width: 190 }}>
+            <tr style={{ background: "#f2f5fb", textAlign: "left" }}>
+              <th style={{ ...cell, borderTop: "none", color: "#5a6677", fontWeight: 600, width: 190 }}>
                 Datum
               </th>
-              <th style={{ ...cell, borderTop: "none", color: "#6b7280", fontWeight: 600 }}>
+              <th style={{ ...cell, borderTop: "none", color: "#5a6677", fontWeight: 600 }}>
                 Shop-URL
               </th>
-              <th style={{ ...cell, borderTop: "none", color: "#6b7280", fontWeight: 600, width: 130 }}>
+              <th style={{ ...cell, borderTop: "none", color: "#5a6677", fontWeight: 600, width: 130 }}>
                 Status
               </th>
             </tr>
@@ -108,10 +108,10 @@ export default async function AdminPage() {
           <tbody>
             {entries.map((e, i) => (
               <tr key={i}>
-                <td style={{ ...cell, color: "#6b7280", whiteSpace: "nowrap" }}>{fmtDate(e.date)}</td>
+                <td style={{ ...cell, color: "#5a6677", whiteSpace: "nowrap" }}>{fmtDate(e.date)}</td>
                 <td style={{ ...cell, wordBreak: "break-all" }}>
                   {isHttp(e.shopUrl) ? (
-                    <a href={e.shopUrl} target="_blank" rel="noreferrer" style={{ color: "#2563eb" }}>
+                    <a href={e.shopUrl} target="_blank" rel="noreferrer" style={{ color: "#2f9b78" }}>
                       {e.shopUrl}
                     </a>
                   ) : (
@@ -125,8 +125,8 @@ export default async function AdminPage() {
                       fontWeight: 700,
                       padding: "2px 8px",
                       borderRadius: 999,
-                      background: e.ok ? "#dcfce7" : "#fee2e2",
-                      color: e.ok ? "#166534" : "#991b1b",
+                      background: e.ok ? "#e6f7f0" : "#fbe7e5",
+                      color: e.ok ? "#2f9b78" : "#c93128",
                     }}
                   >
                     {e.ok ? "✓ analysiert" : "⚠ fehlgeschlagen"}
