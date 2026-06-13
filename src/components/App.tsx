@@ -97,9 +97,14 @@ export function App() {
     <div className="cs-root">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark" />
-          CONVERSIONSCAN
-          <span className="brand-sub">by Netzproduzenten</span>
+          {/* eslint-disable-next-line @next/next/no-img-element -- statisches SVG-Markenlogo; next/image bringt für SVG keinen Vorteil */}
+          <img
+            className="brand-logo"
+            src="/brand/netzproduzenten-logo-weiss.svg"
+            alt="Netzproduzenten"
+          />
+          <span className="brand-sep" aria-hidden="true" />
+          ConversionScan
         </div>
         {(ready || state.status === "error") && (
           <button className="restart" onClick={restart}>

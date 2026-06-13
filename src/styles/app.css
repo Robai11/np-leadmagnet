@@ -84,6 +84,17 @@
   letter-spacing: 0.05em;
   margin-left: 2px;
 }
+.brand-logo {
+  height: 22px;
+  width: auto;
+  display: block;
+}
+.brand-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--color-line-ink);
+  display: inline-block;
+}
 .restart {
   background: transparent;
   border: 1px solid var(--color-line-ink);
