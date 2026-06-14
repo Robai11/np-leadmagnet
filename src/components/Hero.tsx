@@ -30,7 +30,8 @@ const HERO_SHOTS = [
 ];
 
 // Leicht unterschiedliche Tempi je Spalte → lebendiger Parallax (Handoff).
-const DURATIONS = [52, 44, 60, 47, 56, 42, 58, 50];
+// Sehr langsamer, ruhiger Drift (~2,6× langsamer als der Handoff-Default).
+const DURATIONS = [136, 114, 156, 122, 146, 110, 152, 130];
 const TILES_PER_COL = 5;
 
 function Column({ index }: { index: number }) {
