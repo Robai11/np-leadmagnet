@@ -1709,8 +1709,8 @@
 }
 .hero-sub {
   margin: 18px 0 0;
-  color: rgba(255, 255, 255, 0.72);
-  font-weight: 500;
+  color: var(--color-accent);
+  font-weight: 600;
   font-size: clamp(16px, 1.7vw, 22px);
   letter-spacing: -0.01em;
 }
