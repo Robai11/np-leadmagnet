@@ -11,7 +11,7 @@
 
 /* eslint-disable @next/next/no-img-element -- statische lokale Bilder (Logo + Screenshot-Kacheln); next/image bringt hier keinen Vorteil */
 
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, ArrowDownWideNarrow } from "lucide-react";
 
 // Nur die kuratierten Screenshots aus dem Ordner: Desktop = Querformat (breite
 // Kacheln), Mobile = Hochformat (schmale Kacheln).
@@ -122,7 +122,6 @@ export function Hero({ value, onChange, onSubmit, busy, status }: HeroProps) {
             In wenigen Sekunden zu 10+ personalisierten Optimierungen für
             deinen Shop
           </h1>
-          <p className="hero-sub">Keine Optimierungen von der Stange</p>
         </div>
 
         <div className="hero-cta">
@@ -141,6 +140,11 @@ export function Hero({ value, onChange, onSubmit, busy, status }: HeroProps) {
                   </li>
                 ))}
               </ul>
+
+              <p className="hero-scope-note">
+                <ArrowDownWideNarrow size={13} aria-hidden="true" />
+                Priorisiert nach Business Impact &amp; Änderungsaufwand
+              </p>
             </div>
 
             <form
@@ -174,6 +178,8 @@ export function Hero({ value, onChange, onSubmit, busy, status }: HeroProps) {
 
           {status ? <div className="hero-status">{status}</div> : null}
         </div>
+
+        <p className="hero-sub">Keine Optimierungen von der Stange</p>
       </div>
     </div>
   );
