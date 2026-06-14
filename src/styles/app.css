@@ -1678,21 +1678,19 @@
   pointer-events: none;
 }
 .hero-brand {
-  position: absolute;
-  top: 26px;
-  left: 30px;
+  margin: 8vh 0 22px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
   pointer-events: auto;
 }
 .hero-logo {
-  height: 24px;
+  height: 28px;
   width: auto;
   display: block;
 }
 .hero-headline-block {
-  margin-top: 8.5vh;
+  margin-top: 0;
   text-align: center;
   max-width: 860px;
   padding: 0 24px;
@@ -1787,8 +1785,8 @@
 @media (max-width: 700px) {
   .hero-wall { left: -34%; width: 168%; gap: 14px; }
   .hero-col:nth-child(n + 6) { display: none; }
-  .hero-brand { top: 18px; left: 18px; }
-  .hero-headline-block { margin-top: 12vh; }
+  .hero-brand { margin-top: 6vh; }
+  .hero-headline-block { margin-top: 0; }
 }
 
 /* Hero-Kacheln = echte Shop-Screenshots (oben zugeschnitten) */
