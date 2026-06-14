@@ -1863,8 +1863,6 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
-  /* abgeschnittene Ecke oben rechts (NP-Form) */
-  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
   transition: background var(--transition, 180ms) ease;
 }
 .hero-submit:hover:not(:disabled) { background: var(--color-accent-deep); }
