@@ -1680,7 +1680,7 @@
   pointer-events: none;
 }
 .hero-brand {
-  margin: 8vh 0 22px;
+  margin: 5vh 0 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1715,21 +1715,65 @@
   letter-spacing: -0.01em;
 }
 
-/* Glas-Pill-CTA */
+/* CTA-Gruppe — Eyebrow + Feld, weiter oben platziert */
+.hero-cta {
+  margin-top: clamp(22px, 3.5vh, 42px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  pointer-events: auto;
+}
+/* "Trainiert auf …"-Badge direkt über dem Feld */
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 15px;
+  border-radius: 999px;
+  background: rgba(61, 192, 145, 0.14);
+  border: 1px solid rgba(61, 192, 145, 0.34);
+  color: rgba(255, 255, 255, 0.9);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.005em;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.hero-eyebrow svg {
+  color: var(--color-accent);
+  flex: 0 0 auto;
+}
+
+/* Prominentes Eingabe-Feld mit grünem Marken-Akzent */
 .hero-form {
-  margin: auto 0;
+  margin: 0;
   pointer-events: auto;
   display: flex;
   align-items: center;
   gap: 8px;
-  width: min(560px, 90vw);
-  padding: 8px 8px 8px 22px;
+  width: min(620px, 92vw);
+  padding: 10px 10px 10px 26px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.14);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(61, 192, 145, 0.45);
+  box-shadow:
+    0 26px 80px rgba(0, 0, 0, 0.6),
+    0 12px 44px rgba(61, 192, 145, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+.hero-form:focus-within {
+  border-color: var(--color-accent);
+  box-shadow:
+    0 26px 80px rgba(0, 0, 0, 0.6),
+    0 0 0 4px rgba(61, 192, 145, 0.28),
+    0 12px 44px rgba(61, 192, 145, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
 }
 .hero-input {
   flex: 1;
@@ -1740,7 +1784,7 @@
   color: #fff;
   font-family: var(--font-body);
   font-weight: 600;
-  font-size: 16px;
+  font-size: 17px;
   letter-spacing: -0.01em;
 }
 .hero-input::placeholder { color: inherit; opacity: 0.5; }
@@ -1756,17 +1800,16 @@
   color: var(--color-ink);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   letter-spacing: -0.01em;
   white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 18px rgba(61, 192, 145, 0.4);
   transition: background var(--transition, 180ms) ease;
 }
 .hero-submit:hover:not(:disabled) { background: var(--color-accent-deep); }
 .hero-submit:disabled { opacity: 0.7; cursor: default; }
 .hero-status {
   pointer-events: none;
-  margin-bottom: 7vh;
   min-height: 18px;
   font-family: var(--font-body);
   font-size: 13px;
@@ -1790,6 +1833,8 @@
   .hero-col--d { width: 320px; }
   .hero-brand { margin-top: 6vh; }
   .hero-headline-block { margin-top: 0; }
+  .hero-cta { margin-top: 24px; }
+  .hero-eyebrow { font-size: 12px; text-align: center; }
 }
 
 /* Hero-Kacheln = echte Shop-Screenshots (oben zugeschnitten) */

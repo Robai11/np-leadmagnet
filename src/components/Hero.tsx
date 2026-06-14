@@ -11,7 +11,7 @@
 
 /* eslint-disable @next/next/no-img-element -- statische lokale Bilder (Logo + Screenshot-Kacheln); next/image bringt hier keinen Vorteil */
 
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 
 // Nur die kuratierten Screenshots aus dem Ordner: Desktop = Querformat (breite
 // Kacheln), Mobile = Hochformat (schmale Kacheln).
@@ -110,39 +110,50 @@ export function Hero({ value, onChange, onSubmit, busy, status }: HeroProps) {
 
         <div className="hero-headline-block">
           <h1 className="hero-headline">
-            Wo du in deinem Onlineshop Conversions verlierst
+            In wenigen Sekunden zu 10+ personalisierten Optimierungen für
+            deinen Shop
           </h1>
-          <p className="hero-sub">Insights aus 350+ Optimierungsprojekten</p>
+          <p className="hero-sub">
+            Keine Optimierungen von der Stange, sondern individuell auf deinen
+            Shop abgestimmt.
+          </p>
         </div>
 
-        <form
-          className="hero-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!busy) onSubmit();
-          }}
-        >
-          <input
-            className="hero-input"
-            type="url"
-            inputMode="url"
-            placeholder="https://dein-shop.de"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            aria-label="Shop-URL"
-          />
-          <button className="hero-submit" type="submit" disabled={busy}>
-            {busy ? (
-              <>
-                <Loader2 size={16} className="spin" /> Analysiere …
-              </>
-            ) : (
-              "Analysieren"
-            )}
-          </button>
-        </form>
+        <div className="hero-cta">
+          <p className="hero-eyebrow">
+            <Sparkles size={14} aria-hidden="true" />
+            Unsere KI ist auf 10 Jahren Agentur-Kundenprojekten trainiert
+          </p>
 
-        {status ? <div className="hero-status">{status}</div> : null}
+          <form
+            className="hero-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!busy) onSubmit();
+            }}
+          >
+            <input
+              className="hero-input"
+              type="url"
+              inputMode="url"
+              placeholder="https://dein-shop.de"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              aria-label="Shop-URL"
+            />
+            <button className="hero-submit" type="submit" disabled={busy}>
+              {busy ? (
+                <>
+                  <Loader2 size={16} className="spin" /> Analysiere …
+                </>
+              ) : (
+                "Analysieren"
+              )}
+            </button>
+          </form>
+
+          {status ? <div className="hero-status">{status}</div> : null}
+        </div>
       </div>
     </div>
   );
