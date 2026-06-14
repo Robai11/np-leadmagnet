@@ -1634,8 +1634,8 @@
   flex: 0 0 auto;
   overflow: hidden;
 }
-.hero-col--m { width: 232px; } /* Mobile = schmal (Hochformat) */
-.hero-col--d { width: 500px; } /* Desktop = breit (Querformat) */
+.hero-col--m { width: 300px; } /* Mobile = schmal (Hochformat) */
+.hero-col--d { width: 560px; } /* Desktop = breit (Querformat) */
 .hero-col-stack {
   display: flex;
   flex-direction: column;
@@ -1825,5 +1825,5 @@
   object-fit: cover;
   object-position: top;
 }
-.hero-tile--d img { height: 320px; } /* Desktop = Querformat */
-.hero-tile--m img { height: 430px; } /* Mobile = Hochformat */
+.hero-tile--d img { height: 470px; } /* größere, ruhigere Kacheln */
+.hero-tile--m img { height: 470px; }

@@ -13,13 +13,9 @@
 
 import { Loader2 } from "lucide-react";
 
-// Desktop = Querformat (breite Kacheln), Mobile = Hochformat (schmale Kacheln).
+// Nur die kuratierten Screenshots aus dem Ordner: Desktop = Querformat (breite
+// Kacheln), Mobile = Hochformat (schmale Kacheln).
 const DESKTOP_SHOTS = [
-  "/hero/nikin-home-d.jpg",
-  "/hero/ringladen-pdp-d.jpg",
-  "/hero/leds24-pdp-d.jpg",
-  "/hero/ringladen-home-d.jpg",
-  "/hero/nikin-checkout-d.jpg",
   "/hero/xd-1.jpg",
   "/hero/xd-2.jpg",
   "/hero/xd-3.jpg",
@@ -28,12 +24,6 @@ const DESKTOP_SHOTS = [
   "/hero/xd-6.jpg",
 ];
 const MOBILE_SHOTS = [
-  "/hero/brandible-home-m.jpg",
-  "/hero/leds24-pdp-m.jpg",
-  "/hero/electropapa-checkout-m.jpg",
-  "/hero/wunderwunsch-pdp-m.jpg",
-  "/hero/nikin-checkout-m.jpg",
-  "/hero/leds24-checkout-m.jpg",
   "/hero/xm-1.jpg",
   "/hero/xm-2.jpg",
   "/hero/xm-3.jpg",
@@ -57,11 +47,9 @@ const UPLIFT: Record<string, string> = Object.fromEntries(
 // Dubletten); die Verdopplung dient nur der nahtlosen Endlos-Schleife.
 type Col = { kind: "d" | "m"; dur: number; imgs: string[] };
 const COLUMNS: Col[] = [
-  { kind: "m", dur: 142, imgs: MOBILE_SHOTS.slice(0, 3) },
-  { kind: "d", dur: 170, imgs: DESKTOP_SHOTS.slice(0, 6) },
-  { kind: "m", dur: 130, imgs: MOBILE_SHOTS.slice(3, 6) },
-  { kind: "d", dur: 182, imgs: DESKTOP_SHOTS.slice(6, 11) },
-  { kind: "m", dur: 152, imgs: MOBILE_SHOTS.slice(6, 9) },
+  { kind: "d", dur: 172, imgs: DESKTOP_SHOTS.slice(0, 3) },
+  { kind: "m", dur: 146, imgs: MOBILE_SHOTS },
+  { kind: "d", dur: 184, imgs: DESKTOP_SHOTS.slice(3, 6) },
 ];
 
 function Column({ index, col }: { index: number; col: Col }) {
