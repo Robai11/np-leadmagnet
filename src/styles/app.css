@@ -1677,17 +1677,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center; /* gesamter Block vertikal zentriert */
   pointer-events: none;
 }
 .hero-brand {
-  margin: 5vh 0 20px;
+  margin: 0 0 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: auto;
 }
 .hero-logo {
-  height: 28px;
+  height: 48px;
   width: auto;
   display: block;
 }
@@ -1831,7 +1832,8 @@
   .hero-wall { left: -34%; width: 168%; gap: 18px; }
   .hero-col--m { width: 168px; }
   .hero-col--d { width: 320px; }
-  .hero-brand { margin-top: 6vh; }
+  .hero-brand { margin-bottom: 18px; }
+  .hero-logo { height: 38px; }
   .hero-headline-block { margin-top: 0; }
   .hero-cta { margin-top: 24px; }
   .hero-eyebrow { font-size: 12px; text-align: center; }
