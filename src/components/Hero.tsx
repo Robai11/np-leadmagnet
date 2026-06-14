@@ -120,37 +120,39 @@ export function Hero({ value, onChange, onSubmit, busy, status }: HeroProps) {
         </div>
 
         <div className="hero-cta">
-          <p className="hero-eyebrow">
-            <Sparkles size={17} aria-hidden="true" />
-            Unsere KI ist auf 10 Jahren Agentur-Kundenprojekten trainiert
-          </p>
+          <div className="hero-entry">
+            <p className="hero-eyebrow">
+              <Sparkles size={17} aria-hidden="true" />
+              Unsere KI ist auf 10 Jahren Agentur-Kundenprojekten trainiert
+            </p>
 
-          <form
-            className="hero-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!busy) onSubmit();
-            }}
-          >
-            <input
-              className="hero-input"
-              type="url"
-              inputMode="url"
-              placeholder="https://dein-shop.de"
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              aria-label="Shop-URL"
-            />
-            <button className="hero-submit" type="submit" disabled={busy}>
-              {busy ? (
-                <>
-                  <Loader2 size={16} className="spin" /> Analysiere …
-                </>
-              ) : (
-                "Analysieren"
-              )}
-            </button>
-          </form>
+            <form
+              className="hero-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!busy) onSubmit();
+              }}
+            >
+              <input
+                className="hero-input"
+                type="url"
+                inputMode="url"
+                placeholder="https://dein-shop.de"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                aria-label="Shop-URL"
+              />
+              <button className="hero-submit" type="submit" disabled={busy}>
+                {busy ? (
+                  <>
+                    <Loader2 size={16} className="spin" /> Analysiere …
+                  </>
+                ) : (
+                  "Analysieren"
+                )}
+              </button>
+            </form>
+          </div>
 
           {status ? <div className="hero-status">{status}</div> : null}
         </div>
