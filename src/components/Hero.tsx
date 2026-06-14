@@ -20,6 +20,10 @@ const DESKTOP_SHOTS = [
   "/hero/leds24-pdp-d.jpg",
   "/hero/ringladen-home-d.jpg",
   "/hero/nikin-checkout-d.jpg",
+  "/hero/extra-1-d.jpg",
+  "/hero/extra-2-d.jpg",
+  "/hero/extra-3-d.jpg",
+  "/hero/extra-4-d.jpg",
 ];
 const MOBILE_SHOTS = [
   "/hero/brandible-home-m.jpg",
@@ -30,30 +34,23 @@ const MOBILE_SHOTS = [
   "/hero/leds24-checkout-m.jpg",
 ];
 
-// Spalten: gemischte Breite, weniger (breite) Desktop-Spalten als Mobile.
-// Sehr langsamer Drift; leicht unterschiedliche Tempi je Spalte (Parallax).
-type Col = { kind: "d" | "m"; w: number; dur: number };
+// Ruhige, cleane Wand: NUR 3 Spalten, jedes Bild GENAU EINMAL (keine Dubletten).
+// Schmale Mobile-Spalte · breite Desktop-Spalte (mittig) · schmale Mobile-Spalte.
+// Jede Spalte hat genug unterschiedliche Bilder, dass im Sichtfenster nie eins
+// doppelt erscheint; die Verdopplung dient nur der nahtlosen Endlos-Schleife.
+type Col = { kind: "d" | "m"; dur: number; imgs: string[] };
 const COLUMNS: Col[] = [
-  { kind: "m", w: 196, dur: 138 },
-  { kind: "d", w: 430, dur: 156 },
-  { kind: "m", w: 196, dur: 120 },
-  { kind: "d", w: 430, dur: 168 },
-  { kind: "m", w: 196, dur: 130 },
-  { kind: "d", w: 430, dur: 150 },
-  { kind: "m", w: 196, dur: 124 },
+  { kind: "d", dur: 168, imgs: DESKTOP_SHOTS.slice(0, 5) },
+  { kind: "m", dur: 142, imgs: MOBILE_SHOTS.slice(0, 3) },
+  { kind: "d", dur: 178, imgs: DESKTOP_SHOTS.slice(5, 9) },
+  { kind: "m", dur: 152, imgs: MOBILE_SHOTS.slice(3, 6) },
 ];
-const TILES_PER_COL = 5;
 
 function Column({ index, col }: { index: number; col: Col }) {
-  const pool = col.kind === "d" ? DESKTOP_SHOTS : MOBILE_SHOTS;
-  const tiles = Array.from(
-    { length: TILES_PER_COL },
-    (_, i) => pool[(index * 2 + i) % pool.length],
-  );
-  const seq = [...tiles, ...tiles]; // doppelt → nahtlose Schleife
+  const seq = [...col.imgs, ...col.imgs]; // doppelt NUR für die nahtlose Schleife
   const up = index % 2 === 0;
   return (
-    <div className="hero-col" style={{ width: col.w }}>
+    <div className={`hero-col hero-col--${col.kind}`}>
       <div
         className="hero-col-stack"
         style={{

@@ -1626,14 +1626,16 @@
   transform: rotate(-8deg);
   transform-origin: center;
   display: flex;
-  gap: 18px;
+  gap: 22px;
   justify-content: center;
   z-index: 0;
 }
 .hero-col {
-  flex: 0 0 auto; /* Breite wird pro Spalte gesetzt (Desktop breit / Mobile schmal) */
+  flex: 0 0 auto;
   overflow: hidden;
 }
+.hero-col--m { width: 240px; } /* Mobile = schmal (Hochformat) */
+.hero-col--d { width: 520px; } /* Desktop = breit (Querformat) */
 .hero-col-stack {
   display: flex;
   flex-direction: column;
@@ -1781,10 +1783,13 @@
   .hero-col-stack { animation: none !important; }
 }
 
-/* Mobile — Wand dichter beschneiden, weniger Spalten */
+/* Mobile — schmalere Spalten, Wand dichter beschnitten */
 @media (max-width: 700px) {
-  .hero-wall { left: -38%; width: 176%; gap: 14px; }
-  .hero-col:nth-child(n + 5) { display: none; }
+  .hero-wall { left: -34%; width: 168%; gap: 18px; }
+  .hero-col--m { width: 168px; }
+  .hero-col--d { width: 320px; }
+  .hero-tile--d img { height: 220px; }
+  .hero-tile--m img { height: 300px; }
   .hero-brand { margin-top: 6vh; }
   .hero-headline-block { margin-top: 0; }
 }
@@ -1802,5 +1807,5 @@
   object-fit: cover;
   object-position: top;
 }
-.hero-tile--d img { height: 268px; } /* Desktop = Querformat */
-.hero-tile--m img { height: 352px; } /* Mobile = Hochformat */
+.hero-tile--d img { height: 320px; } /* Desktop = Querformat */
+.hero-tile--m img { height: 430px; } /* Mobile = Hochformat */
