@@ -1788,8 +1788,6 @@
   .hero-wall { left: -34%; width: 168%; gap: 18px; }
   .hero-col--m { width: 168px; }
   .hero-col--d { width: 320px; }
-  .hero-tile--d img { height: 220px; }
-  .hero-tile--m img { height: 300px; }
   .hero-brand { margin-top: 6vh; }
   .hero-headline-block { margin-top: 0; }
 }
@@ -1822,8 +1820,5 @@
 .hero-tile img {
   display: block;
   width: 100%;
-  object-fit: cover;
-  object-position: top;
+  height: auto; /* volle Höhe — Screenshot wird NICHT beschnitten */
 }
-.hero-tile--d img { height: 470px; } /* größere, ruhigere Kacheln */
-.hero-tile--m img { height: 470px; }
