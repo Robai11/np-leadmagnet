@@ -122,9 +122,6 @@ export function Hero({ value, onChange, onSubmit, busy, status }: HeroProps) {
             In wenigen Sekunden zu 10+ personalisierten Optimierungen für
             deinen Shop
           </h1>
-          <p className="hero-sub">
-            Priorisiert nach Umsatzeinfluss &amp; Änderungsaufwand
-          </p>
         </div>
 
         <div className="hero-cta">
