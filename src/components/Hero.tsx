@@ -3,56 +3,66 @@
  * Variante 01), adaptiert auf die Netzproduzenten-Marke (Navy-Bühne, NP-Logo,
  * Gantari, grüner CTA). Vollbild-Overlay (position:fixed) über der App-Topbar.
  *
- * Effekt: eine leicht gekippte Wand aus driftenden ECHTEN Shop-Screenshots
- * (public/hero/*.jpg), darüber Vignette/Scrim für Lesbarkeit, zentrale Headline
- * + Glas-Pill mit URL-Feld und "Analysieren". Drift pausiert bei
- * prefers-reduced-motion (CSS).
+ * Wand aus driftenden ECHTEN Shop-Screenshots (public/hero/*.jpg). Spalten mit
+ * GEMISCHTER Breite: breite Desktop-Kacheln (Querformat) + schmale Mobile-
+ * Kacheln (Hochformat) → sichtbarer Desktop/Mobile-Mix. Drift sehr langsam,
+ * pausiert bei prefers-reduced-motion (CSS).
  */
 
 /* eslint-disable @next/next/no-img-element -- statische lokale Bilder (Logo + Screenshot-Kacheln); next/image bringt hier keinen Vorteil */
 
 import { Loader2 } from "lucide-react";
 
-// Echte Shop-Screenshots (oben zugeschnitten, optimiert). Mischung aus
-// Startseite / Produktseite / Checkout und Desktop / Mobile.
-const HERO_SHOTS = [
+// Desktop = Querformat (breite Kacheln), Mobile = Hochformat (schmale Kacheln).
+const DESKTOP_SHOTS = [
   "/hero/nikin-home-d.jpg",
-  "/hero/leds24-pdp-m.jpg",
-  "/hero/electropapa-checkout-m.jpg",
   "/hero/ringladen-pdp-d.jpg",
-  "/hero/brandible-home-m.jpg",
-  "/hero/nikin-checkout-m.jpg",
   "/hero/leds24-pdp-d.jpg",
-  "/hero/wunderwunsch-pdp-m.jpg",
   "/hero/ringladen-home-d.jpg",
-  "/hero/leds24-checkout-m.jpg",
   "/hero/nikin-checkout-d.jpg",
 ];
+const MOBILE_SHOTS = [
+  "/hero/brandible-home-m.jpg",
+  "/hero/leds24-pdp-m.jpg",
+  "/hero/electropapa-checkout-m.jpg",
+  "/hero/wunderwunsch-pdp-m.jpg",
+  "/hero/nikin-checkout-m.jpg",
+  "/hero/leds24-checkout-m.jpg",
+];
 
-// Leicht unterschiedliche Tempi je Spalte → lebendiger Parallax (Handoff).
-// Sehr langsamer, ruhiger Drift (~2,6× langsamer als der Handoff-Default).
-const DURATIONS = [136, 114, 156, 122, 146, 110, 152, 130];
+// Spalten: gemischte Breite, weniger (breite) Desktop-Spalten als Mobile.
+// Sehr langsamer Drift; leicht unterschiedliche Tempi je Spalte (Parallax).
+type Col = { kind: "d" | "m"; w: number; dur: number };
+const COLUMNS: Col[] = [
+  { kind: "m", w: 196, dur: 138 },
+  { kind: "d", w: 430, dur: 156 },
+  { kind: "m", w: 196, dur: 120 },
+  { kind: "d", w: 430, dur: 168 },
+  { kind: "m", w: 196, dur: 130 },
+  { kind: "d", w: 430, dur: 150 },
+  { kind: "m", w: 196, dur: 124 },
+];
 const TILES_PER_COL = 5;
 
-function Column({ index }: { index: number }) {
-  // Pro Spalte eine versetzte Screenshot-Folge; Liste DOPPELT rendern → nahtlose Schleife.
+function Column({ index, col }: { index: number; col: Col }) {
+  const pool = col.kind === "d" ? DESKTOP_SHOTS : MOBILE_SHOTS;
   const tiles = Array.from(
     { length: TILES_PER_COL },
-    (_, i) => HERO_SHOTS[(index * 3 + i) % HERO_SHOTS.length],
+    (_, i) => pool[(index * 2 + i) % pool.length],
   );
-  const seq = [...tiles, ...tiles];
+  const seq = [...tiles, ...tiles]; // doppelt → nahtlose Schleife
   const up = index % 2 === 0;
   return (
-    <div className="hero-col">
+    <div className="hero-col" style={{ width: col.w }}>
       <div
         className="hero-col-stack"
         style={{
           animationName: up ? "hero-drift-up" : "hero-drift-down",
-          animationDuration: `${DURATIONS[index % DURATIONS.length]}s`,
+          animationDuration: `${col.dur}s`,
         }}
       >
         {seq.map((src, i) => (
-          <div className="hero-tile" key={i}>
+          <div className={`hero-tile hero-tile--${col.kind}`} key={i}>
             <img src={src} alt="" loading="lazy" draggable={false} />
           </div>
         ))}
@@ -75,8 +85,8 @@ export function Hero({ value, onChange, onSubmit, busy, status }: HeroProps) {
     <div className="hero">
       {/* Ebene 0 — driftende Screenshot-Wand */}
       <div className="hero-wall" aria-hidden="true">
-        {DURATIONS.map((_, i) => (
-          <Column key={i} index={i} />
+        {COLUMNS.map((col, i) => (
+          <Column key={i} index={i} col={col} />
         ))}
       </div>
 
