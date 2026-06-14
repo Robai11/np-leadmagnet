@@ -1734,14 +1734,11 @@
   width: min(620px, 92vw);
   border-radius: 22px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: #0c222c; /* solide Navy-Fläche, kein Glas */
   border: 1px solid rgba(61, 192, 145, 0.45);
   box-shadow:
     0 26px 80px rgba(0, 0, 0, 0.6),
-    0 12px 44px rgba(61, 192, 145, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+    0 12px 44px rgba(61, 192, 145, 0.22);
   transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 .hero-entry:focus-within {
@@ -1749,8 +1746,7 @@
   box-shadow:
     0 26px 80px rgba(0, 0, 0, 0.6),
     0 0 0 4px rgba(61, 192, 145, 0.28),
-    0 12px 44px rgba(61, 192, 145, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+    0 12px 44px rgba(61, 192, 145, 0.32);
 }
 
 /* Kopfzeile der Karte — "Unsere KI …" sitzt direkt auf dem Feld */
