@@ -37,6 +37,15 @@ const UPLIFT_VALUES = [
   "+9 %", "+4 %", "+24 %", "+0,5 %", "+6 %", "+15 %", "+2,5 %", "+11 %",
   "+8 %", "+1 %", "+33 %", "+4,5 %",
 ];
+// Seiten, die im Funnel analysiert werden (Anzeige im Karten-Kopf).
+const ANALYZED_PAGES = [
+  "Startseite",
+  "Product Listing Page",
+  "Produktdetailseite",
+  "Warenkorb",
+  "Checkout",
+];
+
 const ALL_SHOTS = [...DESKTOP_SHOTS, ...MOBILE_SHOTS];
 const UPLIFT: Record<string, string> = Object.fromEntries(
   ALL_SHOTS.map((s, i) => [s, UPLIFT_VALUES[i % UPLIFT_VALUES.length]]),
@@ -121,10 +130,21 @@ export function Hero({ value, onChange, onSubmit, busy, status }: HeroProps) {
 
         <div className="hero-cta">
           <div className="hero-entry">
-            <p className="hero-eyebrow">
-              <Sparkles size={17} aria-hidden="true" />
-              Unsere KI ist auf 10 Jahren Agentur-Kundenprojekten trainiert
-            </p>
+            <div className="hero-entry-head">
+              <p className="hero-eyebrow">
+                <Sparkles size={17} aria-hidden="true" />
+                Unsere KI ist auf 10 Jahren Agentur-Kundenprojekten trainiert
+              </p>
+
+              <ul className="hero-scope">
+                {ANALYZED_PAGES.map((page) => (
+                  <li key={page}>
+                    <span className="hero-dot" aria-hidden="true" />
+                    {page}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             <form
               className="hero-form"

@@ -1749,14 +1749,21 @@
     0 12px 44px rgba(61, 192, 145, 0.32);
 }
 
-/* Kopfzeile der Karte — "Unsere KI …" sitzt direkt auf dem Feld */
+/* Kopf der Karte — KI-Satz + Liste der analysierten Seiten */
+.hero-entry-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
 .hero-eyebrow {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
   margin: 0;
-  padding: 13px 20px;
   color: #fff;
   font-family: var(--font-display);
   font-weight: 600;
@@ -1764,12 +1771,38 @@
   letter-spacing: 0.005em;
   text-align: center;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
-  background: transparent; /* zeigt das NP-Blau der Karte → einheitlich */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 .hero-eyebrow svg {
   color: var(--color-accent);
   flex: 0 0 auto;
+}
+/* Analysierte Seiten — kleine Items mit grünem Punkt davor */
+.hero-scope {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px 16px;
+}
+.hero-scope li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: rgba(255, 255, 255, 0.82);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 13.5px;
+  letter-spacing: -0.005em;
+}
+.hero-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex: 0 0 auto;
+  box-shadow: 0 0 8px rgba(61, 192, 145, 0.6);
 }
 
 /* Eingabe-Reihe — transparenter Body innerhalb der Karte */
