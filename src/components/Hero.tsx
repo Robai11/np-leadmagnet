@@ -121,7 +121,7 @@ export function Hero({ value, onChange, onSubmit, busy, status }: HeroProps) {
 
         <div className="hero-cta">
           <p className="hero-eyebrow">
-            <Sparkles size={14} aria-hidden="true" />
+            <Sparkles size={17} aria-hidden="true" />
             Unsere KI ist auf 10 Jahren Agentur-Kundenprojekten trainiert
           </p>
 

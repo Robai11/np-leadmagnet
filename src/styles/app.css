@@ -1709,11 +1709,13 @@
   margin: 0;
 }
 .hero-sub {
-  margin: 18px 0 0;
+  margin: 16px 0 0;
   color: var(--color-accent);
-  font-weight: 600;
-  font-size: clamp(16px, 1.7vw, 22px);
+  font-weight: 700;
+  font-size: clamp(20px, 2.2vw, 29px);
+  line-height: 1.3;
   letter-spacing: -0.01em;
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 /* CTA-Gruppe — Eyebrow + Feld, weiter oben platziert */
@@ -1729,17 +1731,19 @@
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin: 0;
-  padding: 6px 15px;
+  padding: 10px 20px;
   border-radius: 999px;
-  background: rgba(61, 192, 145, 0.14);
-  border: 1px solid rgba(61, 192, 145, 0.34);
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(61, 192, 145, 0.2);
+  border: 1px solid rgba(61, 192, 145, 0.5);
+  color: #fff;
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 13px;
+  font-size: clamp(15px, 1.3vw, 17px);
   letter-spacing: 0.005em;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -1836,7 +1840,7 @@
   .hero-logo { height: 38px; }
   .hero-headline-block { margin-top: 0; }
   .hero-cta { margin-top: 24px; }
-  .hero-eyebrow { font-size: 12px; text-align: center; }
+  .hero-eyebrow { font-size: 14px; text-align: center; }
 }
 
 /* Hero-Kacheln = echte Shop-Screenshots (oben zugeschnitten) */
