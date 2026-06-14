@@ -122,10 +122,7 @@ export function Hero({ value, onChange, onSubmit, busy, status }: HeroProps) {
             In wenigen Sekunden zu 10+ personalisierten Optimierungen für
             deinen Shop
           </h1>
-          <p className="hero-sub">
-            Keine Optimierungen von der Stange, sondern individuell auf deinen
-            Shop abgestimmt.
-          </p>
+          <p className="hero-sub">Keine Optimierungen von der Stange</p>
         </div>
 
         <div className="hero-cta">
@@ -153,6 +150,7 @@ export function Hero({ value, onChange, onSubmit, busy, status }: HeroProps) {
                 if (!busy) onSubmit();
               }}
             >
+              <span className="hero-form-label">KI-Analyse</span>
               <input
                 className="hero-input"
                 type="url"
