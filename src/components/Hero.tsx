@@ -20,10 +20,12 @@ const DESKTOP_SHOTS = [
   "/hero/leds24-pdp-d.jpg",
   "/hero/ringladen-home-d.jpg",
   "/hero/nikin-checkout-d.jpg",
-  "/hero/extra-1-d.jpg",
-  "/hero/extra-2-d.jpg",
-  "/hero/extra-3-d.jpg",
-  "/hero/extra-4-d.jpg",
+  "/hero/xd-1.jpg",
+  "/hero/xd-2.jpg",
+  "/hero/xd-3.jpg",
+  "/hero/xd-4.jpg",
+  "/hero/xd-5.jpg",
+  "/hero/xd-6.jpg",
 ];
 const MOBILE_SHOTS = [
   "/hero/brandible-home-m.jpg",
@@ -32,18 +34,34 @@ const MOBILE_SHOTS = [
   "/hero/wunderwunsch-pdp-m.jpg",
   "/hero/nikin-checkout-m.jpg",
   "/hero/leds24-checkout-m.jpg",
+  "/hero/xm-1.jpg",
+  "/hero/xm-2.jpg",
+  "/hero/xm-3.jpg",
 ];
 
-// Ruhige, cleane Wand: NUR 3 Spalten, jedes Bild GENAU EINMAL (keine Dubletten).
-// Schmale Mobile-Spalte · breite Desktop-Spalte (mittig) · schmale Mobile-Spalte.
-// Jede Spalte hat genug unterschiedliche Bilder, dass im Sichtfenster nie eins
-// doppelt erscheint; die Verdopplung dient nur der nahtlosen Endlos-Schleife.
+// Dekoratives Uplift-Label pro Screenshot (illustrativ, keine echten Messwerte
+// einzelner Shops). Pro Bild fix zugeordnet → beide Schleifen-Kopien zeigen
+// denselben Wert; genug Werte für alle 20 Bilder (jeder Wert einmal).
+const UPLIFT_VALUES = [
+  "+3 %", "+0,8 %", "+5 %", "+12 %", "+2 %", "+18 %", "+1,5 %", "+7 %",
+  "+9 %", "+4 %", "+24 %", "+0,5 %", "+6 %", "+15 %", "+2,5 %", "+11 %",
+  "+8 %", "+1 %", "+33 %", "+4,5 %",
+];
+const ALL_SHOTS = [...DESKTOP_SHOTS, ...MOBILE_SHOTS];
+const UPLIFT: Record<string, string> = Object.fromEntries(
+  ALL_SHOTS.map((s, i) => [s, UPLIFT_VALUES[i % UPLIFT_VALUES.length]]),
+);
+
+// Dichte, randlose Wand: 5 Spalten im Wechsel schmal(Mobile)/breit(Desktop).
+// Jede Spalte eine DISTINKTE Bildmenge → jedes Bild GENAU EINMAL (keine
+// Dubletten); die Verdopplung dient nur der nahtlosen Endlos-Schleife.
 type Col = { kind: "d" | "m"; dur: number; imgs: string[] };
 const COLUMNS: Col[] = [
-  { kind: "d", dur: 168, imgs: DESKTOP_SHOTS.slice(0, 5) },
   { kind: "m", dur: 142, imgs: MOBILE_SHOTS.slice(0, 3) },
-  { kind: "d", dur: 178, imgs: DESKTOP_SHOTS.slice(5, 9) },
-  { kind: "m", dur: 152, imgs: MOBILE_SHOTS.slice(3, 6) },
+  { kind: "d", dur: 170, imgs: DESKTOP_SHOTS.slice(0, 6) },
+  { kind: "m", dur: 130, imgs: MOBILE_SHOTS.slice(3, 6) },
+  { kind: "d", dur: 182, imgs: DESKTOP_SHOTS.slice(6, 11) },
+  { kind: "m", dur: 152, imgs: MOBILE_SHOTS.slice(6, 9) },
 ];
 
 function Column({ index, col }: { index: number; col: Col }) {
@@ -61,6 +79,7 @@ function Column({ index, col }: { index: number; col: Col }) {
         {seq.map((src, i) => (
           <div className={`hero-tile hero-tile--${col.kind}`} key={i}>
             <img src={src} alt="" loading="lazy" draggable={false} />
+            <span className="hero-uplift">{UPLIFT[src]}</span>
           </div>
         ))}
       </div>

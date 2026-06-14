@@ -1634,8 +1634,8 @@
   flex: 0 0 auto;
   overflow: hidden;
 }
-.hero-col--m { width: 240px; } /* Mobile = schmal (Hochformat) */
-.hero-col--d { width: 520px; } /* Desktop = breit (Querformat) */
+.hero-col--m { width: 232px; } /* Mobile = schmal (Hochformat) */
+.hero-col--d { width: 500px; } /* Desktop = breit (Querformat) */
 .hero-col-stack {
   display: flex;
   flex-direction: column;
@@ -1796,10 +1796,28 @@
 
 /* Hero-Kacheln = echte Shop-Screenshots (oben zugeschnitten) */
 .hero-tile {
+  position: relative;
   border-radius: 8px;
   overflow: hidden;
   background: #fff;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+}
+/* Dekoratives Uplift-Label je Screenshot (illustrativ) */
+.hero-uplift {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-ink);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 .hero-tile img {
   display: block;
