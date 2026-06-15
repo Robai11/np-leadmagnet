@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   ArrowRight,
   ArrowLeft,
@@ -9,25 +9,50 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  Lightbulb,
 } from "lucide-react";
 import { INDUSTRIES, CHANNELS } from "@/lib/mock-data";
 import { Hero } from "@/components/Hero";
+import { HeroWall } from "@/components/HeroWall";
+import { Wireframe } from "@/components/Wireframes";
 import type { AnalysisContext, PageType } from "@/lib/types";
 
 const PAGE_ORDER: PageType[] = ["home", "plp", "pdp", "cart", "checkout"];
-const PAGE_LABELS: Record<PageType, string> = {
-  home: "Startseite",
-  plp: "Produktlisting-Page",
-  pdp: "Produktseite",
-  cart: "Warenkorb",
-  checkout: "Checkout",
-};
-const PAGE_PLACEHOLDERS: Record<PageType, string> = {
-  home: "https://dein-shop.de",
-  plp: "https://dein-shop.de/kategorie/…",
-  pdp: "https://dein-shop.de/produkt/…",
-  cart: "leer lassen — automatisch über Produktseite erreichbar",
-  checkout: "leer lassen — automatisch über Produktseite erreichbar",
+
+// Geführte Schritte NACH der Landingpage (Step 1). Insgesamt also 6 Schritte.
+type FunnelStep = "home" | "plp" | "pdp" | "cartcheckout" | "context";
+const FUNNEL_STEPS: FunnelStep[] = [
+  "home",
+  "plp",
+  "pdp",
+  "cartcheckout",
+  "context",
+];
+const TOTAL_STEPS = 1 + FUNNEL_STEPS.length; // Landing + 5
+
+// URL-Schritte: Label, Funnel-Position, Platzhalter und Hinweistext.
+const PAGE_STEP: Record<
+  "home" | "plp" | "pdp",
+  { label: string; kicker: string; placeholder: string; hint: string }
+> = {
+  home: {
+    label: "Startseite",
+    kicker: "Seite 1 von 5",
+    placeholder: "https://dein-shop.de",
+    hint: "Erster Eindruck, Wertversprechen, Navigation und Vertrauen — hier entscheidet sich, ob Besucher überhaupt bleiben.",
+  },
+  plp: {
+    label: "Product Listing Page",
+    kicker: "Seite 2 von 5",
+    placeholder: "https://dein-shop.de/kategorie/…",
+    hint: "Sortierung, Filter und Produktkacheln — hier finden Nutzer das passende Produkt. Oder eben nicht.",
+  },
+  pdp: {
+    label: "Produktdetailseite",
+    kicker: "Seite 3 von 5",
+    placeholder: "https://dein-shop.de/produkt/…",
+    hint: "Produktbilder, Preis, Call-to-Action und Trust-Elemente — die wichtigste Conversion-Seite im Funnel.",
+  },
 };
 
 type DiscoverResult = {
@@ -47,24 +72,27 @@ export function InputStage({
 }: {
   onStart: (ctx: AnalysisContext) => void;
 }) {
-  // ── Shared state ────────────────────────────────────────────────────
-  const [step, setStep] = useState<1 | 2>(1);
+  // ── Flow ────────────────────────────────────────────────────────────
+  const [step, setStep] = useState(1); // 1 = Landing, 2..6 = geführte Schritte
   const [industry, setIndustry] = useState("");
   const [device, setDevice] = useState(60);
   const [channels, setChannels] = useState<string[]>([]);
 
-  // ── Step 1 state ─────────────────────────────────────────────────────
+  // ── Step 1 / Discovery ──────────────────────────────────────────────
   const [shopUrl, setShopUrl] = useState("");
   const [discovering, setDiscovering] = useState(false);
   const [discoverResult, setDiscoverResult] = useState<DiscoverResult | null>(
     null,
   );
-  const [busy, setBusy] = useState(false); // submit pending (waiting on discovery)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  // Handle to an in-flight discovery so a submit can await it (no effect needed).
-  const discoverPromiseRef = useRef<Promise<DiscoverResult | null> | null>(null);
+  const [busy, setBusy] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const discoverPromiseRef = useRef<Promise<DiscoverResult | null> | null>(
+    null,
+  );
 
-  // ── Step 2 state ─────────────────────────────────────────────────────
+  // ── URLs der Seitentypen ────────────────────────────────────────────
   const [pageUrls, setPageUrls] = useState<Record<PageType, string>>({
     home: "",
     plp: "",
@@ -72,15 +100,8 @@ export function InputStage({
     cart: "",
     checkout: "",
   });
-  const [pageSelected, setPageSelected] = useState<Record<PageType, boolean>>({
-    home: true,
-    plp: true,
-    pdp: true,
-    cart: true,
-    checkout: true,
-  });
 
-  // ── Auto-discovery (returns the result so a submit can await it) ─────
+  // ── Auto-Discovery ──────────────────────────────────────────────────
   const runDiscover = async (raw: string): Promise<DiscoverResult | null> => {
     if (!looksLikeUrl(raw)) return null;
     setDiscovering(true);
@@ -114,7 +135,7 @@ export function InputStage({
     }
   };
 
-  const proceedToStep2 = (r: DiscoverResult | null) => {
+  const applyDiscovery = (r: DiscoverResult | null) => {
     const homeUrl =
       r?.home ??
       (shopUrl.trim().startsWith("http")
@@ -127,26 +148,17 @@ export function InputStage({
       cart: "",
       checkout: "",
     });
-    setPageSelected({
-      home: true,
-      plp: Boolean(r?.plp),
-      pdp: Boolean(r?.pdp),
-      cart: Boolean(r?.pdp),
-      checkout: Boolean(r?.pdp),
-    });
-    setStep(2);
   };
 
-  // Submit from the hero: ensure discovery for the current URL has resolved
-  // (awaiting an in-flight run or starting a fresh one), then advance.
-  const goToStep2 = async () => {
+  // Landing → erster geführter Schritt (Discovery abwarten / anstoßen).
+  const startFunnel = async () => {
     if (!looksLikeUrl(shopUrl) || busy) return;
     let r = discoverResult;
     if (!r) {
       setBusy(true);
       let p: Promise<DiscoverResult | null>;
       if (discovering && discoverPromiseRef.current) {
-        p = discoverPromiseRef.current; // await the run already in flight
+        p = discoverPromiseRef.current;
       } else {
         clearTimeout(debounceRef.current);
         p = runDiscover(shopUrl);
@@ -155,22 +167,12 @@ export function InputStage({
       r = await p;
       setBusy(false);
     }
-    proceedToStep2(r);
+    applyDiscovery(r);
+    setStep(2);
   };
 
-  // ── Step 2 validation ───────────────────────────────────────────────
-  const pdpReady = pageSelected.pdp && pageUrls.pdp.trim().length > 3;
-  const pageRowOk = (t: PageType): boolean => {
-    if (!pageSelected[t]) return true;
-    if (t === "cart" || t === "checkout") return pdpReady;
-    return pageUrls[t].trim().length > 3;
-  };
-  const anySelected = PAGE_ORDER.some((t) => pageSelected[t]);
-  const step2Valid =
-    anySelected &&
-    PAGE_ORDER.every(pageRowOk) &&
-    !!industry &&
-    channels.length > 0;
+  const goBack = () => setStep((s) => Math.max(1, s - 1));
+  const goNext = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
 
   const submit = () => {
     onStart({
@@ -181,7 +183,7 @@ export function InputStage({
       targets: PAGE_ORDER.map((t) => ({
         type: t,
         url: pageUrls[t].trim(),
-        selected: pageSelected[t],
+        selected: true,
       })),
     });
   };
@@ -189,171 +191,279 @@ export function InputStage({
   const toggleChannel = (c: string) =>
     setChannels((p) => (p.includes(c) ? p.filter((x) => x !== c) : [...p, c]));
 
-  // ── Step 1 — cinematic Hero (nur URL + Analysieren) ──────────────────
-  if (step === 1) {
-    const heroStatus = discovering ? (
-      <>
-        <Loader2 size={14} className="spin" /> Seiten werden erkannt …
-      </>
-    ) : discoverResult?.error ? (
-      <span className="err">
-        <AlertCircle size={13} /> Seiten nicht automatisch erkannt — im nächsten
-        Schritt eintragbar
-      </span>
-    ) : discoverResult ? (
-      <span className="ok">
-        <CheckCircle2 size={13} />{" "}
-        {[
-          discoverResult.home && "Startseite",
-          discoverResult.plp && "Kategorie",
-          discoverResult.pdp && "Produkt",
-        ]
-          .filter(Boolean)
-          .join(", ")}{" "}
-        erkannt
-      </span>
-    ) : null;
+  // Fokussiert das URL-Feld beim Schritt-Wechsel OHNE den (durch die große Wand)
+  // scrollbaren Hero-Container zu verschieben — sonst rutscht die Top-Bar raus.
+  const focusNoScroll = useCallback((el: HTMLInputElement | null) => {
+    if (el) el.focus({ preventScroll: true });
+  }, []);
 
-    return (
-      <Hero
-        value={shopUrl}
-        onChange={onUrlChange}
-        onSubmit={goToStep2}
-        busy={busy}
-        status={heroStatus}
-      />
+  // ── Step 1 — cinematic Hero ─────────────────────────────────────────
+  const heroStatus = discovering ? (
+    <>
+      <Loader2 size={14} className="spin" /> Seiten werden erkannt …
+    </>
+  ) : discoverResult?.error ? (
+    <span className="err">
+      <AlertCircle size={13} /> Seiten nicht automatisch erkannt — im nächsten
+      Schritt eintragbar
+    </span>
+  ) : discoverResult ? (
+    <span className="ok">
+      <CheckCircle2 size={13} />{" "}
+      {[
+        discoverResult.home && "Startseite",
+        discoverResult.plp && "Kategorie",
+        discoverResult.pdp && "Produkt",
+      ]
+        .filter(Boolean)
+        .join(", ")}{" "}
+      erkannt
+    </span>
+  ) : null;
+
+  // ── Inhalt der geführten Schritte (2..6) ────────────────────────────
+  const funnel = FUNNEL_STEPS[step - 2]; // undefined bei step === 1
+
+  const renderUrlStep = (type: "home" | "plp" | "pdp") => {
+    const meta = PAGE_STEP[type];
+    const valid = pageUrls[type].trim().length > 3;
+    const detected = Boolean(
+      type === "home" ? discoverResult?.home : discoverResult?.[type],
     );
-  }
+    return (
+      <div className="fstep-body">
+        <div className="fstep-main">
+          <span className="fstep-kicker">{meta.kicker}</span>
+          <h2 className="fstep-title">{meta.label}</h2>
+          <p className="fstep-hint">{meta.hint}</p>
 
-  // ── Step 2 — Kontext + Seiten bestätigen ─────────────────────────────
-  return (
-    <div className="stage step2-stage">
-      <div className="step2-head">
-        <button className="step2-back" onClick={() => setStep(1)}>
-          <ArrowLeft size={15} /> Zurück
-        </button>
-        <span className="step2-progress">Schritt 2 · Kontext &amp; Seiten</span>
-      </div>
+          <div className="fstep-field">
+            <label>
+              URL prüfen oder korrigieren
+              {detected && (
+                <span className="fstep-detected">
+                  <CheckCircle2 size={12} /> automatisch erkannt
+                </span>
+              )}
+            </label>
+            <input
+              type="url"
+              inputMode="url"
+              placeholder={meta.placeholder}
+              value={pageUrls[type]}
+              onChange={(e) =>
+                setPageUrls((p) => ({ ...p, [type]: e.target.value }))
+              }
+              ref={focusNoScroll}
+            />
+            {!valid && (
+              <p className="fstep-warn">
+                <AlertCircle size={13} /> Bitte trage die URL dieser Seite ein.
+              </p>
+            )}
+          </div>
 
-      {/* Kontext */}
-      <h2 className="step2-title">Kontext deiner Analyse</h2>
-      <p className="step2-sub">
-        Branche, Traffic-Verteilung und Kanäle präzisieren die Empfehlungen.
-      </p>
-
-      <div className="field">
-        <label>
-          Branche <em>· präzisiert die Analyse</em>
-        </label>
-        <div className="chips">
-          {INDUSTRIES.map((i) => (
-            <button
-              key={i}
-              className={`chip ${industry === i ? "on" : ""}`}
-              onClick={() => setIndustry(i)}
-            >
-              {i}
+          <div className="fstep-actions">
+            <button className="cta" disabled={!valid} onClick={goNext}>
+              Weiter <ArrowRight size={18} />
             </button>
-          ))}
+          </div>
+        </div>
+
+        <div className="fstep-aside">
+          <Wireframe type={type} />
         </div>
       </div>
+    );
+  };
 
-      <div className="field">
-        <label>Traffic-Verteilung</label>
-        <div className="device">
-          <Smartphone size={16} />
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={100 - device}
-            onChange={(e) => setDevice(100 - Number(e.target.value))}
-          />
-          <Monitor size={16} />
-        </div>
-        <div className="device-lbl">
-          <span>{device}% Mobile</span>
-          <span>{100 - device}% Desktop</span>
-        </div>
-      </div>
-
-      <div className="field">
-        <label>
-          Wichtigste Traffic-Kanäle <em>· Mehrfachauswahl</em>
-        </label>
-        <div className="chips">
-          {CHANNELS.map((c) => (
-            <button
-              key={c}
-              className={`chip ${channels.includes(c) ? "on" : ""}`}
-              onClick={() => toggleChannel(c)}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Seiten bestätigen */}
-      <h2 className="step2-title" style={{ marginTop: 32 }}>
-        Stimmen diese URLs?
-      </h2>
-      <p className="step2-sub">
-        {discoverResult && !discoverResult.error
-          ? "Wir haben die Seiten deines Shops automatisch erkannt. Überprüf die URLs und korrigiere sie bei Bedarf."
-          : "Die Seiten konnten nicht automatisch erkannt werden. Trage die URLs deines Shops manuell ein."}
-      </p>
-
-      <div className="step2-rows">
-        {PAGE_ORDER.map((t) => {
-          const isStateful = t === "cart" || t === "checkout";
-          return (
-            <div
-              key={t}
-              className={`step2-row ${pageSelected[t] ? "on" : "off"}`}
-            >
-              <label className="step2-check">
-                <input
-                  type="checkbox"
-                  checked={pageSelected[t]}
-                  onChange={() =>
-                    setPageSelected((p) => ({ ...p, [t]: !p[t] }))
-                  }
-                />
-                <span className="step2-label">{PAGE_LABELS[t]}</span>
-                {isStateful && pageSelected[t] && (
-                  <span className="step2-badge">automatisch über Produkt</span>
-                )}
-              </label>
-              <input
-                className={`step2-url ${!pageSelected[t] ? "disabled" : ""} ${isStateful ? "muted" : ""}`}
-                type="url"
-                placeholder={PAGE_PLACEHOLDERS[t]}
-                value={pageUrls[t]}
-                disabled={!pageSelected[t]}
-                onChange={(e) =>
-                  setPageUrls((p) => ({ ...p, [t]: e.target.value }))
-                }
-              />
-            </div>
-          );
-        })}
-      </div>
-
-      {!step2Valid && anySelected && (
-        <p className="hint" style={{ marginTop: 4 }}>
-          {!industry || channels.length === 0
-            ? "Bitte Branche und mindestens einen Kanal wählen."
-            : !pdpReady && (pageSelected.cart || pageSelected.checkout)
-              ? "Warenkorb und Checkout benötigen eine Produktseiten-URL."
-              : "Bitte trage für alle ausgewählten Seiten eine URL ein."}
+  const renderCartCheckout = () => (
+    <div className="fstep-body">
+      <div className="fstep-main">
+        <span className="fstep-kicker">Seite 4 &amp; 5 von 5</span>
+        <h2 className="fstep-title">Warenkorb &amp; Checkout</h2>
+        <p className="fstep-hint">
+          Warenkorb-Transparenz und Checkout-Reibung — hier passieren die
+          meisten Abbrüche. Genau diese beiden Schritte schaut sich die Analyse
+          besonders genau an.
         </p>
-      )}
+        <p className="fstep-auto">
+          <CheckCircle2 size={15} /> Kein Link nötig: Die KI legt ein Produkt in
+          den Warenkorb und durchläuft den Checkout automatisch über deine
+          Produktseite.
+        </p>
+        <div className="fstep-actions">
+          <button className="cta" onClick={goNext}>
+            Weiter <ArrowRight size={18} />
+          </button>
+        </div>
+      </div>
 
-      <div className="step2-actions">
-        <button className="cta" disabled={!step2Valid} onClick={submit}>
-          Funnel-Analyse starten <ArrowRight size={18} />
-        </button>
+      <div className="fstep-aside fstep-aside--duo">
+        <Wireframe type="cart" />
+        <Wireframe type="checkout" />
+      </div>
+    </div>
+  );
+
+  const renderContext = () => {
+    const valid = !!industry && channels.length > 0;
+    return (
+      <div className="fstep-body">
+        <div className="fstep-main fstep-main--wide">
+          <span className="fstep-kicker">Letzter Schritt</span>
+          <h2 className="fstep-title">Kontext deiner Analyse</h2>
+          <p className="fstep-hint">
+            Branche, Traffic-Verteilung und Kanäle schärfen die Empfehlungen für
+            deinen Shop.
+          </p>
+
+          <div className="field">
+            <label>
+              Branche <em>· präzisiert die Analyse</em>
+            </label>
+            <div className="chips">
+              {INDUSTRIES.map((i) => (
+                <button
+                  key={i}
+                  className={`chip ${industry === i ? "on" : ""}`}
+                  onClick={() => setIndustry(i)}
+                >
+                  {i}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="field">
+            <label>Traffic-Verteilung</label>
+            <div className="device">
+              <Smartphone size={16} />
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={100 - device}
+                onChange={(e) => setDevice(100 - Number(e.target.value))}
+              />
+              <Monitor size={16} />
+            </div>
+            <div className="device-lbl">
+              <span>{device}% Mobile</span>
+              <span>{100 - device}% Desktop</span>
+            </div>
+          </div>
+
+          <div className="field">
+            <label>
+              Wichtigste Traffic-Kanäle <em>· Mehrfachauswahl</em>
+            </label>
+            <div className="chips">
+              {CHANNELS.map((c) => (
+                <button
+                  key={c}
+                  className={`chip ${channels.includes(c) ? "on" : ""}`}
+                  onClick={() => toggleChannel(c)}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {!valid && (
+            <p className="fstep-warn">
+              <AlertCircle size={13} /> Bitte Branche und mindestens einen Kanal
+              wählen.
+            </p>
+          )}
+
+          <div className="fstep-actions">
+            <button className="cta" disabled={!valid} onClick={submit}>
+              Funnel-Analyse starten <ArrowRight size={18} />
+            </button>
+          </div>
+        </div>
+
+        <div className="fstep-aside">
+          <div className="fstep-recap">
+            <h3>
+              <Lightbulb size={15} /> Das wird analysiert
+            </h3>
+            <ul>
+              <li>
+                <span className="recap-row">
+                  <span className="hero-dot" /> Startseite
+                </span>
+                <em>{pageUrls.home || "—"}</em>
+              </li>
+              <li>
+                <span className="recap-row">
+                  <span className="hero-dot" /> Product Listing Page
+                </span>
+                <em>{pageUrls.plp || "—"}</em>
+              </li>
+              <li>
+                <span className="recap-row">
+                  <span className="hero-dot" /> Produktdetailseite
+                </span>
+                <em>{pageUrls.pdp || "—"}</em>
+              </li>
+              <li>
+                <span className="recap-row">
+                  <span className="hero-dot" /> Warenkorb
+                </span>
+                <em>automatisch</em>
+              </li>
+              <li>
+                <span className="recap-row">
+                  <span className="hero-dot" /> Checkout
+                </span>
+                <em>automatisch</em>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className={`hero ${step > 1 ? "hero--deep" : ""}`}>
+      {/* Persistente Screenshot-Wand (ab Schritt 2 abgedunkelt + unscharf) */}
+      <HeroWall />
+      <div className="hero-scrim hero-scrim--radial" aria-hidden="true" />
+      <div className="hero-scrim hero-scrim--vert" aria-hidden="true" />
+      <div className="hero-deep-veil" aria-hidden="true" />
+
+      <div className="flow-screens">
+        {step === 1 ? (
+          <Hero
+            key="hero"
+            value={shopUrl}
+            onChange={onUrlChange}
+            onSubmit={startFunnel}
+            busy={busy}
+            status={heroStatus}
+          />
+        ) : (
+          <div className="fstep" key={step}>
+            <div className="fstep-bar">
+              <button className="fstep-back" onClick={goBack}>
+                <ArrowLeft size={16} /> Zurück
+              </button>
+              <span className="fstep-progress">
+                Schritt {step} von {TOTAL_STEPS}
+              </span>
+            </div>
+
+            {funnel === "cartcheckout"
+              ? renderCartCheckout()
+              : funnel === "context"
+                ? renderContext()
+                : renderUrlStep(funnel as "home" | "plp" | "pdp")}
+          </div>
+        )}
       </div>
     </div>
   );
