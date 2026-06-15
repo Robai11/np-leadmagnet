@@ -51,14 +51,22 @@ const UPLIFT: Record<string, string> = Object.fromEntries(
   ALL_SHOTS.map((s, i) => [s, UPLIFT_VALUES[i % UPLIFT_VALUES.length]]),
 );
 
-// Dichte, randlose Wand: 5 Spalten im Wechsel schmal(Mobile)/breit(Desktop).
-// Jede Spalte eine DISTINKTE Bildmenge → jedes Bild GENAU EINMAL (keine
-// Dubletten); die Verdopplung dient nur der nahtlosen Endlos-Schleife.
+// Randlose Wand über die VOLLE Bildschirmbreite: 6 Spalten im Wechsel
+// breit(Desktop)/schmal(Mobile). Mit nur 9 Bildern wiederholen sich Screenshots
+// über die Wand verteilt — aber: jede Spalte hat 3 DISTINKTE Bilder (kein Repeat
+// innerhalb einer Spalte) und keine zwei gleichen stehen nebeneinander. Die
+// unterschiedlichen Dauern desynchronisieren den Drift, die Verdopplung dient
+// nur der nahtlosen Endlos-Schleife.
+const D = DESKTOP_SHOTS;
+const M = MOBILE_SHOTS;
 type Col = { kind: "d" | "m"; dur: number; imgs: string[] };
 const COLUMNS: Col[] = [
-  { kind: "d", dur: 172, imgs: DESKTOP_SHOTS.slice(0, 3) },
-  { kind: "m", dur: 146, imgs: MOBILE_SHOTS },
-  { kind: "d", dur: 184, imgs: DESKTOP_SHOTS.slice(3, 6) },
+  { kind: "d", dur: 176, imgs: [D[0], D[1], D[2]] },
+  { kind: "m", dur: 150, imgs: [M[0], M[1], M[2]] },
+  { kind: "d", dur: 200, imgs: [D[3], D[4], D[5]] },
+  { kind: "m", dur: 162, imgs: [M[1], M[2], M[0]] },
+  { kind: "d", dur: 188, imgs: [D[1], D[5], D[0]] },
+  { kind: "m", dur: 156, imgs: [M[2], M[0], M[1]] },
 ];
 
 function Column({ index, col }: { index: number; col: Col }) {
