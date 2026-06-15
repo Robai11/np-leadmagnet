@@ -1934,11 +1934,47 @@
 
 /* Wand zieht sich ab Schritt 2 abgedunkelt + unscharf in die Tiefe ("rein") */
 .hero-wall {
-  transition: transform 800ms cubic-bezier(0.22, 1, 0.36, 1), filter 800ms ease;
+  transition: transform 900ms cubic-bezier(0.65, 0, 0.2, 1), filter 800ms ease;
 }
 .hero--deep .hero-wall {
-  transform: rotate(-8deg) scale(1.22);
+  transform: rotate(-8deg) scale(1.28);
   filter: blur(13px) brightness(0.42) saturate(0.9);
+}
+/* Die zwei Hälften öffnen sich beim Eintauchen EINMALIG mittig (Vorhang/Luke)
+   und schließen sich hinter dem Inhalt wieder zur unscharfen Hintergrund-Wand. */
+.hero-wall-half {
+  display: flex;
+  gap: 22px;
+  flex: 0 0 auto;
+  will-change: transform;
+}
+.hero--deep .hero-wall-half--left {
+  animation: hero-part-left 1000ms cubic-bezier(0.5, 0, 0.2, 1) both;
+}
+.hero--deep .hero-wall-half--right {
+  animation: hero-part-right 1000ms cubic-bezier(0.5, 0, 0.2, 1) both;
+}
+@keyframes hero-part-left {
+  0% {
+    transform: translateX(0);
+  }
+  45% {
+    transform: translateX(-46%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+@keyframes hero-part-right {
+  0% {
+    transform: translateX(0);
+  }
+  45% {
+    transform: translateX(46%);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 /* Zusätzlicher dunkler Schleier ab Schritt 2 (Lesbarkeit + Tiefe) */
 .hero-deep-veil {
@@ -1972,13 +2008,17 @@
   display: flex;
   flex-direction: column;
   font-family: var(--font-display);
-  animation: fstep-in 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fstep-in 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+/* Taucht aus der Tiefe durch die geöffnete Wand nach vorne */
 @keyframes fstep-in {
   from {
     opacity: 0;
-    transform: scale(0.94) translateY(26px);
-    filter: blur(8px);
+    transform: scale(0.86) translateY(54px);
+    filter: blur(12px);
+  }
+  60% {
+    opacity: 1;
   }
   to {
     opacity: 1;
@@ -2073,21 +2113,96 @@
 .fstep-field {
   margin-bottom: 22px;
 }
-.fstep-field > label {
+/* Prominenter "URL prüfen"-Aufruf */
+.fstep-check-label {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 8px;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+.fstep-check-label svg {
+  color: var(--color-accent);
+  flex: 0 0 auto;
 }
 .fstep-detected {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--color-accent);
+  font-size: 12px;
   font-weight: 600;
+  color: var(--color-accent);
+}
+/* Beispiel-Hinweis (PLP/PDP) */
+.fstep-example {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: rgba(224, 146, 42, 0.13);
+  border: 1px solid rgba(224, 146, 42, 0.32);
+  color: rgba(255, 255, 255, 0.82);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.fstep-example svg {
+  color: var(--color-impact-mid);
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+/* Bestätigungs-Häkchen "URL geprüft" */
+.fstep-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  user-select: none;
+}
+.fstep-confirm input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.fstep-confirm-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: 1.5px solid rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.06);
+  color: transparent;
+  transition: all 150ms ease;
+}
+.fstep-confirm-box svg {
+  transform: scale(0.6);
+  transition: transform 150ms ease;
+}
+.fstep-confirm.on {
+  color: #fff;
+}
+.fstep-confirm.on .fstep-confirm-box {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-ink);
+}
+.fstep-confirm.on .fstep-confirm-box svg {
+  transform: scale(1);
 }
 .fstep-field input {
   width: 100%;

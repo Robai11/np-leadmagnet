@@ -10,6 +10,9 @@ import {
   CheckCircle2,
   AlertCircle,
   Lightbulb,
+  Search,
+  Check,
+  Info,
 } from "lucide-react";
 import { INDUSTRIES, CHANNELS } from "@/lib/mock-data";
 import { Hero } from "@/components/Hero";
@@ -30,10 +33,17 @@ const FUNNEL_STEPS: FunnelStep[] = [
 ];
 const TOTAL_STEPS = 1 + FUNNEL_STEPS.length; // Landing + 5
 
-// URL-Schritte: Label, Funnel-Position, Platzhalter und Hinweistext.
+// URL-Schritte: Label, Funnel-Position, Platzhalter, Hinweis und (für PLP/PDP)
+// ein Beispiel-Hinweis, damit klar ist, dass EINE repräsentative Seite genügt.
 const PAGE_STEP: Record<
   "home" | "plp" | "pdp",
-  { label: string; kicker: string; placeholder: string; hint: string }
+  {
+    label: string;
+    kicker: string;
+    placeholder: string;
+    hint: string;
+    example?: string;
+  }
 > = {
   home: {
     label: "Startseite",
@@ -46,12 +56,16 @@ const PAGE_STEP: Record<
     kicker: "Seite 2 von 5",
     placeholder: "https://dein-shop.de/kategorie/…",
     hint: "Sortierung, Filter und Produktkacheln — hier finden Nutzer das passende Produkt. Oder eben nicht.",
+    example:
+      "Nur ein Beispiel: Eine repräsentative Kategorieseite genügt — du musst nicht alle eintragen.",
   },
   pdp: {
     label: "Produktdetailseite",
     kicker: "Seite 3 von 5",
     placeholder: "https://dein-shop.de/produkt/…",
     hint: "Produktbilder, Preis, Call-to-Action und Trust-Elemente — die wichtigste Conversion-Seite im Funnel.",
+    example:
+      "Nur ein Beispiel: Eine repräsentative Produktseite genügt — du musst nicht alle eintragen.",
   },
 };
 
@@ -99,6 +113,12 @@ export function InputStage({
     pdp: "",
     cart: "",
     checkout: "",
+  });
+  // Bestätigung "URL geprüft" je Seitentyp (gate für Weiter).
+  const [checkedPages, setCheckedPages] = useState<Record<string, boolean>>({
+    home: false,
+    plp: false,
+    pdp: false,
   });
 
   // ── Auto-Discovery ──────────────────────────────────────────────────
@@ -226,7 +246,8 @@ export function InputStage({
 
   const renderUrlStep = (type: "home" | "plp" | "pdp") => {
     const meta = PAGE_STEP[type];
-    const valid = pageUrls[type].trim().length > 3;
+    const urlValid = pageUrls[type].trim().length > 3;
+    const confirmed = checkedPages[type];
     const detected = Boolean(
       type === "home" ? discoverResult?.home : discoverResult?.[type],
     );
@@ -238,33 +259,62 @@ export function InputStage({
           <p className="fstep-hint">{meta.hint}</p>
 
           <div className="fstep-field">
-            <label>
-              URL prüfen oder korrigieren
+            <p className="fstep-check-label">
+              <Search size={17} aria-hidden="true" /> URL prüfen oder
+              korrigieren
               {detected && (
                 <span className="fstep-detected">
                   <CheckCircle2 size={12} /> automatisch erkannt
                 </span>
               )}
-            </label>
+            </p>
+
+            {meta.example && (
+              <p className="fstep-example">
+                <Info size={14} aria-hidden="true" /> {meta.example}
+              </p>
+            )}
+
             <input
               type="url"
               inputMode="url"
               placeholder={meta.placeholder}
               value={pageUrls[type]}
-              onChange={(e) =>
-                setPageUrls((p) => ({ ...p, [type]: e.target.value }))
-              }
+              onChange={(e) => {
+                const v = e.target.value;
+                setPageUrls((p) => ({ ...p, [type]: v }));
+                setCheckedPages((p) => ({ ...p, [type]: false }));
+              }}
               ref={focusNoScroll}
             />
-            {!valid && (
+            {!urlValid && (
               <p className="fstep-warn">
                 <AlertCircle size={13} /> Bitte trage die URL dieser Seite ein.
               </p>
             )}
+
+            <label className={`fstep-confirm ${confirmed ? "on" : ""}`}>
+              <input
+                type="checkbox"
+                checked={confirmed}
+                disabled={!urlValid}
+                onChange={() =>
+                  setCheckedPages((p) => ({ ...p, [type]: !p[type] }))
+                }
+              />
+              <span className="fstep-confirm-box" aria-hidden="true">
+                <Check size={13} />
+              </span>
+              Ich habe die URL geprüft
+            </label>
           </div>
 
           <div className="fstep-actions">
-            <button className="cta" disabled={!valid} onClick={goNext}>
+            <button
+              className="cta"
+              disabled={!urlValid || !confirmed}
+              onClick={goNext}
+            >
               Weiter <ArrowRight size={18} />
             </button>
           </div>

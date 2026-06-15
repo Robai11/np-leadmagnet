@@ -66,11 +66,20 @@ function Column({ index, col }: { index: number; col: Col }) {
 }
 
 export function HeroWall() {
+  // Zwei Hälften (3 + 3 Spalten), damit sich die Wand beim Übergang in den
+  // Wizard mittig öffnen kann (.hero--deep schiebt die Hälften auseinander).
   return (
     <div className="hero-wall" aria-hidden="true">
-      {COLUMNS.map((col, i) => (
-        <Column key={i} index={i} col={col} />
-      ))}
+      <div className="hero-wall-half hero-wall-half--left">
+        {COLUMNS.slice(0, 3).map((col, i) => (
+          <Column key={i} index={i} col={col} />
+        ))}
+      </div>
+      <div className="hero-wall-half hero-wall-half--right">
+        {COLUMNS.slice(3, 6).map((col, i) => (
+          <Column key={i} index={i + 3} col={col} />
+        ))}
+      </div>
     </div>
   );
 }
