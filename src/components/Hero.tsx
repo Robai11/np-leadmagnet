@@ -25,11 +25,20 @@ export interface HeroProps {
   busy?: boolean;
   /** Optionale, dezente Status-Zeile unter der Pill (z.B. Seiten-Erkennung). */
   status?: React.ReactNode;
+  /** Übergang aktiv → Inhalt taucht in die geöffnete Wand-Mitte ab. */
+  leaving?: boolean;
 }
 
-export function Hero({ value, onChange, onSubmit, busy, status }: HeroProps) {
+export function Hero({
+  value,
+  onChange,
+  onSubmit,
+  busy,
+  status,
+  leaving,
+}: HeroProps) {
   return (
-    <div className="hero-content">
+    <div className={`hero-content ${leaving ? "is-leaving" : ""}`}>
       <div className="hero-brand">
         <img
           className="hero-logo"

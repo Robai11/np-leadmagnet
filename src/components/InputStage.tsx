@@ -99,11 +99,15 @@ export function InputStage({
     null,
   );
   const [busy, setBusy] = useState(false);
+  const [transitioning, setTransitioning] = useState(false); // Vorhang-Übergang Landing→Wizard
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
   const discoverPromiseRef = useRef<Promise<DiscoverResult | null> | null>(
     null,
+  );
+  const transTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
   );
 
   // ── URLs der Seitentypen ────────────────────────────────────────────
@@ -172,7 +176,7 @@ export function InputStage({
 
   // Landing → erster geführter Schritt (Discovery abwarten / anstoßen).
   const startFunnel = async () => {
-    if (!looksLikeUrl(shopUrl) || busy) return;
+    if (!looksLikeUrl(shopUrl) || busy || transitioning) return;
     let r = discoverResult;
     if (!r) {
       setBusy(true);
@@ -188,7 +192,14 @@ export function InputStage({
       setBusy(false);
     }
     applyDiscovery(r);
-    setStep(2);
+    // Vorhang-Übergang: Wand öffnen + Box in die Tiefe abtauchen lassen,
+    // danach erst Schritt 2 mounten (taucht aus der Tiefe auf).
+    setTransitioning(true);
+    clearTimeout(transTimerRef.current);
+    transTimerRef.current = setTimeout(() => {
+      setStep(2);
+      setTransitioning(false);
+    }, 760);
   };
 
   const goBack = () => setStep((s) => Math.max(1, s - 1));
@@ -479,7 +490,7 @@ export function InputStage({
   };
 
   return (
-    <div className={`hero ${step > 1 ? "hero--deep" : ""}`}>
+    <div className={`hero ${step > 1 || transitioning ? "hero--deep" : ""}`}>
       {/* Persistente Screenshot-Wand (ab Schritt 2 abgedunkelt + unscharf) */}
       <HeroWall />
       <div className="hero-scrim hero-scrim--radial" aria-hidden="true" />
@@ -495,6 +506,7 @@ export function InputStage({
             onSubmit={startFunnel}
             busy={busy}
             status={heroStatus}
+            leaving={transitioning}
           />
         ) : (
           <div className="fstep" key={step}>
