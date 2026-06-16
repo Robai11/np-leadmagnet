@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Volume2, VolumeX, Loader2 } from "lucide-react";
+import { Volume2, VolumeX, Loader2, Bot } from "lucide-react";
 import type { AnalysisContext } from "@/lib/types";
 import { HeroWall } from "@/components/HeroWall";
 import { Calculator } from "@/components/Calculator";
@@ -65,45 +65,43 @@ export function LoadingStage({
       <div className="flow-screens">
         <div className="aload">
           <div className="aload-inner">
-            <div className="aload-headbar">
-              <div className="aload-head">
-                <span className="fstep-kicker">Analyse läuft</span>
-                {onToggleMuted ? (
-                  <button
-                    type="button"
-                    className="aload-mute"
-                    onClick={onToggleMuted}
-                    aria-pressed={muted}
-                    title={
-                      muted
-                        ? "Abschluss-Ton ist aus — zum Aktivieren klicken"
-                        : "Abschluss-Ton ist an — zum Stummschalten klicken"
-                    }
-                  >
-                    {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                    <span>{muted ? "Ton aus" : "Ton an"}</span>
-                  </button>
-                ) : null}
+            {onToggleMuted ? (
+              <button
+                type="button"
+                className="aload-mute aload-mute--corner"
+                onClick={onToggleMuted}
+                aria-pressed={muted}
+                title={
+                  muted
+                    ? "Abschluss-Ton ist aus — zum Aktivieren klicken"
+                    : "Abschluss-Ton ist an — zum Stummschalten klicken"
+                }
+              >
+                {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                <span>{muted ? "Ton aus" : "Ton an"}</span>
+              </button>
+            ) : null}
+
+            <div className="aload-intro">
+              <span className="fstep-kicker">Analyse läuft</span>
+              <div className="aload-statement-row">
+                <span className="aload-bot" aria-hidden="true">
+                  <Bot size={26} />
+                </span>
+                <p className="aload-statement">
+                  Ich durchlaufe jetzt deinen Shop und finde die wichtigsten
+                  Optimierungen — priorisiert nach Umsatz-Effekt und
+                  Änderungsaufwand. Warte kurz oder komm in ein paar Minuten
+                  einfach wieder.
+                </p>
               </div>
+            </div>
 
-              <h2 className="aload-headline">
-                Ich durchlaufe jetzt deinen Shop und finde die wichtigsten
-                Optimierungen.
-              </h2>
-              <p className="aload-sub">
-                Übrigens: Ich priorisiere nach Umsatz-Effekt und
-                Änderungsaufwand gleich mit.
-              </p>
-              <p className="aload-sub aload-sub--mute">
-                Warte kurz oder komm in ein paar Minuten einfach wieder.
-              </p>
-
+            <div className="aload-progress">
               <p className="aload-url">{ctx.url}</p>
-
               <div className={`aload-bar ${done ? "" : "is-busy"}`}>
                 <div className="aload-bar-fill" style={{ width: `${pct}%` }} />
               </div>
-
               <p className="aload-count">
                 {done ? null : <Loader2 size={14} className="spin" />}
                 {doneCount} von {total} Seiten gelesen · {estLabel}
