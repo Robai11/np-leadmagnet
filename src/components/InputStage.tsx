@@ -206,7 +206,9 @@ export function InputStage({
     }, 760);
   };
 
-  const goBack = () => setStep((s) => Math.max(1, s - 1));
+  // Zurück: das Scan-Interstitial (Schritt 2) überspringen, sonst springt es
+  // sofort wieder automatisch vorwärts.
+  const goBack = () => setStep((s) => (s - 1 === 2 ? 1 : Math.max(1, s - 1)));
   const goNext = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
 
   const submit = () => {
