@@ -515,6 +515,7 @@ export function InputStage({
             busy={transitioning}
             status={heroStatus}
             leaving={transitioning}
+            loading={discovering}
           />
         ) : (
           <div className="fstep" key={step}>

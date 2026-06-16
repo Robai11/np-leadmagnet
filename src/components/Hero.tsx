@@ -27,6 +27,8 @@ export interface HeroProps {
   status?: React.ReactNode;
   /** Übergang aktiv → Inhalt taucht in die geöffnete Wand-Mitte ab. */
   leaving?: boolean;
+  /** Seiten werden gerade erkannt → "arbeitet"-Animation am Button. */
+  loading?: boolean;
 }
 
 export function Hero({
@@ -36,6 +38,7 @@ export function Hero({
   busy,
   status,
   leaving,
+  loading,
 }: HeroProps) {
   return (
     <div className={`hero-content ${leaving ? "is-leaving" : ""}`}>
@@ -89,7 +92,11 @@ export function Hero({
               onChange={(e) => onChange(e.target.value)}
               aria-label="Shop-URL"
             />
-            <button className="hero-submit" type="submit" disabled={busy}>
+            <button
+              className={`hero-submit ${loading && !busy ? "is-loading" : ""}`}
+              type="submit"
+              disabled={busy}
+            >
               {busy ? (
                 <>
                   <Loader2 size={16} className="spin" /> Analysiere …
