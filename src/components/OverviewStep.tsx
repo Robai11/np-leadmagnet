@@ -52,7 +52,7 @@ export function OverviewStep({ onNext }: { onNext: () => void }) {
         <header className="scan-head">
           <span className="fstep-kicker">Analyse läuft</span>
           <h2 className="scan-title">
-            Ich prüfe deine Shop-URLs
+            Ich lese deine Shop-URLs aus
             <span className="scan-dots" aria-hidden="true">
               <i />
               <i />
