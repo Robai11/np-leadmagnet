@@ -12,9 +12,8 @@
  */
 
 import { useEffect, useState } from "react";
-import { ArrowRight, Search, SlidersHorizontal, MousePointer2 } from "lucide-react";
+import { Check, Search, SlidersHorizontal, MousePointer2 } from "lucide-react";
 import { Wireframe } from "@/components/Wireframes";
-import { Calculator } from "@/components/Calculator";
 import type { PageType } from "@/lib/types";
 
 type Callout = { text: string; pos: "tl" | "tr" | "bl" | "br" };
@@ -148,14 +147,6 @@ export function OverviewStep({ onNext }: { onNext: () => void }) {
           </span>
         </section>
 
-        {/* Uplift-Rechner */}
-        <section className="ovw-calc">
-          <h3 className="ovw-h3">
-            Wie viel Conversion-Rate-Steigerung möchtest du erzielen?
-          </h3>
-          <Calculator />
-        </section>
-
         {/* Ablauf in Kürze */}
         <section className="ovw-process">
           {PROCESS.map((p, i) => {
@@ -183,7 +174,7 @@ export function OverviewStep({ onNext }: { onNext: () => void }) {
 
         <div className="ovw-cta">
           <button className="cta" onClick={onNext}>
-            Jetzt meinen Shop analysieren <ArrowRight size={18} />
+            <Check size={18} /> Alles klar, verstanden
           </button>
         </div>
       </div>

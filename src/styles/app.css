@@ -1166,6 +1166,7 @@
 .calc-label {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 13px;
   margin-bottom: 9px;
   color: var(--color-text-ink-mute);
@@ -1174,6 +1175,42 @@
   font-family: var(--font-mono);
   font-weight: 700;
   color: #fff;
+}
+/* Manuelles Eingabefeld neben dem Slider */
+.calc-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--color-line-ink);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  padding: 3px 9px;
+}
+.calc-input:focus-within {
+  border-color: var(--color-accent);
+}
+.calc-num {
+  width: 7ch;
+  background: transparent;
+  border: none;
+  outline: none;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  -moz-appearance: textfield;
+}
+.calc-num::-webkit-outer-spin-button,
+.calc-num::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.calc-suffix {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--color-text-ink-mute);
 }
 .calc-field input[type="range"] {
   width: 100%;
@@ -1220,49 +1257,58 @@
   border: 1px solid var(--color-line-ink);
   border-radius: 11px;
   padding: 16px 18px;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 4px 16px;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.scen-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
 }
 .scen-up {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 22px;
+  font-size: 20px;
   color: var(--color-accent);
-  grid-row: span 2;
 }
 .scen-up span {
   font-size: 11px;
   color: var(--color-text-ink-mute);
   font-weight: 500;
-  display: block;
 }
 .scen-cr {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-text-ink-mute);
-  text-align: right;
+  white-space: nowrap;
 }
-.scen-main {
+/* Monat & Jahr gleichwertig nebeneinander */
+.scen-figs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.scen-fig b {
+  display: block;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 22px;
+  font-size: clamp(20px, 2vw, 24px);
   color: #fff;
+  line-height: 1.05;
 }
-.scen-main span {
-  font-size: 12px;
+.scen-fig span {
+  font-family: var(--font-mono);
+  font-size: 11px;
   color: var(--color-text-ink-mute);
-  font-weight: 500;
 }
 .scen-sub {
-  grid-column: 1 / -1;
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-text-ink-mute);
   border-top: 1px solid var(--color-line-ink);
   padding-top: 8px;
-  margin-top: 4px;
 }
 
 .foot {
@@ -2897,13 +2943,27 @@
   font-style: italic;
 }
 
-/* Calculator-Einbettung (eigener Kopf aus, Headline kommt von .ovw-h3) */
-.ovw-calc .calc {
+/* Calculator-Einbettung (eigener Kopf aus, Headline kommt vom Schritt) */
+.ovw .calc {
   margin-top: 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
-.ovw-calc .calc-head {
+.ovw .calc-head {
   display: none;
+}
+/* Calc-Schritt */
+.ovw-inner--calc {
+  max-width: 860px;
+}
+.ovw-calc-title {
+  margin: 8px auto 6px;
+  max-width: 22ch;
+  text-align: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: clamp(22px, 2.8vw, 34px);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
 }
 
 /* Ablauf in Kürze */

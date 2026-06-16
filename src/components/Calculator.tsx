@@ -25,9 +25,18 @@ function Field({
     <div className="calc-field">
       <div className="calc-label">
         <span>{label}</span>
-        <span className="calc-val">
-          {fmt(value)}
-          {suffix}
+        <span className="calc-input">
+          <input
+            type="number"
+            className="calc-num"
+            value={value}
+            min={min}
+            max={max}
+            step={step}
+            onChange={(e) => set(Number(e.target.value))}
+            aria-label={label}
+          />
+          {suffix ? <span className="calc-suffix">{suffix.trim()}</span> : null}
         </span>
       </div>
       <input
@@ -113,15 +122,24 @@ export function Calculator() {
         <div className="calc-scen">
           {scen.map((s) => (
             <div key={s.up} className="scen">
-              <div className="scen-up">
-                +{s.up}%<span> Conversion</span>
+              <div className="scen-head">
+                <div className="scen-up">
+                  +{s.up}%<span> Conversion</span>
+                </div>
+                <div className="scen-cr">{s.newCr.toFixed(2)} % CR</div>
               </div>
-              <div className="scen-cr">{s.newCr.toFixed(2)} % CR</div>
-              <div className="scen-main">
-                +{fmt(s.extraMonth)} €<span> / Monat</span>
+              <div className="scen-figs">
+                <div className="scen-fig">
+                  <b>+{fmt(s.extraMonth)} €</b>
+                  <span>/ Monat</span>
+                </div>
+                <div className="scen-fig">
+                  <b>+{fmt(s.extraYear)} €</b>
+                  <span>/ Jahr</span>
+                </div>
               </div>
               <div className="scen-sub">
-                +{fmt(s.extraYear)} € / Jahr · +{fmt(s.extraOrders)} Bestellungen
+                +{fmt(s.extraOrders)} Bestellungen / Monat
               </div>
             </div>
           ))}
