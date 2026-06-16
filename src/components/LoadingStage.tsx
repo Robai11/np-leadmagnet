@@ -1,13 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Volume2, VolumeX, Loader2, Bot } from "lucide-react";
+import { Volume2, VolumeX, Loader2 } from "lucide-react";
 import type { AnalysisContext } from "@/lib/types";
 import { HeroWall } from "@/components/HeroWall";
 import { Calculator } from "@/components/Calculator";
 import { BotJourney } from "@/components/BotJourney";
 
 const PAGE_IDS = ["home", "plp", "pdp", "cart", "checkout"];
+
+// Dynamisch wechselnde Beispiele, was man sich in der Wartezeit holen kann.
+const SNACKS = [
+  "einen Kaffee",
+  "einen Schokoriegel",
+  "ein paar Gummibären",
+  "einen Tee",
+  "einen Snack",
+];
 
 export function LoadingStage({
   ctx,
@@ -29,6 +38,15 @@ export function LoadingStage({
   const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const [snackIdx, setSnackIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(
+      () => setSnackIdx((n) => (n + 1) % SNACKS.length),
+      2400,
+    );
     return () => clearInterval(t);
   }, []);
 
@@ -83,16 +101,17 @@ export function LoadingStage({
             ) : null}
 
             <div className="aload-intro">
-              <span className="aload-bot" aria-hidden="true">
-                <Bot size={26} />
-              </span>
               <h2 className="aload-headline2">
                 Ich durchlaufe jetzt deinen Shop und finde die wichtigsten
                 Optimierungen — priorisiert nach Umsatz-Effekt und
                 Änderungsaufwand.
               </h2>
               <p className="aload-subhead">
-                Warte kurz oder komm in ein paar Minuten einfach wieder.
+                Warte ein paar Minuten hier — oder hol dir{" "}
+                <span className="aload-snack" key={snackIdx}>
+                  {SNACKS[snackIdx]}
+                </span>
+                .
               </p>
             </div>
 

@@ -7,7 +7,7 @@
 
 /* eslint-disable @next/next/no-img-element -- statisches lokales Logo */
 
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, TrendingUp } from "lucide-react";
 
 // Seiten, die im Funnel analysiert werden (Anzeige im Karten-Kopf).
 const ANALYZED_PAGES = [
@@ -55,6 +55,11 @@ export function Hero({
           In wenigen Sekunden zu 10+ personalisierten Optimierungen für deinen
           Shop
         </h1>
+      </div>
+
+      <div className="hero-prio">
+        <TrendingUp size={15} aria-hidden="true" />
+        Priorisiert nach Umsatz-Effekt und Änderungsaufwand
       </div>
 
       <div className="hero-cta">
