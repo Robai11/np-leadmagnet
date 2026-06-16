@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowRight, TrendingUp, Smartphone, Monitor } from "lucide-react";
 import { opportunityVar } from "@/styles/tokens";
 import { rankPages } from "@/lib/scoring";
@@ -10,24 +10,22 @@ import { FunnelStrip } from "@/components/FunnelStrip";
 import { Screenshot } from "@/components/Screenshot";
 import { LeverCard } from "@/components/LeverCard";
 import { Calculator } from "@/components/Calculator";
-import { LeadGate, type LeadData } from "@/components/LeadGate";
+import { LeadForm, type LeadData } from "@/components/LeadForm";
 
 export function ReportStage({
   result,
   unlocked,
   onUnlock,
-  peekMs = 5000,
+  initialSelected,
   onLead,
 }: {
   result: AnalysisResult;
   unlocked: boolean;
   onUnlock: (email: string) => Promise<boolean>;
-  /** How long the full report is shown before the lead gate comes up. */
-  peekMs?: number;
+  /** Tab to land on first (preview/tests). Defaults to the free Startseite. */
+  initialSelected?: string;
   /** Override the lead capture (preview/tests). Default POSTs to /api/lead. */
-  onLead?: (
-    data: LeadData,
-  ) => Promise<{ ok: boolean; error?: string }>;
+  onLead?: (data: LeadData) => Promise<{ ok: boolean; error?: string }>;
 }) {
   const { meta, overall, pages, notes } = result;
   // A page may carry two views (mobile + desktop at a 50/50 split); count both.
@@ -42,7 +40,13 @@ export function ReportStage({
   const teaserPageId = heroPage?.id ?? "";
   const teaserLeverId = heroPage?.levers[0]?.id ?? "";
 
-  const [selected, setSelected] = useState(teaserPageId);
+  // The single FREE tab: the Startseite (home), else the first page.
+  const freeId = useMemo(
+    () => (pages.find((p) => p.type === "home") ?? pages[0])?.id ?? "",
+    [pages],
+  );
+
+  const [selected, setSelected] = useState(initialSelected ?? freeId);
   const [hovered, setHovered] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -53,13 +57,23 @@ export function ReportStage({
   const activePage = pages.find((p) => p.id === activePageId) ?? heroPage;
 
   // ── Client-side lead gate (LEAD_GATE_ENABLED) ───────────────────────────
-  // Peek the full report for a few seconds, then blur + lead form, then reveal
-  // with the landing-style curtain part.
+  // The Startseite tab is free; every other tab blurs its content and shows the
+  // lead form in place (within the tab content area). A captured lead reveals
+  // the whole report. `revealing` plays the brief blur-clear transition.
   const gateOn = LEAD_GATE_ENABLED;
-  const [phase, setPhase] = useState<"peek" | "gate" | "revealing" | "open">(
-    gateOn ? "peek" : "open",
+  const [revealed, setRevealed] = useState(false);
+  const [revealing, setRevealing] = useState(false);
+
+  const isLocked = gateOn && !revealed && activePage.type !== "home";
+  const showGate = gateOn && (isLocked || revealing);
+  const bodyBlurred = isLocked && !revealing;
+  const lockedIds = useMemo(
+    () =>
+      gateOn && !revealed
+        ? pages.filter((p) => p.type !== "home").map((p) => p.id)
+        : [],
+    [gateOn, revealed, pages],
   );
-  const blurred = phase === "gate";
 
   // X = kritische Leaks (hoher Impact), Y = Umsatz-Upside (mittel/niedrig).
   const { critical, upside } = useMemo(() => {
@@ -72,23 +86,6 @@ export function ReportStage({
       upside: all.filter((l) => l.impact !== "high").length,
     };
   }, [pages]);
-
-  // Peek → gate after the configured peek window.
-  useEffect(() => {
-    if (!gateOn || phase !== "peek") return;
-    const t = window.setTimeout(() => setPhase("gate"), peekMs);
-    return () => window.clearTimeout(t);
-  }, [gateOn, phase, peekMs]);
-
-  // Lock background scroll while the gate is up (the peek stays framed behind).
-  useEffect(() => {
-    if (phase !== "gate") return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [phase]);
 
   const handleLead = async (
     d: LeadData,
@@ -119,8 +116,11 @@ export function ReportStage({
       }
     }
     if (res.ok) {
-      setPhase("revealing");
-      window.setTimeout(() => setPhase("open"), 1100);
+      setRevealing(true);
+      window.setTimeout(() => {
+        setRevealed(true);
+        setRevealing(false);
+      }, 900);
     }
     return res;
   };
@@ -144,8 +144,7 @@ export function ReportStage({
   if (!activePage) return null;
 
   return (
-    <div className="report-shell">
-      <div className={`stage report-stage ${blurred ? "is-gated" : ""}`}>
+    <div className="stage report-stage">
       <div className="report-head">
         <div>
           <span className="kicker">Funnel-Analyse · {meta.url}</span>
@@ -168,7 +167,7 @@ export function ReportStage({
 
       <FunnelStrip
         pages={pages}
-        unlocked={unlocked}
+        lockedIds={lockedIds}
         selected={selected}
         setSelected={setSelected}
       />
@@ -181,110 +180,113 @@ export function ReportStage({
         </div>
       )}
 
-      <div className="report-body">
-        <div className="shot-col">
-          <div className="shot-tag">
-            <span
-              className="opp"
-              style={{ background: opportunityVar(activePage.opportunity) }}
-            />{" "}
-            {activePage.name} · {pageLevers(activePage).length} Hebel
+      <div className="report-tabzone">
+        <div className={`report-body ${bodyBlurred ? "is-locked" : ""}`}>
+          <div className="shot-col">
+            <div className="shot-tag">
+              <span
+                className="opp"
+                style={{ background: opportunityVar(activePage.opportunity) }}
+              />{" "}
+              {activePage.name} · {pageLevers(activePage).length} Hebel
+            </div>
+            <Screenshot
+              page={activePage}
+              url={meta.url}
+              hovered={hovered}
+              setHovered={setHovered}
+            />
           </div>
-          <Screenshot
-            page={activePage}
-            url={meta.url}
-            hovered={hovered}
-            setHovered={setHovered}
-          />
-        </div>
 
-        <div className="cards-col">
-          {!unlocked && (
-            <div className="teaser-note">
-              <TrendingUp size={15} /> Stärkster Hebel sichtbar.{" "}
-              {totalLevers - 1} weitere — inkl. Warenkorb & Checkout — nach
-              Freischaltung.
-            </div>
-          )}
-          {[
-            { viewport: activePage.viewport, levers: activePage.levers },
-            ...(activePage.secondary
-              ? [
-                  {
-                    viewport: activePage.secondary.viewport,
-                    levers: activePage.secondary.levers,
-                  },
-                ]
-              : []),
-          ]
-            .filter((g) => g.levers.length > 0)
-            .map((g) => (
-              <div className="lever-group" key={g.viewport}>
-                <div className="lever-group-head">
-                  {g.viewport === "mobile" ? (
-                    <Smartphone size={14} />
-                  ) : (
-                    <Monitor size={14} />
-                  )}
-                  {g.viewport === "mobile" ? "Mobile" : "Desktop"} · {g.levers.length}{" "}
-                  {g.levers.length === 1 ? "Hebel" : "Hebel"}
+          <div className="cards-col">
+            {!unlocked && (
+              <div className="teaser-note">
+                <TrendingUp size={15} /> Stärkster Hebel sichtbar.{" "}
+                {totalLevers - 1} weitere — inkl. Warenkorb & Checkout — nach
+                Freischaltung.
+              </div>
+            )}
+            {[
+              { viewport: activePage.viewport, levers: activePage.levers },
+              ...(activePage.secondary
+                ? [
+                    {
+                      viewport: activePage.secondary.viewport,
+                      levers: activePage.secondary.levers,
+                    },
+                  ]
+                : []),
+            ]
+              .filter((g) => g.levers.length > 0)
+              .map((g) => (
+                <div className="lever-group" key={g.viewport}>
+                  <div className="lever-group-head">
+                    {g.viewport === "mobile" ? (
+                      <Smartphone size={14} />
+                    ) : (
+                      <Monitor size={14} />
+                    )}
+                    {g.viewport === "mobile" ? "Mobile" : "Desktop"} ·{" "}
+                    {g.levers.length}{" "}
+                    {g.levers.length === 1 ? "Hebel" : "Hebel"}
+                  </div>
+                  {g.levers.map((lv) => {
+                    const isTeaserLever = lv.id === teaserLeverId;
+                    const locked = lockedNow && !isTeaserLever;
+                    return (
+                      <LeverCard
+                        key={lv.id}
+                        lv={lv}
+                        locked={locked}
+                        hovered={hovered}
+                        setHovered={setHovered}
+                        onUnlock={scrollToGate}
+                      />
+                    );
+                  })}
                 </div>
-                {g.levers.map((lv) => {
-                  const isTeaserLever = lv.id === teaserLeverId;
-                  const locked = lockedNow && !isTeaserLever;
-                  return (
-                    <LeverCard
-                      key={lv.id}
-                      lv={lv}
-                      locked={locked}
-                      hovered={hovered}
-                      setHovered={setHovered}
-                      onUnlock={scrollToGate}
-                    />
-                  );
-                })}
-              </div>
-            ))}
+              ))}
 
-          {!unlocked && (
-            <div className="gate" id="gate">
-              <h3>Vollständige Analyse freischalten</h3>
-              <p>
-                Alle {totalLevers} Hebel mit Hypothesen & Testvorschlägen über
-                den kompletten Funnel — inkl. Warenkorb und Checkout.
-              </p>
-              <div className="gate-row">
-                <input
-                  placeholder="deine@email.de"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && submit()}
-                />
-                <button onClick={submit} disabled={submitting}>
-                  {submitting ? "Wird geladen …" : "Freischalten"}{" "}
-                  <ArrowRight size={16} />
-                </button>
+            {!unlocked && (
+              <div className="gate" id="gate">
+                <h3>Vollständige Analyse freischalten</h3>
+                <p>
+                  Alle {totalLevers} Hebel mit Hypothesen & Testvorschlägen über
+                  den kompletten Funnel — inkl. Warenkorb und Checkout.
+                </p>
+                <div className="gate-row">
+                  <input
+                    placeholder="deine@email.de"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && submit()}
+                  />
+                  <button onClick={submit} disabled={submitting}>
+                    {submitting ? "Wird geladen …" : "Freischalten"}{" "}
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+                <span className="gate-hint">
+                  {gateError ??
+                    "Die gesperrten Hebel liegen serverseitig und werden erst nach Eingabe nachgeladen."}
+                </span>
               </div>
-              <span className="gate-hint">
-                {gateError ??
-                  "Die gesperrten Hebel liegen serverseitig und werden erst nach Eingabe nachgeladen."}
-              </span>
-            </div>
-          )}
+            )}
+          </div>
         </div>
+
+        {showGate && (
+          <div className={`tabgate ${revealing ? "is-revealing" : ""}`}>
+            <LeadForm
+              critical={critical}
+              upside={upside}
+              onSubmit={handleLead}
+            />
+          </div>
+        )}
       </div>
 
       <Calculator />
-      </div>
-
-      {gateOn && (phase === "gate" || phase === "revealing") && (
-        <LeadGate
-          phase={phase}
-          critical={critical}
-          upside={upside}
-          onSubmit={handleLead}
-        />
-      )}
     </div>
   );
 }

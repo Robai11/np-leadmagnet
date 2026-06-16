@@ -3770,73 +3770,45 @@ h3.fstep-title {
 }
 
 /* ── Report Lead Gate (client-side, LEAD_GATE_ENABLED) ─────────────────────
- * Peek the full report, then blur + lead form, then reveal with a landing-style
- * curtain part. The report data already lives in the client; this gate is the
- * lead-capture layer, not a hard server gate. */
-.report-shell {
+ * The Startseite tab is free; every other tab blurs its content IN PLACE and
+ * shows the lead form (LeadForm) on top, scoped to the tab content area (not
+ * full-screen). A captured lead reveals the whole report. Not a hard server
+ * gate — the report data already lives in the client; this is the lead-capture
+ * layer. */
+.report-tabzone {
   position: relative;
 }
 
-/* Report sharpens back when the gate lets go (revealing/open). */
-.report-stage {
-  transition:
-    filter 900ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+/* The locked tab's content blurs in place; sharpens back on reveal. */
+.report-body {
+  transition: filter 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-/* Snap-blur the report when the gate comes up ("auf einmal blurrt"). */
-.report-stage.is-gated {
-  filter: blur(13px) saturate(0.92) brightness(0.97);
-  transform: scale(1.015);
-  transition:
-    filter 340ms ease,
-    transform 340ms ease;
+.report-body.is-locked {
+  filter: blur(9px) saturate(0.94) brightness(0.99);
+  min-height: 460px;
   pointer-events: none;
   user-select: none;
+  transition: filter 300ms ease;
 }
 
-.leadgate {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 28px;
-}
-
-/* Two semi-opaque navy curtains: they darken the blurred report, then part. */
-.leadgate-curtain {
+/* In-place gate overlay over the blurred tab content. */
+.tabgate {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 52%;
-  pointer-events: none;
-  will-change: transform;
-}
-.leadgate-curtain--left {
-  left: 0;
-  background: linear-gradient(
-    100deg,
-    rgba(6, 28, 40, 0.93) 0%,
-    rgba(9, 39, 55, 0.78) 68%,
-    rgba(9, 39, 55, 0.5) 100%
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: safe center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+  background: radial-gradient(
+    120% 90% at 50% 38%,
+    rgba(245, 250, 248, 0.5) 0%,
+    rgba(9, 39, 55, 0.26) 100%
   );
+  animation: tabgate-in 300ms ease both;
 }
-.leadgate-curtain--right {
-  right: 0;
-  background: linear-gradient(
-    260deg,
-    rgba(6, 28, 40, 0.93) 0%,
-    rgba(9, 39, 55, 0.78) 68%,
-    rgba(9, 39, 55, 0.5) 100%
-  );
-}
-
-/* Mount-in (gate). */
-.leadgate.phase-gate {
-  animation: leadgate-in 380ms ease both;
-}
-@keyframes leadgate-in {
+@keyframes tabgate-in {
   from {
     opacity: 0;
   }
@@ -3844,55 +3816,46 @@ h3.fstep-title {
     opacity: 1;
   }
 }
-
-/* Reveal: curtains slide outward, report sharpens behind them. */
-.leadgate.phase-revealing {
+.tabgate.is-revealing {
+  opacity: 0;
   pointer-events: none;
-}
-.leadgate.phase-revealing .leadgate-curtain--left {
-  transform: translateX(-101%);
-  transition: transform 1050ms cubic-bezier(0.5, 0, 0.2, 1);
-}
-.leadgate.phase-revealing .leadgate-curtain--right {
-  transform: translateX(101%);
-  transition: transform 1050ms cubic-bezier(0.5, 0, 0.2, 1);
+  transition: opacity 360ms ease;
 }
 
 /* Panel — headline + form. */
 .leadgate-panel {
   position: relative;
   z-index: 2;
-  width: min(560px, 100%);
-  max-height: calc(100vh - 56px);
+  width: min(520px, 100%);
+  max-height: 100%;
   overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  padding: 34px clamp(22px, 4vw, 40px);
+  gap: 20px;
+  padding: 30px clamp(20px, 3.4vw, 36px);
   background: #fff;
   border-radius: var(--radius-lg);
-  box-shadow: 0 30px 80px rgba(6, 28, 40, 0.45);
+  box-shadow: 0 26px 70px rgba(6, 28, 40, 0.4);
 }
-.leadgate.phase-gate .leadgate-panel {
-  animation: leadgate-panel-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 110ms;
+.tabgate .leadform-panel {
+  animation: leadform-pop 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-@keyframes leadgate-panel-in {
+@keyframes leadform-pop {
   from {
     opacity: 0;
-    transform: translateY(18px) scale(0.985);
+    transform: translateY(14px) scale(0.985);
   }
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
-.leadgate.phase-revealing .leadgate-panel {
+.tabgate.is-revealing .leadform-panel {
   opacity: 0;
-  transform: translateY(-10px) scale(0.97);
+  transform: translateY(-8px) scale(0.97);
   transition:
-    opacity 340ms ease,
-    transform 340ms ease;
+    opacity 300ms ease,
+    transform 300ms ease;
 }
 
 /* "Ich habe X … und Y …" headline. */
@@ -4066,26 +4029,36 @@ h3.fstep-title {
   .lg-grid {
     grid-template-columns: 1fr;
   }
-  .leadgate-curtain {
-    width: 62%;
-  }
   .leadgate-found {
     font-size: clamp(18px, 5.5vw, 22px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .report-stage.is-gated {
-    filter: blur(13px);
-    transform: none;
+  .report-body.is-locked {
+    filter: blur(9px);
   }
-  .leadgate.phase-gate,
-  .leadgate.phase-gate .leadgate-panel {
+  .tabgate,
+  .tabgate .leadform-panel {
     animation: none;
   }
-  .leadgate-curtain {
-    transition: none !important;
-  }
+}
+
+/* Funnel tab lock badge (gated tabs). */
+.fname {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.fpage-lock {
+  flex: none;
+  color: var(--color-text-mute);
+}
+.fpage.sel .fpage-lock {
+  color: var(--color-accent);
+}
+.fpage.locked:not(.sel) {
+  border-style: dashed;
 }
 
 /* Dev-only gate preview route (/gate-preview). */

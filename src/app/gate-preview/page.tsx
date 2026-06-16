@@ -3,8 +3,9 @@
 /*
  * /gate-preview — local-only preview of the report lead gate, so the gate can
  * be iterated on without running a (paid) analysis. Renders ReportStage on a
- * mock report; the control bar replays the gate instantly or with the real
- * 8 s peek. Lead capture is stubbed here (no /api/lead write). Dev-only.
+ * mock report. The Startseite tab is free; other tabs blur their content and
+ * show the lead form in place. Lead capture is stubbed here (no /api/lead
+ * write). Each control bumps the mount key, which re-locks the report. Dev-only.
  */
 
 import { useMemo, useState } from "react";
@@ -15,12 +16,12 @@ import { buildMockResult } from "@/lib/mock-result";
 export default function GatePreviewPage() {
   const result = useMemo(() => buildMockResult(), []);
   const [replay, setReplay] = useState(0);
-  const [peekMs, setPeekMs] = useState(0);
+  const [initial, setInitial] = useState("pdp");
 
   if (process.env.NODE_ENV === "production") notFound();
 
-  const play = (ms: number) => {
-    setPeekMs(ms);
+  const show = (id: string) => {
+    setInitial(id);
     setReplay((n) => n + 1);
   };
 
@@ -28,15 +29,18 @@ export default function GatePreviewPage() {
     <div className="cs-root cs-root--preview">
       <div className="gate-preview-bar">
         <span className="gpb-title">Gate-Vorschau · Mock-Report</span>
-        <button className="gpb-btn" onClick={() => play(0)}>
-          Gate sofort
+        <button className="gpb-btn" onClick={() => show("pdp")}>
+          Gesperrter Tab
         </button>
-        <button className="gpb-btn" onClick={() => play(5000)}>
-          Mit 5 s Peek
+        <button className="gpb-btn" onClick={() => show("home")}>
+          Startseite (frei)
+        </button>
+        <button className="gpb-btn" onClick={() => setReplay((n) => n + 1)}>
+          Neu sperren
         </button>
         <span className="gpb-hint">
-          Reveal: Formular ausfüllen &amp; absenden — Vorschau speichert keinen
-          Lead.
+          Tabs sind klickbar. Reveal: Formular ausfüllen &amp; absenden —
+          Vorschau speichert keinen Lead.
         </span>
       </div>
 
@@ -44,7 +48,7 @@ export default function GatePreviewPage() {
         key={replay}
         result={result}
         unlocked
-        peekMs={peekMs}
+        initialSelected={initial}
         onUnlock={async () => true}
         onLead={async () => ({ ok: true })}
       />

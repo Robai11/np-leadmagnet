@@ -1,12 +1,10 @@
 "use client";
 
 /*
- * LeadGate — the client-side lead gate that sits over the report (see
- * LEAD_GATE_ENABLED). The report is shown for a few seconds (peek), then the
- * parent blurs it and mounts this overlay: a "found X/Y" headline plus the
- * "Jetzt Schwachstellen ansehen" lead form. On a captured lead the parent flips
- * to the `revealing` phase and the two curtains part — the landing-style
- * open-up — while the report behind sharpens back into focus.
+ * LeadForm — the lead-capture panel shown over the blurred, locked report tabs
+ * (see LEAD_GATE_ENABLED). The Startseite tab is free; every other tab blurs its
+ * content and renders this panel on top, scoped to the tab content area (not
+ * full-screen). A captured lead unlocks the whole report.
  */
 
 import { useState } from "react";
@@ -87,8 +85,7 @@ function FoundHeadline({
   const upPart = (
     <>
       <b className="lg-num lg-num--up">{upside}</b>{" "}
-      {upside === 1 ? "Stelle" : "Stellen"},{" "}
-      {upside === 1 ? "an der" : "wo"} du{" "}
+      {upside === 1 ? "Stelle" : "Stellen"}, {upside === 1 ? "an der" : "wo"} du{" "}
       <span className="lg-up">mehr Umsatz</span> herausholen kannst
     </>
   );
@@ -111,13 +108,11 @@ function FoundHeadline({
   return <p className="leadgate-found">{body}</p>;
 }
 
-export function LeadGate({
-  phase,
+export function LeadForm({
   critical,
   upside,
   onSubmit,
 }: {
-  phase: "gate" | "revealing";
   critical: number;
   upside: number;
   onSubmit: (data: LeadData) => Promise<{ ok: boolean; error?: string }>;
@@ -153,7 +148,7 @@ export function LeadGate({
 
   const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
-    if (submitting || phase === "revealing") return;
+    if (submitting) return;
     const e = validate();
     setErrors(e);
     if (Object.keys(e).length > 0) return;
@@ -173,102 +168,94 @@ export function LeadGate({
           "Konnte nicht abgesendet werden. Bitte erneut versuchen.",
       );
     }
-    // On success the parent flips to `revealing`; we keep the spinner until then.
+    // On success the parent reveals (unmounts this form); keep the spinner.
   };
 
   return (
-    <div className={`leadgate phase-${phase}`}>
-      <div className="leadgate-curtain leadgate-curtain--left" aria-hidden="true" />
-      <div
-        className="leadgate-curtain leadgate-curtain--right"
-        aria-hidden="true"
-      />
+    <div
+      className="leadgate-panel leadform-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Schwachstellen ansehen"
+    >
+      <FoundHeadline critical={critical} upside={upside} />
 
-      <div
-        className="leadgate-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Schwachstellen ansehen"
-      >
-        <FoundHeadline critical={critical} upside={upside} />
-
-        <form className="leadgate-form" onSubmit={handleSubmit} noValidate>
-          <div className="leadgate-form-head">
-            <span className="leadgate-form-badge">
-              <Lock size={13} aria-hidden="true" /> Auswertung freischalten
-            </span>
-            <h3 className="leadgate-form-title">Jetzt Schwachstellen ansehen</h3>
-            <p className="leadgate-form-sub">
-              Trag deine Kontaktdaten ein — danach siehst du sofort alle
-              Optimierungen über den kompletten Funnel.
-            </p>
-          </div>
-
-          <div className="lg-grid">
-            <Field
-              label="Vorname"
-              name="firstName"
-              value={data.firstName}
-              onChange={set("firstName")}
-              autoComplete="given-name"
-              placeholder="Max"
-              error={errors.firstName}
-            />
-            <Field
-              label="Nachname"
-              name="lastName"
-              value={data.lastName}
-              onChange={set("lastName")}
-              autoComplete="family-name"
-              placeholder="Mustermann"
-              error={errors.lastName}
-            />
-            <div className="lg-field-full">
-              <Field
-                label="Geschäftliche E-Mail"
-                name="email"
-                type="email"
-                value={data.email}
-                onChange={set("email")}
-                autoComplete="email"
-                placeholder="max@dein-unternehmen.de"
-                error={errors.email}
-              />
-            </div>
-            <div className="lg-field-full">
-              <Field
-                label="Telefonnummer"
-                name="phone"
-                type="tel"
-                value={data.phone}
-                onChange={set("phone")}
-                autoComplete="tel"
-                placeholder="+49 …"
-                error={errors.phone}
-              />
-            </div>
-          </div>
-
-          {serverError ? <p className="lg-server-error">{serverError}</p> : null}
-
-          <button className="lg-submit" type="submit" disabled={submitting}>
-            {submitting ? (
-              <>
-                <Loader2 size={17} className="spin" /> Wird geöffnet …
-              </>
-            ) : (
-              <>
-                Schwachstellen ansehen <ArrowRight size={17} />
-              </>
-            )}
-          </button>
-
-          <p className="lg-fineprint">
-            Wir nutzen deine Daten ausschließlich für deine Auswertung und die
-            Kontaktaufnahme dazu.
+      <form className="leadgate-form" onSubmit={handleSubmit} noValidate>
+        <div className="leadgate-form-head">
+          <span className="leadgate-form-badge">
+            <Lock size={13} aria-hidden="true" /> Auswertung freischalten
+          </span>
+          <h3 className="leadgate-form-title">Jetzt Schwachstellen ansehen</h3>
+          <p className="leadgate-form-sub">
+            Trag deine Kontaktdaten ein — danach siehst du sofort alle
+            Optimierungen über den kompletten Funnel.
           </p>
-        </form>
-      </div>
+        </div>
+
+        <div className="lg-grid">
+          <Field
+            label="Vorname"
+            name="firstName"
+            value={data.firstName}
+            onChange={set("firstName")}
+            autoComplete="given-name"
+            placeholder="Max"
+            error={errors.firstName}
+          />
+          <Field
+            label="Nachname"
+            name="lastName"
+            value={data.lastName}
+            onChange={set("lastName")}
+            autoComplete="family-name"
+            placeholder="Mustermann"
+            error={errors.lastName}
+          />
+          <div className="lg-field-full">
+            <Field
+              label="Geschäftliche E-Mail"
+              name="email"
+              type="email"
+              value={data.email}
+              onChange={set("email")}
+              autoComplete="email"
+              placeholder="max@dein-unternehmen.de"
+              error={errors.email}
+            />
+          </div>
+          <div className="lg-field-full">
+            <Field
+              label="Telefonnummer"
+              name="phone"
+              type="tel"
+              value={data.phone}
+              onChange={set("phone")}
+              autoComplete="tel"
+              placeholder="+49 …"
+              error={errors.phone}
+            />
+          </div>
+        </div>
+
+        {serverError ? <p className="lg-server-error">{serverError}</p> : null}
+
+        <button className="lg-submit" type="submit" disabled={submitting}>
+          {submitting ? (
+            <>
+              <Loader2 size={17} className="spin" /> Wird geöffnet …
+            </>
+          ) : (
+            <>
+              Schwachstellen ansehen <ArrowRight size={17} />
+            </>
+          )}
+        </button>
+
+        <p className="lg-fineprint">
+          Wir nutzen deine Daten ausschließlich für deine Auswertung und die
+          Kontaktaufnahme dazu.
+        </p>
+      </form>
     </div>
   );
 }
