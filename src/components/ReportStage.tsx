@@ -16,7 +16,7 @@ export function ReportStage({
   result,
   unlocked,
   onUnlock,
-  peekMs = 8000,
+  peekMs = 5000,
   onLead,
 }: {
   result: AnalysisResult;

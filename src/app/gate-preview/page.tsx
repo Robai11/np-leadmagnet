@@ -31,8 +31,8 @@ export default function GatePreviewPage() {
         <button className="gpb-btn" onClick={() => play(0)}>
           Gate sofort
         </button>
-        <button className="gpb-btn" onClick={() => play(8000)}>
-          Mit 8 s Peek
+        <button className="gpb-btn" onClick={() => play(5000)}>
+          Mit 5 s Peek
         </button>
         <span className="gpb-hint">
           Reveal: Formular ausfüllen &amp; absenden — Vorschau speichert keinen
