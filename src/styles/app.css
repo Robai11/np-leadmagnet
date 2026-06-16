@@ -2273,6 +2273,23 @@
   line-height: 1.08;
   letter-spacing: -0.02em;
 }
+/* Zentrierte Top-Headline über den URL-Schritten */
+.fstep-tophead {
+  flex: 0 0 auto;
+  margin: 0 auto;
+  padding: 4px clamp(20px, 4vw, 54px) 0;
+  max-width: 900px;
+  text-align: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: clamp(24px, 3vw, 38px);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+/* Seitentyp-Überschrift (h3) auf URL-Schritten kleiner als die Top-Headline */
+h3.fstep-title {
+  font-size: clamp(20px, 2.2vw, 28px);
+}
 .fstep-hint {
   margin: 0 0 24px;
   color: rgba(255, 255, 255, 0.74);
