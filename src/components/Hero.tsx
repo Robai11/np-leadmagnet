@@ -58,7 +58,7 @@ export function Hero({
       </div>
 
       <div className="hero-prio">
-        <TrendingUp size={15} aria-hidden="true" />
+        <TrendingUp size={18} aria-hidden="true" />
         Priorisiert nach Umsatz-Effekt und Änderungsaufwand
       </div>
 

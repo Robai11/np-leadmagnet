@@ -45,7 +45,7 @@ export function LoadingStage({
   useEffect(() => {
     const t = setInterval(
       () => setSnackIdx((n) => (n + 1) % SNACKS.length),
-      2400,
+      4200,
     );
     return () => clearInterval(t);
   }, []);
