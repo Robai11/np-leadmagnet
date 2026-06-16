@@ -3388,7 +3388,7 @@
     var(--color-accent)
   );
   width: 0;
-  animation: scan-progress 4s linear forwards;
+  animation: scan-progress 6s linear forwards;
 }
 @keyframes scan-progress {
   to {

@@ -20,7 +20,7 @@ const SCAN_PAGES: { type: PageType; label: string }[] = [
   { type: "checkout", label: "Checkout" },
 ];
 const N = SCAN_PAGES.length;
-const AUTO_ADVANCE_MS = 4000;
+const AUTO_ADVANCE_MS = 6000;
 const CYCLE_MS = 1500;
 
 export function OverviewStep({ onNext }: { onNext: () => void }) {

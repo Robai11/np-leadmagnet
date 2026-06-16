@@ -271,8 +271,12 @@ export function InputStage({
     return (
       <div className="fstep-body">
         <div className="fstep-main">
-          <span className="fstep-kicker">{meta.kicker}</span>
-          <h2 className="fstep-title">{meta.label}</h2>
+          <span className="fstep-kicker">
+            {meta.kicker} · {meta.label}
+          </span>
+          <h2 className="fstep-title">
+            Hilf mir schnell, die richtigen URLs zu finden
+          </h2>
           <p className="fstep-hint">{meta.hint}</p>
 
           <div className="fstep-field">
