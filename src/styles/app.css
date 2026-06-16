@@ -2696,3 +2696,193 @@
     animation: none;
   }
 }
+
+/* ── Ablauf-Übersicht (overview step) ─────────────────────────────────── */
+.ovw-steps {
+  list-style: none;
+  margin: 8px 0 26px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.ovw-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  opacity: 0;
+  animation: ovw-step-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ovw-step-in {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+.ovw-step-ico {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(61, 192, 145, 0.14);
+  border: 1px solid rgba(61, 192, 145, 0.32);
+  color: var(--color-accent);
+}
+.ovw-step-text strong {
+  display: block;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 3px;
+}
+.ovw-step-text p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.66);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 1.45;
+  max-width: 42ch;
+}
+/* Report-Vorschau (rechts) */
+.ovw-preview {
+  width: 100%;
+  max-width: 380px;
+  padding: 20px 22px 22px;
+  border-radius: 18px;
+  background: var(--color-ink);
+  border: 1px solid rgba(61, 192, 145, 0.3);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.5);
+  animation: fstep-in 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.1s;
+}
+.ovw-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.ovw-preview-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+}
+.ovw-preview-title svg {
+  color: var(--color-accent);
+}
+.ovw-preview-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 3px 7px;
+  border-radius: 6px;
+}
+.ovw-stat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.ovw-stat strong {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 42px;
+  line-height: 1;
+  color: var(--color-accent);
+  letter-spacing: -0.02em;
+}
+.ovw-stat span {
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.ovw-levers {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.ovw-levers li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 9px;
+}
+.ovw-imp {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.ovw-imp--high {
+  background: var(--color-impact-high);
+}
+.ovw-imp--mid {
+  background: var(--color-impact-mid);
+}
+.ovw-imp--low {
+  background: var(--color-accent);
+}
+.ovw-lever-label {
+  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+.ovw-bar {
+  grid-column: 2;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.ovw-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: ovw-bar-grow 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ovw-bar-grow {
+  to {
+    transform: scaleX(1);
+  }
+}
+.ovw-more {
+  display: block;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-style: italic;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ovw-steps li,
+  .ovw-preview,
+  .ovw-bar i {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

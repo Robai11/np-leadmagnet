@@ -18,20 +18,29 @@ import { INDUSTRIES, CHANNELS } from "@/lib/mock-data";
 import { Hero } from "@/components/Hero";
 import { HeroWall } from "@/components/HeroWall";
 import { Wireframe } from "@/components/Wireframes";
+import { OverviewStep } from "@/components/OverviewStep";
 import type { AnalysisContext, PageType } from "@/lib/types";
 
 const PAGE_ORDER: PageType[] = ["home", "plp", "pdp", "cart", "checkout"];
 
-// Geführte Schritte NACH der Landingpage (Step 1). Insgesamt also 6 Schritte.
-type FunnelStep = "home" | "plp" | "pdp" | "cartcheckout" | "context";
+// Geführte Schritte NACH der Landingpage (Step 1): Ablauf-Übersicht zuerst,
+// dann die Seiten-Prüfung und der Kontext.
+type FunnelStep =
+  | "overview"
+  | "home"
+  | "plp"
+  | "pdp"
+  | "cartcheckout"
+  | "context";
 const FUNNEL_STEPS: FunnelStep[] = [
+  "overview",
   "home",
   "plp",
   "pdp",
   "cartcheckout",
   "context",
 ];
-const TOTAL_STEPS = 1 + FUNNEL_STEPS.length; // Landing + 5
+const TOTAL_STEPS = 1 + FUNNEL_STEPS.length; // Landing + 6
 
 // URL-Schritte: Label, Funnel-Position, Platzhalter, Hinweis und (für PLP/PDP)
 // ein Beispiel-Hinweis, damit klar ist, dass EINE repräsentative Seite genügt.
@@ -87,7 +96,7 @@ export function InputStage({
   onStart: (ctx: AnalysisContext) => void;
 }) {
   // ── Flow ────────────────────────────────────────────────────────────
-  const [step, setStep] = useState(1); // 1 = Landing, 2..6 = geführte Schritte
+  const [step, setStep] = useState(1); // 1 = Landing, 2..7 = geführte Schritte
   const [industry, setIndustry] = useState("");
   const [device, setDevice] = useState(60);
   const [channels, setChannels] = useState<string[]>([]);
@@ -519,11 +528,15 @@ export function InputStage({
               </span>
             </div>
 
-            {funnel === "cartcheckout"
-              ? renderCartCheckout()
-              : funnel === "context"
-                ? renderContext()
-                : renderUrlStep(funnel as "home" | "plp" | "pdp")}
+            {funnel === "overview" ? (
+              <OverviewStep onNext={goNext} />
+            ) : funnel === "cartcheckout" ? (
+              renderCartCheckout()
+            ) : funnel === "context" ? (
+              renderContext()
+            ) : (
+              renderUrlStep(funnel as "home" | "plp" | "pdp")
+            )}
           </div>
         )}
       </div>
