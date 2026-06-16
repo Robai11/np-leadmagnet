@@ -96,7 +96,7 @@ export function InputStage({
   onStart: (ctx: AnalysisContext) => void;
 }) {
   // ── Flow ────────────────────────────────────────────────────────────
-  const [step, setStep] = useState(1); // 1 = Landing, 2..8 = geführte Schritte
+  const [step, setStep] = useState(1); // 1 = Landing, 2..7 = geführte Schritte
   const [industry, setIndustry] = useState("");
   const [device, setDevice] = useState(60);
   const [channels, setChannels] = useState<string[]>([]);
