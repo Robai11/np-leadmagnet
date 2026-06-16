@@ -281,8 +281,7 @@ export function InputStage({
 
           <div className="fstep-field">
             <p className="fstep-check-label">
-              <Search size={17} aria-hidden="true" /> URL prüfen oder
-              korrigieren
+              <Search size={17} aria-hidden="true" /> Ist diese URL richtig?
               {detected ? (
                 <span className="fstep-detected">
                   <CheckCircle2 size={12} /> automatisch erkannt

@@ -59,9 +59,6 @@ export function OverviewStep({ onNext }: { onNext: () => void }) {
               <i />
             </span>
           </h2>
-          <p className="scan-sub">
-            Wir scannen jede Seite und suchen nach Conversion-Potenzialen.
-          </p>
         </header>
 
         <div className="ovw-stage scan-stage">
