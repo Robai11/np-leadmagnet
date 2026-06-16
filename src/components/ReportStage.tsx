@@ -1,14 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, TrendingUp, Smartphone, Monitor } from "lucide-react";
 import { opportunityVar } from "@/styles/tokens";
 import { rankPages } from "@/lib/scoring";
 import type { AnalysisResult } from "@/lib/types";
+import { LEAD_GATE_ENABLED } from "@/lib/flags";
 import { FunnelStrip } from "@/components/FunnelStrip";
 import { Screenshot } from "@/components/Screenshot";
 import { LeverCard } from "@/components/LeverCard";
 import { Calculator } from "@/components/Calculator";
+import { LeadGate, type LeadData } from "@/components/LeadGate";
 
 export function ReportStage({
   result,
@@ -42,6 +44,74 @@ export function ReportStage({
   const activePageId = unlocked ? selected : teaserPageId;
   const activePage = pages.find((p) => p.id === activePageId) ?? heroPage;
 
+  // ── Client-side lead gate (LEAD_GATE_ENABLED) ───────────────────────────
+  // Peek the full report for a few seconds, then blur + lead form, then reveal
+  // with the landing-style curtain part.
+  const gateOn = LEAD_GATE_ENABLED;
+  const [phase, setPhase] = useState<"peek" | "gate" | "revealing" | "open">(
+    gateOn ? "peek" : "open",
+  );
+  const blurred = phase === "gate";
+
+  // X = kritische Leaks (hoher Impact), Y = Umsatz-Upside (mittel/niedrig).
+  const { critical, upside } = useMemo(() => {
+    const all = pages.flatMap((p) => [
+      ...p.levers,
+      ...(p.secondary?.levers ?? []),
+    ]);
+    return {
+      critical: all.filter((l) => l.impact === "high").length,
+      upside: all.filter((l) => l.impact !== "high").length,
+    };
+  }, [pages]);
+
+  // Peek → gate after a few seconds.
+  useEffect(() => {
+    if (!gateOn || phase !== "peek") return;
+    const t = window.setTimeout(() => setPhase("gate"), 5000);
+    return () => window.clearTimeout(t);
+  }, [gateOn, phase]);
+
+  // Lock background scroll while the gate is up (the peek stays framed behind).
+  useEffect(() => {
+    if (phase !== "gate") return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [phase]);
+
+  const handleLead = async (
+    d: LeadData,
+  ): Promise<{ ok: boolean; error?: string }> => {
+    try {
+      const res = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ...d,
+          url: meta.url,
+          industry: meta.industry,
+          device: meta.device,
+          channels: meta.channels,
+        }),
+      });
+      const j = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+      };
+      if (res.ok && j.ok) {
+        setPhase("revealing");
+        window.setTimeout(() => setPhase("open"), 1100);
+        return { ok: true };
+      }
+      return { ok: false, error: j.error };
+    } catch {
+      return { ok: false };
+    }
+  };
+
   const submit = async () => {
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || submitting) return;
     setSubmitting(true);
@@ -61,7 +131,8 @@ export function ReportStage({
   if (!activePage) return null;
 
   return (
-    <div className="stage report-stage">
+    <div className="report-shell">
+      <div className={`stage report-stage ${blurred ? "is-gated" : ""}`}>
       <div className="report-head">
         <div>
           <span className="kicker">Funnel-Analyse · {meta.url}</span>
@@ -191,6 +262,16 @@ export function ReportStage({
       </div>
 
       <Calculator />
+      </div>
+
+      {gateOn && (phase === "gate" || phase === "revealing") && (
+        <LeadGate
+          phase={phase}
+          critical={critical}
+          upside={upside}
+          onSubmit={handleLead}
+        />
+      )}
     </div>
   );
 }

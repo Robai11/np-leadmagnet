@@ -10,6 +10,10 @@ import { join } from "node:path";
 
 export interface Lead {
   email: string;
+  /** Contact details from the report lead gate (optional for the legacy unlock). */
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
   url: string;
   industry: string;
   device: number;
