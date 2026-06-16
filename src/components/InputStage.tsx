@@ -107,7 +107,6 @@ export function InputStage({
   const [discoverResult, setDiscoverResult] = useState<DiscoverResult | null>(
     null,
   );
-  const [busy, setBusy] = useState(false);
   const [transitioning, setTransitioning] = useState(false); // Vorhang-Übergang Landing→Wizard
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
@@ -168,41 +167,37 @@ export function InputStage({
     }
   };
 
+  // Erkannte URLs NACHFÜLLEN — nur leere Felder, damit bereits Getipptes nicht
+  // überschrieben wird (Discovery läuft jetzt im Hintergrund).
   const applyDiscovery = (r: DiscoverResult | null) => {
     const homeUrl =
       r?.home ??
       (shopUrl.trim().startsWith("http")
         ? shopUrl.trim()
         : `https://${shopUrl.trim()}`);
-    setPageUrls({
-      home: homeUrl,
-      plp: r?.plp ?? "",
-      pdp: r?.pdp ?? "",
-      cart: "",
-      checkout: "",
-    });
+    setPageUrls((prev) => ({
+      ...prev,
+      home: prev.home || homeUrl,
+      plp: prev.plp || (r?.plp ?? ""),
+      pdp: prev.pdp || (r?.pdp ?? ""),
+    }));
   };
 
-  // Landing → erster geführter Schritt (Discovery abwarten / anstoßen).
-  const startFunnel = async () => {
-    if (!looksLikeUrl(shopUrl) || busy || transitioning) return;
-    let r = discoverResult;
-    if (!r) {
-      setBusy(true);
-      let p: Promise<DiscoverResult | null>;
-      if (discovering && discoverPromiseRef.current) {
-        p = discoverPromiseRef.current;
-      } else {
-        clearTimeout(debounceRef.current);
-        p = runDiscover(shopUrl);
-        discoverPromiseRef.current = p;
-      }
-      r = await p;
-      setBusy(false);
+  // Landing → SOFORT in die Übersicht eintauchen. Die Seiten-Erkennung läuft im
+  // Hintergrund weiter und füllt die URL-Felder nach, sobald sie da ist.
+  const startFunnel = () => {
+    if (!looksLikeUrl(shopUrl) || transitioning) return;
+    if (discoverResult) {
+      applyDiscovery(discoverResult);
+    } else if (discovering && discoverPromiseRef.current) {
+      void discoverPromiseRef.current.then((r) => applyDiscovery(r));
+    } else {
+      clearTimeout(debounceRef.current);
+      const p = runDiscover(shopUrl);
+      discoverPromiseRef.current = p;
+      void p.then((r) => applyDiscovery(r));
     }
-    applyDiscovery(r);
-    // Vorhang-Übergang: Wand öffnen + Box in die Tiefe abtauchen lassen,
-    // danach erst Schritt 2 mounten (taucht aus der Tiefe auf).
+    // Vorhang-Übergang: Wand öffnen + Box abtauchen, dann Übersicht mounten.
     setTransitioning(true);
     clearTimeout(transTimerRef.current);
     transTimerRef.current = setTimeout(() => {
@@ -282,11 +277,15 @@ export function InputStage({
             <p className="fstep-check-label">
               <Search size={17} aria-hidden="true" /> URL prüfen oder
               korrigieren
-              {detected && (
+              {detected ? (
                 <span className="fstep-detected">
                   <CheckCircle2 size={12} /> automatisch erkannt
                 </span>
-              )}
+              ) : discovering ? (
+                <span className="fstep-detecting">
+                  <Loader2 size={12} className="spin" /> wird erkannt …
+                </span>
+              ) : null}
             </p>
 
             {meta.example && (
@@ -513,7 +512,7 @@ export function InputStage({
             value={shopUrl}
             onChange={onUrlChange}
             onSubmit={startFunnel}
-            busy={busy}
+            busy={transitioning}
             status={heroStatus}
             leaving={transitioning}
           />

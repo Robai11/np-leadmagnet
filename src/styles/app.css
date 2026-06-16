@@ -2170,6 +2170,14 @@
   font-weight: 600;
   color: var(--color-accent);
 }
+.fstep-detecting {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+}
 /* Beispiel-Hinweis (PLP/PDP) */
 .fstep-example {
   display: flex;
