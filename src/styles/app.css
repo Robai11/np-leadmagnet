@@ -2517,18 +2517,25 @@
 .aload {
   position: absolute;
   inset: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: center;
-  align-content: safe center;
-  gap: clamp(28px, 5vw, 72px);
-  width: 100%;
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 0 clamp(24px, 6vw, 90px);
   overflow-y: auto;
   font-family: var(--font-display);
   animation: fstep-in 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.aload-inner {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: clamp(20px, 4vh, 56px) clamp(24px, 6vw, 90px) 8vh;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(40px, 7vh, 80px);
+}
+/* Fortschritt + Scan-Wireframe nebeneinander */
+.aload-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(28px, 5vw, 72px);
 }
 .aload-main {
   max-width: 480px;
@@ -2725,14 +2732,38 @@
   color: var(--color-accent);
   flex: 0 0 auto;
 }
+/* Wartezeit-Rechner */
+.aload-calc {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: clamp(28px, 5vh, 52px);
+}
+.aload-calc-head {
+  text-align: center;
+  margin-bottom: 22px;
+}
+.aload-calc-head .ovw-calc-title {
+  margin: 8px auto 0;
+  max-width: 30ch;
+}
+.aload-calc-sub {
+  margin: 12px auto 0;
+  max-width: 48ch;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+.aload-calc .calc {
+  margin-top: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.aload-calc .calc-head {
+  display: none;
+}
 @media (max-width: 860px) {
-  .aload {
+  .aload-top {
     grid-template-columns: 1fr;
     gap: 26px;
     align-items: start;
-    align-content: start;
-    padding-top: 6vh;
-    padding-bottom: 8vh;
   }
   .aload-aside {
     order: -1;

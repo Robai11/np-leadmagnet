@@ -19,7 +19,6 @@ import { Hero } from "@/components/Hero";
 import { HeroWall } from "@/components/HeroWall";
 import { Wireframe } from "@/components/Wireframes";
 import { OverviewStep } from "@/components/OverviewStep";
-import { CalcStep } from "@/components/CalcStep";
 import type { AnalysisContext, PageType } from "@/lib/types";
 
 const PAGE_ORDER: PageType[] = ["home", "plp", "pdp", "cart", "checkout"];
@@ -28,7 +27,6 @@ const PAGE_ORDER: PageType[] = ["home", "plp", "pdp", "cart", "checkout"];
 // dann die Seiten-Prüfung und der Kontext.
 type FunnelStep =
   | "overview"
-  | "calc"
   | "home"
   | "plp"
   | "pdp"
@@ -36,14 +34,13 @@ type FunnelStep =
   | "context";
 const FUNNEL_STEPS: FunnelStep[] = [
   "overview",
-  "calc",
   "home",
   "plp",
   "pdp",
   "cartcheckout",
   "context",
 ];
-const TOTAL_STEPS = 1 + FUNNEL_STEPS.length; // Landing + 7
+const TOTAL_STEPS = 1 + FUNNEL_STEPS.length; // Landing + 6
 
 // URL-Schritte: Label, Funnel-Position, Platzhalter, Hinweis und (für PLP/PDP)
 // ein Beispiel-Hinweis, damit klar ist, dass EINE repräsentative Seite genügt.
@@ -532,8 +529,6 @@ export function InputStage({
 
             {funnel === "overview" ? (
               <OverviewStep onNext={goNext} />
-            ) : funnel === "calc" ? (
-              <CalcStep onNext={goNext} />
             ) : funnel === "cartcheckout" ? (
               renderCartCheckout()
             ) : funnel === "context" ? (
