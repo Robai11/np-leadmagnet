@@ -2,36 +2,51 @@
 
 /*
  * BotJourney — gescriptete "KI-Bot durchläuft den Shop"-Animation für den
- * Warte-Screen (Stufe 1, stilisiert mit den Wireframes). Der Bot-Cursor wandert
- * Szene für Szene durch den Funnel: Startseite umschauen → klicken → Kategorie
- * filtern → PDP lesen/scrollen → Warenkorb → Checkout. Der Scan-Effekt erscheint
- * an passenden Stellen. Läuft in Schleife, bis die Analyse fertig ist.
+ * Warte-Screen. Desktop- und Mobile-Wireframe stehen nebeneinander und wechseln
+ * sich als aktives Gerät ab (das inaktive graut aus). Desktop = Maus-Cursor,
+ * Mobile = Finger. Die Pointer wandern Punkt zu Punkt (sie starten nicht jedes
+ * Mal neu), Bewegungen & Seitenwechsel sind langsam. Der Scan-Effekt erscheint
+ * nur selten. Läuft in Schleife, bis die Analyse fertig ist.
  */
 
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
+import { Pointer } from "lucide-react";
 import { Wireframe } from "@/components/Wireframes";
+import { WireframeMobile } from "@/components/WireframeMobile";
 import type { PageType } from "@/lib/types";
 
+type Device = "desktop" | "mobile";
 type Scene = {
-  type: PageType;
-  caption: string;
-  cx: string; // Ziel-X des Cursors/Hotspots (in % der Bühne)
-  cy: string;
-  scan?: boolean; // Scan-Linie in dieser Szene
-  scroll?: boolean; // "liest/scrollt" — Inhalt driftet
+  d: Device;
+  p: PageType;
+  x: string; // Pointer-Ziel in % des Geräts
+  y: string;
+  cap: string;
+  scan?: boolean;
 };
 
 const SCENES: Scene[] = [
-  { type: "home", caption: "schaut sich auf der Startseite um", cx: "34%", cy: "44%", scan: true },
-  { type: "home", caption: "klickt sich zu den Produkten", cx: "74%", cy: "21%" },
-  { type: "plp", caption: "filtert die passende Kategorie", cx: "16%", cy: "52%", scan: true },
-  { type: "pdp", caption: "liest die Produktbeschreibung", cx: "58%", cy: "48%", scroll: true },
-  { type: "pdp", caption: "prüft Preis und Call-to-Action", cx: "70%", cy: "64%" },
-  { type: "cart", caption: "legt das Produkt in den Warenkorb", cx: "80%", cy: "72%", scan: true },
-  { type: "checkout", caption: "durchläuft den Checkout", cx: "34%", cy: "48%", scan: true },
+  { d: "desktop", p: "home", x: "32%", y: "42%", cap: "schaut sich auf der Startseite um", scan: true },
+  { d: "desktop", p: "home", x: "74%", y: "22%", cap: "klickt sich in die Navigation" },
+  { d: "desktop", p: "plp", x: "16%", y: "52%", cap: "setzt Filter in der Kategorie" },
+  { d: "desktop", p: "plp", x: "58%", y: "46%", cap: "vergleicht die Produkte" },
+  { d: "mobile", p: "pdp", x: "50%", y: "32%", cap: "öffnet ein Produkt am Smartphone" },
+  { d: "mobile", p: "pdp", x: "50%", y: "58%", cap: "wischt durch die Produktbilder", scan: true },
+  { d: "mobile", p: "pdp", x: "52%", y: "80%", cap: "liest Beschreibung und Bewertungen" },
+  { d: "desktop", p: "pdp", x: "68%", y: "64%", cap: "prüft Preis und Call-to-Action" },
+  { d: "desktop", p: "cart", x: "80%", y: "72%", cap: "legt das Produkt in den Warenkorb" },
+  { d: "mobile", p: "cart", x: "58%", y: "72%", cap: "prüft den Warenkorb mobil", scan: true },
+  { d: "mobile", p: "checkout", x: "50%", y: "64%", cap: "startet den Checkout am Handy" },
+  { d: "desktop", p: "checkout", x: "34%", y: "50%", cap: "füllt die Checkout-Felder aus" },
+  { d: "desktop", p: "checkout", x: "66%", y: "80%", cap: "kommt bis zur Zahlung" },
 ];
-const SCENE_MS = 3600;
+const SCENE_MS = 5000;
+
+function lastFor(d: Device, upto: number): Scene {
+  for (let k = upto; k >= 0; k--) if (SCENES[k].d === d) return SCENES[k];
+  return SCENES.find((s) => s.d === d) as Scene;
+}
 
 export function BotJourney() {
   const [i, setI] = useState(0);
@@ -41,39 +56,74 @@ export function BotJourney() {
     return () => clearTimeout(t);
   }, [i]);
 
-  const s = SCENES[i];
-  const targetStyle = { "--cx": s.cx, "--cy": s.cy } as CSSProperties;
+  const cur = SCENES[i];
+  const active = cur.d;
+  const desk = lastFor("desktop", i);
+  const mob = lastFor("mobile", i);
+  const scanDesk = active === "desktop" && cur.scan;
+  const scanMob = active === "mobile" && cur.scan;
 
   return (
     <div className="bot">
-      <div className="bot-window" key={i}>
-        <div className={`bot-screen ${s.scroll ? "is-scrolling" : ""}`}>
-          <Wireframe type={s.type} />
+      <div className="bot-stage">
+        <div
+          className={`bot-dev bot-dev--desktop ${active === "desktop" ? "is-active" : ""}`}
+        >
+          <div className="bot-dev-screen" key={`d-${desk.p}`}>
+            <Wireframe type={desk.p} />
+            {scanDesk ? <span className="bot-scan" aria-hidden="true" /> : null}
+          </div>
+          <span
+            className="bot-hotspot"
+            style={{ left: desk.x, top: desk.y }}
+            aria-hidden="true"
+          />
+          <span
+            className="bot-cursor"
+            style={{ left: desk.x, top: desk.y } as CSSProperties}
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 24 24" width="28" height="28">
+              <path
+                d="M5 3l14 9-6 1 3.5 6-2.6 1.5L10.5 14 5 18z"
+                fill="#fff"
+                stroke="rgba(0,0,0,0.5)"
+                strokeWidth="1"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
         </div>
 
-        {s.scan ? <span className="bot-scan" aria-hidden="true" /> : null}
-
-        <span
-          className="bot-hotspot"
-          style={{ left: s.cx, top: s.cy }}
-          aria-hidden="true"
-        />
-        <span className="bot-cursor" style={targetStyle} aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="26" height="26">
-            <path
-              d="M5 3l14 9-6 1 3.5 6-2.6 1.5L10.5 14 5 18z"
-              fill="#fff"
-              stroke="rgba(0,0,0,0.5)"
-              strokeWidth="1"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </span>
+        <div
+          className={`bot-dev bot-dev--mobile ${active === "mobile" ? "is-active" : ""}`}
+        >
+          <div className="bot-dev-screen" key={`m-${mob.p}`}>
+            <WireframeMobile type={mob.p} />
+            {scanMob ? (
+              <span className="bot-scan bot-scan--mobile" aria-hidden="true" />
+            ) : null}
+          </div>
+          <span
+            className="bot-hotspot"
+            style={{ left: mob.x, top: mob.y }}
+            aria-hidden="true"
+          />
+          <span
+            className="bot-thumb"
+            style={{ left: mob.x, top: mob.y } as CSSProperties}
+            aria-hidden="true"
+          >
+            <Pointer size={26} />
+          </span>
+        </div>
       </div>
 
       <p className="bot-caption">
-        <span className="bot-badge">KI-Bot</span>
-        {s.caption}
+        <span className="bot-badge">
+          {active === "mobile" ? "Mobil" : "Desktop"}
+        </span>
+        KI-Bot {cur.cap}
       </p>
     </div>
   );
