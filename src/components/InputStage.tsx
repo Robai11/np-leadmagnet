@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   ArrowLeft,
@@ -22,6 +22,9 @@ import { OverviewStep } from "@/components/OverviewStep";
 import type { AnalysisContext, PageType } from "@/lib/types";
 
 const PAGE_ORDER: PageType[] = ["home", "plp", "pdp", "cart", "checkout"];
+
+// Überbrückungstexte, während die Seiten erkannt werden (Button ausgegraut).
+const WAIT_MSGS = ["Warte kurz …", "Lese deine Seiten …", "Bin gleich bereit …"];
 
 // Geführte Schritte NACH der Landingpage (Step 1): Ablauf-Übersicht zuerst,
 // dann die Seiten-Prüfung und der Kontext.
@@ -108,6 +111,7 @@ export function InputStage({
     null,
   );
   const [transitioning, setTransitioning] = useState(false); // Vorhang-Übergang Landing→Wizard
+  const [waitIdx, setWaitIdx] = useState(0); // rotierender Button-Text während der Erkennung
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
@@ -117,6 +121,16 @@ export function InputStage({
   const transTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
+
+  // Button-Text rotieren, solange die Seiten erkannt werden.
+  useEffect(() => {
+    if (!discovering) return;
+    const t = setInterval(
+      () => setWaitIdx((i) => (i + 1) % WAIT_MSGS.length),
+      1600,
+    );
+    return () => clearInterval(t);
+  }, [discovering]);
 
   // ── URLs der Seitentypen ────────────────────────────────────────────
   const [pageUrls, setPageUrls] = useState<Record<PageType, string>>({
@@ -522,6 +536,8 @@ export function InputStage({
             status={heroStatus}
             leaving={transitioning}
             loading={discovering}
+            loadingLabel={WAIT_MSGS[waitIdx]}
+            ready={!discovering && !!discoverResult}
           />
         ) : (
           <div className="fstep" key={step}>

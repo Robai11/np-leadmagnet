@@ -1983,10 +1983,11 @@
   transition: background var(--transition, 180ms) ease;
 }
 .hero-submit:hover:not(:disabled) { background: var(--color-accent-deep); }
-.hero-submit:disabled { opacity: 0.7; cursor: default; }
-/* Während unten die Seiten ausgelesen werden: Shimmer + Puls am Button */
+.hero-submit:disabled { opacity: 0.85; cursor: default; }
+/* Während die Seiten erkannt werden: Button ausgegraut + Shimmer (arbeitet) */
 .hero-submit.is-loading {
-  animation: hero-submit-pulse 1.5s ease-in-out infinite;
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.72);
 }
 .hero-submit.is-loading > * {
   position: relative;

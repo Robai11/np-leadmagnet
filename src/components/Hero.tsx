@@ -27,8 +27,12 @@ export interface HeroProps {
   status?: React.ReactNode;
   /** Übergang aktiv → Inhalt taucht in die geöffnete Wand-Mitte ab. */
   leaving?: boolean;
-  /** Seiten werden gerade erkannt → "arbeitet"-Animation am Button. */
+  /** Seiten werden gerade erkannt → Button ausgegraut + rotierender Text. */
   loading?: boolean;
+  /** Rotierender Button-Text während loading. */
+  loadingLabel?: string;
+  /** Erkennung fertig → Button freigeschaltet ("Analyse starten"). */
+  ready?: boolean;
 }
 
 export function Hero({
@@ -39,6 +43,8 @@ export function Hero({
   status,
   leaving,
   loading,
+  loadingLabel,
+  ready,
 }: HeroProps) {
   return (
     <div className={`hero-content ${leaving ? "is-leaving" : ""}`}>
@@ -84,7 +90,7 @@ export function Hero({
             className="hero-form"
             onSubmit={(e) => {
               e.preventDefault();
-              if (!busy) onSubmit();
+              if (!busy && !loading) onSubmit();
             }}
           >
             <span className="hero-form-label">KI-Analyse</span>
@@ -100,12 +106,16 @@ export function Hero({
             <button
               className={`hero-submit ${loading && !busy ? "is-loading" : ""}`}
               type="submit"
-              disabled={busy}
+              disabled={busy || loading}
             >
               {busy ? (
                 <>
                   <Loader2 size={16} className="spin" /> Analysiere …
                 </>
+              ) : loading ? (
+                (loadingLabel ?? "Lese deine Seiten …")
+              ) : ready ? (
+                "Analyse starten"
               ) : (
                 "Analysieren"
               )}
