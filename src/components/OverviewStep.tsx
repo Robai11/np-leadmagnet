@@ -28,8 +28,11 @@ type Callout = {
   pos: "tl" | "tr" | "bl" | "br";
   impact: Impact;
   uplift: string;
+  cat: string;
   problem: string;
   fix: string;
+  why: string;
+  source: string;
 };
 const SHOWCASE: { type: PageType; label: string; opt: Callout[] }[] = [
   {
@@ -40,15 +43,21 @@ const SHOWCASE: { type: PageType; label: string; opt: Callout[] }[] = [
         pos: "tl",
         impact: "high",
         uplift: "+9 %",
+        cat: "Above the Fold",
         problem: "Wertversprechen erst nach dem Scrollen sichtbar.",
-        fix: "Klare Value Proposition above the fold platzieren.",
+        fix: "Klare Value Proposition in den sichtbaren Bereich.",
+        why: "Nutzer entscheiden in unter 5 Sek., ob sie bleiben.",
+        source: "Nielsen Norman Group",
       },
       {
         pos: "br",
         impact: "mid",
         uplift: "+4 %",
+        cat: "Vertrauen / Header",
         problem: "Keine Trust-Signale im sichtbaren Bereich.",
-        fix: "Bewertungen & Siegel in den Header holen.",
+        fix: "Bewertungen, Siegel & USP in den Header holen.",
+        why: "Frühe Vertrauenssignale senken die Absprungrate.",
+        source: "Baymard Institute",
       },
     ],
   },
@@ -60,15 +69,21 @@ const SHOWCASE: { type: PageType; label: string; opt: Callout[] }[] = [
         pos: "tl",
         impact: "mid",
         uplift: "+8 %",
-        problem: "Filter auf Mobile versteckt im Menü.",
-        fix: "Filter-Leiste sichtbar & sticky machen.",
+        cat: "Filter & Navigation",
+        problem: "Filter auf Mobile im Menü versteckt.",
+        fix: "Filter-Leiste sichtbar und sticky machen.",
+        why: "Sichtbare Filter führen schneller zum passenden Produkt.",
+        source: "Baymard Institute",
       },
       {
         pos: "br",
         impact: "low",
         uplift: "+4 %",
-        problem: "Produktkacheln ohne Trust-Signale.",
-        fix: "Bewertungen pro Kachel einblenden.",
+        cat: "Produktkachel",
+        problem: "Kacheln ohne Bewertungen oder Trust.",
+        fix: "Sterne-Bewertungen pro Kachel einblenden.",
+        why: "Social Proof erhöht die Klickrate auf Produkte.",
+        source: "CXL Institute",
       },
     ],
   },
@@ -80,15 +95,21 @@ const SHOWCASE: { type: PageType; label: string; opt: Callout[] }[] = [
         pos: "tr",
         impact: "high",
         uplift: "+12 %",
-        problem: "Call-to-Action geht visuell unter.",
-        fix: "Button farblich absetzen & beim Scrollen fixieren.",
+        cat: "Call-to-Action",
+        problem: "Der „In den Warenkorb“-Button geht visuell unter.",
+        fix: "Button absetzen, vergrößern und sticky fixieren.",
+        why: "Ein dominanter CTA ist der stärkste Hebel der PDP.",
+        source: "Nielsen Norman Group",
       },
       {
         pos: "bl",
         impact: "mid",
         uplift: "+5 %",
+        cat: "Preis & Vertrauen",
         problem: "Keine Trust-Signale direkt am Preis.",
-        fix: "Bewertungen & Garantie am Preis zeigen.",
+        fix: "Bewertungen, Garantie & Versand am Preis zeigen.",
+        why: "Vertrauen am Preis reduziert das Kaufzögern.",
+        source: "Baymard Institute",
       },
     ],
   },
@@ -100,15 +121,21 @@ const SHOWCASE: { type: PageType; label: string; opt: Callout[] }[] = [
         pos: "tr",
         impact: "high",
         uplift: "+7 %",
+        cat: "Versand & Kosten",
         problem: "Versandkosten erst spät im Checkout sichtbar.",
         fix: "Kosten transparent direkt im Warenkorb zeigen.",
+        why: "Versteckte Kosten sind der häufigste Abbruchgrund.",
+        source: "Baymard Institute",
       },
       {
         pos: "bl",
         impact: "low",
         uplift: "+3 %",
+        cat: "Ablenkung",
         problem: "Gutschein-Feld lenkt vom Kauf ab.",
         fix: "Gutschein-Feld dezent einklappen.",
+        why: "Prominente Gutschein-Felder triggern Rabatt-Suche & Abbruch.",
+        source: "GoodUI",
       },
     ],
   },
@@ -120,15 +147,21 @@ const SHOWCASE: { type: PageType; label: string; opt: Callout[] }[] = [
         pos: "tl",
         impact: "high",
         uplift: "+18 %",
-        problem: "Konto-Zwang vor dem Kauf.",
-        fix: "Gast-Checkout anbieten.",
+        cat: "Konto-Zwang",
+        problem: "Konto-Erstellung vor dem Kauf erzwungen.",
+        fix: "Gast-Checkout prominent anbieten.",
+        why: "Zwangsregistrierung ist einer der Top-Abbruchgründe.",
+        source: "Baymard Institute",
       },
       {
         pos: "br",
         impact: "mid",
         uplift: "+6 %",
-        problem: "Zu viele Formularfelder.",
-        fix: "Felder reduzieren & Autofill aktivieren.",
+        cat: "Formular",
+        problem: "Zu viele Pflicht-Formularfelder.",
+        fix: "Felder reduzieren & Autofill/Adress-Lookup.",
+        why: "Jedes Feld weniger senkt die Abbruchrate messbar.",
+        source: "Baymard Institute",
       },
     ],
   },
@@ -199,10 +232,11 @@ export function OverviewStep({ onNext }: { onNext: () => void }) {
                 >
                   <div className="ovw-co-head">
                     <span className={`ovw-co-prio ovw-co-prio--${o.impact}`}>
-                      {IMPACT_LABEL[o.impact]}
+                      Priorität {IMPACT_LABEL[o.impact]}
                     </span>
                     <span className="ovw-co-uplift">{o.uplift}</span>
                   </div>
+                  <div className="ovw-co-cat">{o.cat}</div>
                   <p className="ovw-co-line">
                     <span>Schwachstelle</span>
                     {o.problem}
@@ -211,6 +245,11 @@ export function OverviewStep({ onNext }: { onNext: () => void }) {
                     <span>Empfehlung</span>
                     {o.fix}
                   </p>
+                  <p className="ovw-co-line">
+                    <span>Warum es wirkt</span>
+                    {o.why}
+                  </p>
+                  <div className="ovw-co-src">Wissensbasis · {o.source}</div>
                 </div>
               ))}
             </div>

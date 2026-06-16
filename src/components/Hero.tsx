@@ -58,7 +58,7 @@ export function Hero({
       </div>
 
       <div className="hero-cta">
-        <div className="hero-entry">
+        <div className={`hero-entry ${loading ? "is-scanning" : ""}`}>
           <div className="hero-entry-head">
             <p className="hero-eyebrow">
               <Sparkles size={17} aria-hidden="true" />

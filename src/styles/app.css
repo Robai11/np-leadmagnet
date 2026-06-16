@@ -1855,6 +1855,7 @@
 
 /* Eingabe-Reihe — transparenter Body innerhalb der Karte */
 .hero-form {
+  position: relative;
   margin: 0;
   pointer-events: auto;
   display: flex;
@@ -1865,6 +1866,54 @@
   background: transparent;
   border: none;
   box-shadow: none;
+}
+.hero-form > * {
+  position: relative;
+  z-index: 1;
+}
+/* Scan-Effekt während die URL ausgelesen wird (loading) */
+.hero-entry.is-scanning {
+  border-color: var(--color-accent);
+}
+.hero-entry.is-scanning .hero-form::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 36%,
+    rgba(61, 192, 145, 0.32) 50%,
+    transparent 64%
+  );
+  transform: translateX(-100%);
+  animation: hero-url-scan 1.7s ease-in-out infinite;
+}
+@keyframes hero-url-scan {
+  to {
+    transform: translateX(100%);
+  }
+}
+.hero-entry.is-scanning .hero-form-label {
+  animation: hero-ki-pulse 1.7s ease-in-out infinite;
+}
+@keyframes hero-ki-pulse {
+  0%,
+  100% {
+    text-shadow: none;
+    opacity: 0.8;
+  }
+  50% {
+    text-shadow: 0 0 12px rgba(61, 192, 145, 0.8);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-entry.is-scanning .hero-form::before,
+  .hero-entry.is-scanning .hero-form-label {
+    animation: none;
+  }
 }
 /* "KI-Analyse"-Label links vor der URL, durch Trenner abgesetzt */
 .hero-form-label {
@@ -3003,12 +3052,20 @@
   font-size: 16px;
   color: var(--color-accent);
 }
+.ovw-co-cat {
+  margin: 2px 0 6px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
 .ovw-co-line {
-  margin: 8px 0 0;
+  margin: 7px 0 0;
   font-family: var(--font-body);
   font-size: 12.5px;
   font-weight: 500;
-  line-height: 1.35;
+  line-height: 1.34;
   color: rgba(255, 255, 255, 0.9);
 }
 .ovw-co-line span {
@@ -3019,6 +3076,15 @@
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.45);
   margin-bottom: 2px;
+}
+.ovw-co-src {
+  margin-top: 11px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.5);
 }
 .ovw-callout--tl {
   top: 12%;
