@@ -83,18 +83,17 @@ export function LoadingStage({
             ) : null}
 
             <div className="aload-intro">
-              <span className="fstep-kicker">Analyse läuft</span>
-              <div className="aload-statement-row">
-                <span className="aload-bot" aria-hidden="true">
-                  <Bot size={26} />
-                </span>
-                <p className="aload-statement">
-                  Ich durchlaufe jetzt deinen Shop und finde die wichtigsten
-                  Optimierungen — priorisiert nach Umsatz-Effekt und
-                  Änderungsaufwand. Warte kurz oder komm in ein paar Minuten
-                  einfach wieder.
-                </p>
-              </div>
+              <span className="aload-bot" aria-hidden="true">
+                <Bot size={26} />
+              </span>
+              <h2 className="aload-headline2">
+                Ich durchlaufe jetzt deinen Shop und finde die wichtigsten
+                Optimierungen — priorisiert nach Umsatz-Effekt und
+                Änderungsaufwand.
+              </h2>
+              <p className="aload-subhead">
+                Warte kurz oder komm in ein paar Minuten einfach wieder.
+              </p>
             </div>
 
             <div className="aload-progress">

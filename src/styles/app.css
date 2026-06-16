@@ -2637,10 +2637,10 @@ h3.fstep-title {
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
-  padding: clamp(20px, 4vh, 56px) clamp(24px, 6vw, 90px) 8vh;
+  padding: clamp(18px, 3vh, 40px) clamp(24px, 6vw, 90px) 7vh;
   display: flex;
   flex-direction: column;
-  gap: clamp(40px, 7vh, 80px);
+  gap: clamp(20px, 3vh, 34px);
 }
 /* Fortschritt + Scan-Wireframe nebeneinander */
 .aload-top {
@@ -3659,42 +3659,45 @@ h3.fstep-title {
 }
 .aload-intro {
   margin: 0 auto;
-  max-width: 960px;
+  max-width: 980px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   text-align: center;
-}
-.aload-statement-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  max-width: 940px;
 }
 .aload-bot {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 54px;
-  height: 54px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: rgba(61, 192, 145, 0.16);
   border: 1px solid rgba(61, 192, 145, 0.4);
   color: var(--color-accent);
 }
-.aload-statement {
+/* Headline (gleiche Größe wie die übrigen Headlines), breit -> max. ~5 Zeilen */
+.aload-headline2 {
   margin: 0;
   color: #fff;
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(20px, 2.1vw, 28px);
-  line-height: 1.32;
-  letter-spacing: -0.01em;
+  font-weight: 800;
+  font-size: clamp(26px, 3.2vw, 40px);
+  line-height: 1.16;
+  letter-spacing: -0.02em;
   text-align: center;
-  max-width: 32ch;
+  max-width: 900px;
+}
+.aload-subhead {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-body);
+  font-size: clamp(15px, 1.6vw, 19px);
+  line-height: 1.45;
+  text-align: center;
+  max-width: 52ch;
 }
 .aload-progress {
   margin: 0 auto;

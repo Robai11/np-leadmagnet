@@ -118,13 +118,6 @@ export function BotJourney() {
           </span>
         </div>
       </div>
-
-      <p className="bot-caption">
-        <span className="bot-badge">
-          {active === "mobile" ? "Mobil" : "Desktop"}
-        </span>
-        KI-Bot {cur.cap}
-      </p>
     </div>
   );
 }
