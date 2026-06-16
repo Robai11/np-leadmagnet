@@ -2679,14 +2679,39 @@ h3.fstep-title {
 .aload-mute[aria-pressed="true"] {
   color: rgba(255, 255, 255, 0.55);
 }
-.aload-url {
-  margin: 0 0 20px;
+/* Headline über der URL */
+.aload-headline {
+  margin: 0;
   color: #fff;
   font-weight: 800;
-  font-size: clamp(20px, 2.4vw, 30px);
-  line-height: 1.15;
+  font-size: clamp(22px, 2.6vw, 34px);
+  line-height: 1.14;
   letter-spacing: -0.02em;
+  max-width: 32ch;
+}
+.aload-sub {
+  margin: 0;
+  max-width: 60ch;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: var(--font-body);
+  font-size: clamp(14px, 1.4vw, 16px);
+  line-height: 1.5;
+}
+.aload-sub--mute {
+  color: rgba(255, 255, 255, 0.5);
+}
+/* URL jetzt sekundär, kleiner & monospaced */
+.aload-url {
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(14px, 1.5vw, 17px);
+  letter-spacing: -0.01em;
   word-break: break-all;
+}
+.aload-headbar .aload-bar {
+  margin: 6px 0 0;
 }
 /* Fortschrittsbalken (grün) */
 .aload-bar {
@@ -3458,9 +3483,9 @@ h3.fstep-title {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(20px, 4vw, 48px);
+  gap: clamp(24px, 4vw, 60px);
   width: 100%;
-  max-width: 880px;
+  max-width: 1120px;
 }
 .bot-dev {
   position: relative;
@@ -3468,10 +3493,10 @@ h3.fstep-title {
   transition: opacity 0.8s ease, filter 0.8s ease, transform 0.8s ease;
 }
 .bot-dev--desktop {
-  width: min(560px, 60vw);
+  width: min(740px, 58vw);
 }
 .bot-dev--mobile {
-  width: min(176px, 22vw);
+  width: min(264px, 22vw);
 }
 .bot-dev:not(.is-active) {
   opacity: 0.32;

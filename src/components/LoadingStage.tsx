@@ -39,6 +39,22 @@ export function LoadingStage({
   );
   const pct = Math.min(100, progressPct);
 
+  // Geschätzte Restzeit: sobald genug Fortschritt da ist, aus
+  // elapsed/Fortschritt hochrechnen (passt sich selbst an), sonst grobe
+  // Schätzung (~50 s/Seite + Overhead). Immer als "ca." gekennzeichnet.
+  let estLabel: string;
+  if (done || pct >= 99) {
+    estLabel = "fast fertig …";
+  } else {
+    const fallback = total * 50 + 30;
+    const estTotal = pct >= 8 && elapsed >= 4 ? elapsed / (pct / 100) : fallback;
+    const remaining = Math.max(10, Math.round(estTotal - elapsed));
+    estLabel =
+      remaining > 90
+        ? `noch ca. ${Math.ceil(remaining / 60)} Min`
+        : `noch ca. ${Math.ceil(remaining / 15) * 15} Sek`;
+  }
+
   return (
     <div className="hero hero--deep">
       <HeroWall />
@@ -70,7 +86,19 @@ export function LoadingStage({
                 ) : null}
               </div>
 
-              <h2 className="aload-url">{ctx.url}</h2>
+              <h2 className="aload-headline">
+                Ich durchlaufe jetzt deinen Shop und finde die wichtigsten
+                Optimierungen.
+              </h2>
+              <p className="aload-sub">
+                Übrigens: Ich priorisiere nach Umsatz-Effekt und
+                Änderungsaufwand gleich mit.
+              </p>
+              <p className="aload-sub aload-sub--mute">
+                Warte kurz oder komm in ein paar Minuten einfach wieder.
+              </p>
+
+              <p className="aload-url">{ctx.url}</p>
 
               <div className={`aload-bar ${done ? "" : "is-busy"}`}>
                 <div className="aload-bar-fill" style={{ width: `${pct}%` }} />
@@ -78,7 +106,7 @@ export function LoadingStage({
 
               <p className="aload-count">
                 {done ? null : <Loader2 size={14} className="spin" />}
-                {doneCount} von {total} Seiten gelesen · läuft seit {elapsed}s
+                {doneCount} von {total} Seiten gelesen · {estLabel}
               </p>
             </div>
 
