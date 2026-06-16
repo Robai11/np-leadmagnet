@@ -16,10 +16,18 @@ export function ReportStage({
   result,
   unlocked,
   onUnlock,
+  peekMs = 8000,
+  onLead,
 }: {
   result: AnalysisResult;
   unlocked: boolean;
   onUnlock: (email: string) => Promise<boolean>;
+  /** How long the full report is shown before the lead gate comes up. */
+  peekMs?: number;
+  /** Override the lead capture (preview/tests). Default POSTs to /api/lead. */
+  onLead?: (
+    data: LeadData,
+  ) => Promise<{ ok: boolean; error?: string }>;
 }) {
   const { meta, overall, pages, notes } = result;
   // A page may carry two views (mobile + desktop at a 50/50 split); count both.
@@ -65,12 +73,12 @@ export function ReportStage({
     };
   }, [pages]);
 
-  // Peek → gate after a few seconds.
+  // Peek → gate after the configured peek window.
   useEffect(() => {
     if (!gateOn || phase !== "peek") return;
-    const t = window.setTimeout(() => setPhase("gate"), 5000);
+    const t = window.setTimeout(() => setPhase("gate"), peekMs);
     return () => window.clearTimeout(t);
-  }, [gateOn, phase]);
+  }, [gateOn, phase, peekMs]);
 
   // Lock background scroll while the gate is up (the peek stays framed behind).
   useEffect(() => {
@@ -85,31 +93,36 @@ export function ReportStage({
   const handleLead = async (
     d: LeadData,
   ): Promise<{ ok: boolean; error?: string }> => {
-    try {
-      const res = await fetch("/api/lead", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          ...d,
-          url: meta.url,
-          industry: meta.industry,
-          device: meta.device,
-          channels: meta.channels,
-        }),
-      });
-      const j = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        error?: string;
-      };
-      if (res.ok && j.ok) {
-        setPhase("revealing");
-        window.setTimeout(() => setPhase("open"), 1100);
-        return { ok: true };
+    let res: { ok: boolean; error?: string };
+    if (onLead) {
+      res = await onLead(d);
+    } else {
+      try {
+        const r = await fetch("/api/lead", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            ...d,
+            url: meta.url,
+            industry: meta.industry,
+            device: meta.device,
+            channels: meta.channels,
+          }),
+        });
+        const j = (await r.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+        };
+        res = r.ok && j.ok ? { ok: true } : { ok: false, error: j.error };
+      } catch {
+        res = { ok: false };
       }
-      return { ok: false, error: j.error };
-    } catch {
-      return { ok: false };
     }
+    if (res.ok) {
+      setPhase("revealing");
+      window.setTimeout(() => setPhase("open"), 1100);
+    }
+    return res;
   };
 
   const submit = async () => {

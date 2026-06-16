@@ -4087,3 +4087,49 @@ h3.fstep-title {
     transition: none !important;
   }
 }
+
+/* Dev-only gate preview route (/gate-preview). */
+.cs-root--preview {
+  padding-top: 44px;
+}
+.gate-preview-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 16px;
+  background: rgba(6, 28, 40, 0.92);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #cfe9df;
+}
+.gpb-title {
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.gpb-btn {
+  padding: 5px 12px;
+  border: 1px solid rgba(61, 192, 145, 0.5);
+  border-radius: var(--radius-pill);
+  background: rgba(61, 192, 145, 0.16);
+  color: #7fe6bd;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.gpb-btn:hover {
+  background: rgba(61, 192, 145, 0.28);
+}
+.gpb-hint {
+  color: rgba(255, 255, 255, 0.55);
+}
