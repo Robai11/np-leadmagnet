@@ -1,22 +1,13 @@
 "use client";
 
 /*
- * /usp-preview — dev-only Auswahlseite: drei Varianten, wie die USP-/Wissens-
- * quellen als "Backend" der Analyse auf der Landingpage dargestellt werden
- * können (Bereich unter dem Analyse-Feld). Nach der Entscheidung wandert die
- * gewählte Variante in den Hero. Dev-only (404 in Produktion).
+ * /usp-preview — dev-only Auswahlseite: drei Varianten, wie "Die Knowledge
+ * Engine dahinter" (4 Wissensquellen) DIREKT in die URL-Eingabe-Karte des Hero
+ * eingewoben wird — jeweils ÜBER dem Eingabefeld. Nach der Entscheidung wandert
+ * die gewählte Variante in den Hero. Dev-only (404 in Produktion).
  */
 
-import {
-  Briefcase,
-  Trophy,
-  Users,
-  Brain,
-  Sparkles,
-  Cpu,
-  Check,
-  Layers,
-} from "lucide-react";
+import { Briefcase, Trophy, Users, Brain, Cpu, Check } from "lucide-react";
 import { notFound } from "next/navigation";
 
 const USPS = [
@@ -27,13 +18,13 @@ const USPS = [
   },
   {
     icon: Trophy,
-    title: "Tricks & Kniffe der Top-500-Online-Shops",
+    title: "Tricks & Kniffe der Top-500-Shops",
     sub: "aus echter Praxis",
   },
   {
     icon: Users,
     title: "Kuratierte Insights",
-    sub: "von Senior Conversion-Experten",
+    sub: "von Senior-Conversion-Experten",
   },
   {
     icon: Brain,
@@ -42,98 +33,94 @@ const USPS = [
   },
 ];
 
-/* Variante 1 — Module fließen in die KI-Engine. */
+const ENGINE_LABEL = "Die Knowledge Engine dahinter";
+
+/* Die Eingabezeile (rein visuell, nicht funktional in der Vorschau). */
+function EntryForm() {
+  return (
+    <form className="hero-form" onSubmit={(e) => e.preventDefault()}>
+      <span className="hero-form-label">KI-Analyse</span>
+      <input
+        className="hero-input"
+        type="url"
+        placeholder="https://dein-shop.de"
+        aria-label="Shop-URL"
+      />
+      <button className="hero-submit" type="button">
+        Analysieren
+      </button>
+    </form>
+  );
+}
+
+/* Variante 1 — genestetes Engine-Panel mit 2×2-Grid über dem Feld. */
 function Variant1() {
   return (
-    <div className="uspv uspv1">
-      <span className="uspv-kicker">
-        <Cpu size={15} aria-hidden="true" /> Das steckt im Backend deiner Analyse
-      </span>
-      <div className="uspv1-flow">
-        <div className="uspv1-mods">
+    <div className="hero-entry">
+      <div className="kev1-head">
+        <span className="kev-kicker">
+          <Cpu size={14} aria-hidden="true" /> {ENGINE_LABEL}
+        </span>
+        <div className="kev1-grid">
           {USPS.map((u) => (
-            <div className="uspv1-mod" key={u.title}>
-              <span className="uspv1-ico">
-                <u.icon size={18} aria-hidden="true" />
-              </span>
-              <div className="uspv1-txt">
+            <div className="kev1-item" key={u.title}>
+              <u.icon size={18} aria-hidden="true" />
+              <div>
                 <b>{u.title}</b>
                 <span>{u.sub}</span>
               </div>
             </div>
           ))}
         </div>
-        <div className="uspv1-feed" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </div>
-        <div className="uspv1-engine">
-          <Sparkles size={22} aria-hidden="true" />
-          <b>KI-Analyse</b>
-          <span>destilliert daraus deine Hebel</span>
-        </div>
       </div>
+      <EntryForm />
     </div>
   );
 }
 
-/* Variante 2 — Wissens-Schichten als Fundament der Empfehlungen. */
+/* Variante 2 — Checkliste über dem Feld. */
 function Variant2() {
   return (
-    <div className="uspv uspv2">
-      <div className="uspv2-cap">
-        <Sparkles size={16} aria-hidden="true" /> Deine personalisierten
-        Optimierungen
+    <div className="hero-entry">
+      <div className="kev2-head">
+        <span className="kev-kicker">
+          <Cpu size={14} aria-hidden="true" /> {ENGINE_LABEL}
+        </span>
+        <ul className="kev2-list">
+          {USPS.map((u) => (
+            <li key={u.title}>
+              <Check size={15} aria-hidden="true" />
+              <b>{u.title}</b> <span>{u.sub}</span>
+            </li>
+          ))}
+        </ul>
       </div>
-      <span className="uspv2-on">basieren auf vier Wissens-Schichten</span>
-      <div className="uspv2-stack">
-        {USPS.map((u, i) => (
-          <div
-            className="uspv2-layer"
-            key={u.title}
-            style={{ "--i": i } as React.CSSProperties}
-          >
-            <span className="uspv2-ico">
-              <u.icon size={17} aria-hidden="true" />
-            </span>
-            <b>{u.title}</b>
-            <span className="uspv2-sub">{u.sub}</span>
-          </div>
-        ))}
-      </div>
+      <EntryForm />
     </div>
   );
 }
 
-/* Variante 3 — Engine-Terminal lädt die Wissensbasis. */
+/* Variante 3 — Icon-Strip (4 Kacheln) über dem Feld. */
 function Variant3() {
   return (
-    <div className="uspv uspv3">
-      <div className="uspv3-term">
-        <div className="uspv3-bar">
-          <span className="uspv3-dot" />
-          <span className="uspv3-dot" />
-          <span className="uspv3-dot" />
-          <em>
-            <Layers size={12} aria-hidden="true" /> wissensbasis.engine
-          </em>
-        </div>
-        <div className="uspv3-body">
+    <div className="hero-entry">
+      <div className="kev3-head">
+        <span className="kev-kicker">
+          <Cpu size={14} aria-hidden="true" /> {ENGINE_LABEL}
+        </span>
+        <div className="kev3-strip">
           {USPS.map((u) => (
-            <div className="uspv3-line" key={u.title}>
-              <Check size={14} aria-hidden="true" className="uspv3-check" />
-              <span className="uspv3-tag">geladen</span>
+            <div className="kev3-tile" key={u.title}>
+              <span className="kev3-ico">
+                <u.icon size={18} aria-hidden="true" />
+              </span>
               <b>{u.title}</b>
-              <span className="uspv3-sub">· {u.sub}</span>
+              <span>{u.sub}</span>
             </div>
           ))}
-          <div className="uspv3-ready">
-            <Sparkles size={14} aria-hidden="true" /> Analyse-Engine bereit
-            <span className="uspv3-caret" aria-hidden="true" />
-          </div>
         </div>
       </div>
+      <EntryForm />
     </div>
   );
 }
@@ -142,22 +129,23 @@ export default function UspPreviewPage() {
   if (process.env.NODE_ENV === "production") notFound();
 
   const variants = [
-    { n: 1, name: "Engine-Reihe — Module fließen in die KI", el: <Variant1 /> },
     {
-      n: 2,
-      name: "Fundament — Wissens-Schichten tragen die Empfehlungen",
-      el: <Variant2 />,
+      n: 1,
+      name: "Engine-Panel — 2×2-Grid in einem genesteten Feld",
+      el: <Variant1 />,
     },
-    { n: 3, name: "Terminal — Engine lädt die Wissensbasis", el: <Variant3 /> },
+    { n: 2, name: "Checkliste — vier Zeilen mit Haken", el: <Variant2 /> },
+    { n: 3, name: "Icon-Strip — vier Kacheln nebeneinander", el: <Variant3 /> },
   ];
 
   return (
     <div className="usp-preview">
       <header className="usp-preview-head">
-        <h1>USP-„Backend“ — 3 Varianten</h1>
+        <h1>„Die Knowledge Engine dahinter“ — 3 Varianten in der URL-Box</h1>
         <p>
-          Für den Bereich unter dem Analyse-Feld auf der Landingpage. Sag mir,
-          welche dir gefällt — dann baue ich sie in den Hero ein.
+          Die vier Wissensquellen sind jeweils ÜBER dem Eingabefeld in die Karte
+          eingewoben. Sag mir, welche dir gefällt — dann baue ich sie in den Hero
+          ein.
         </p>
       </header>
 

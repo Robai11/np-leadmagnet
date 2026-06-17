@@ -4320,311 +4320,159 @@ h3.fstep-title {
     ),
     linear-gradient(180deg, #0c2330, #071620);
 }
-.uspv-kicker {
+
+/* Gemeinsamer Kicker für die "Knowledge Engine"-Header. */
+.kev-kicker {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   color: var(--color-accent);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
-
-/* Variante 1 — Engine-Reihe */
-.uspv1-flow {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  align-items: center;
-  gap: clamp(16px, 3vw, 40px);
-  margin-top: 22px;
+.kev-kicker svg {
+  flex: none;
 }
-.uspv1-mods {
+/* Karte in der Vorschau zentrieren. */
+.usp-stage .hero-entry {
+  margin: 0 auto;
+}
+
+/* ── Variante 1 — genestetes Engine-Panel (2×2-Grid) ─────────────────────── */
+.kev1-head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 14px 14px 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(61, 192, 145, 0.06);
+  border: 1px solid rgba(61, 192, 145, 0.28);
+}
+.kev1-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px 14px;
 }
-.uspv1-mod {
+.kev1-item {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 13px 15px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 10px;
+  min-width: 0;
 }
-.uspv1-ico {
+.kev1-item > svg {
   flex: none;
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: rgba(61, 192, 145, 0.16);
   color: #6fe3b8;
 }
-.uspv1-txt {
+.kev1-item div {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  line-height: 1.25;
+  line-height: 1.2;
 }
-.uspv1-txt b {
+.kev1-item b {
   color: #fff;
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: 13px;
   font-weight: 700;
 }
-.uspv1-txt span {
+.kev1-item span {
   color: rgba(255, 255, 255, 0.55);
   font-family: var(--font-body);
-  font-size: 12.5px;
-}
-.uspv1-feed {
-  position: relative;
-  width: clamp(40px, 6vw, 90px);
-  height: 3px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, transparent, rgba(61, 192, 145, 0.4));
-}
-.uspv1-feed i {
-  position: absolute;
-  top: 50%;
-  width: 7px;
-  height: 7px;
-  margin-top: -3.5px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  box-shadow: 0 0 8px rgba(61, 192, 145, 0.8);
-  animation: uspv1-flow 1.8s linear infinite;
-}
-.uspv1-feed i:nth-child(2) {
-  animation-delay: 0.6s;
-}
-.uspv1-feed i:nth-child(3) {
-  animation-delay: 1.2s;
-}
-@keyframes uspv1-flow {
-  from {
-    left: -8px;
-    opacity: 0;
-  }
-  20% {
-    opacity: 1;
-  }
-  80% {
-    opacity: 1;
-  }
-  to {
-    left: 100%;
-    opacity: 0;
-  }
-}
-.uspv1-engine {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 20px 22px;
-  border-radius: 14px;
-  text-align: center;
-  color: #fff;
-  background: linear-gradient(
-    180deg,
-    rgba(61, 192, 145, 0.2),
-    rgba(61, 192, 145, 0.08)
-  );
-  border: 1px solid rgba(61, 192, 145, 0.5);
-  box-shadow: 0 0 40px rgba(61, 192, 145, 0.18);
-}
-.uspv1-engine svg {
-  color: var(--color-accent);
-}
-.uspv1-engine b {
-  font-size: 17px;
-  font-weight: 800;
-}
-.uspv1-engine span {
-  max-width: 140px;
-  color: rgba(255, 255, 255, 0.6);
-  font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 11.5px;
 }
 
-/* Variante 2 — Fundament/Stack */
-.uspv2 {
+/* ── Variante 2 — Checkliste ─────────────────────────────────────────────── */
+.kev2-head {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  gap: 10px;
+  padding: 16px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
-.uspv2-cap {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 11px 20px;
-  border-radius: var(--radius-pill);
-  background: var(--color-accent);
-  color: var(--color-ink);
-  font-weight: 800;
-  font-size: 15px;
-}
-.uspv2-cap svg {
-  color: var(--color-ink);
-}
-.uspv2-on {
-  margin: 10px 0 16px;
-  color: rgba(255, 255, 255, 0.6);
-  font-family: var(--font-body);
-  font-size: 13px;
-}
-.uspv2-on::before {
-  content: "↑";
-  display: block;
-  margin-bottom: 2px;
-  color: var(--color-accent);
-  font-size: 18px;
-}
-.uspv2-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  max-width: 580px;
-}
-.uspv2-layer {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  border-radius: 12px;
-  text-align: left;
-  background: rgba(255, 255, 255, calc(0.04 + var(--i, 0) * 0.03));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-.uspv2-ico {
-  flex: none;
+.kev2-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  place-items: center;
-  color: #6fe3b8;
+  gap: 8px;
 }
-.uspv2-layer b {
-  color: #fff;
-  font-size: 14.5px;
-  font-weight: 700;
-}
-.uspv2-sub {
-  margin-left: auto;
-  color: rgba(255, 255, 255, 0.55);
-  font-family: var(--font-body);
-  font-size: 13px;
-}
-
-/* Variante 3 — Terminal */
-.uspv3 {
-  display: flex;
-  justify-content: center;
-}
-.uspv3-term {
-  width: 100%;
-  max-width: 640px;
-  overflow: hidden;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: #061119;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-  font-family: var(--font-mono);
-}
-.uspv3-bar {
+.kev2-list li {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-.uspv3-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-}
-.uspv3-dot:nth-child(1) {
-  background: #ff5f57;
-}
-.uspv3-dot:nth-child(2) {
-  background: #febc2e;
-}
-.uspv3-dot:nth-child(3) {
-  background: #28c840;
-}
-.uspv3-bar em {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: 6px;
-  font-style: normal;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
-}
-.uspv3-body {
-  display: flex;
-  flex-direction: column;
   gap: 9px;
-  padding: 16px 18px 18px;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: var(--font-body);
   font-size: 13.5px;
 }
-.uspv3-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  color: rgba(255, 255, 255, 0.85);
-}
-.uspv3-check {
+.kev2-list svg {
   flex: none;
   color: var(--color-accent);
 }
-.uspv3-tag {
-  color: #6fe3b8;
-  opacity: 0.8;
-}
-.uspv3-line b {
+.kev2-list b {
+  font-family: var(--font-display);
+  font-weight: 700;
   color: #fff;
-  font-weight: 700;
 }
-.uspv3-sub {
-  color: rgba(255, 255, 255, 0.45);
-}
-.uspv3-ready {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-top: 6px;
-  padding-top: 11px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.12);
-  color: var(--color-accent);
-  font-weight: 700;
-}
-.uspv3-caret {
-  width: 8px;
-  height: 15px;
-  margin-left: 2px;
-  background: var(--color-accent);
-  animation: uspv3-blink 1s steps(1) infinite;
-}
-@keyframes uspv3-blink {
-  50% {
-    opacity: 0;
-  }
+.kev2-list span {
+  color: rgba(255, 255, 255, 0.55);
 }
 
-@media (max-width: 720px) {
-  .uspv1-flow,
-  .uspv1-mods {
-    grid-template-columns: 1fr;
-  }
-  .uspv1-feed {
-    width: 100%;
+/* ── Variante 3 — Icon-Strip (4 Kacheln) ─────────────────────────────────── */
+.kev3-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 13px;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.kev3-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+.kev3-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.kev3-ico {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(61, 192, 145, 0.16);
+  color: #6fe3b8;
+}
+.kev3-tile b {
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.kev3-tile span {
+  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  line-height: 1.25;
+}
+
+@media (max-width: 560px) {
+  .kev1-grid,
+  .kev3-strip {
+    grid-template-columns: 1fr 1fr;
   }
 }
