@@ -9,7 +9,6 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
-  Lightbulb,
   Search,
   Check,
   Info,
@@ -23,8 +22,20 @@ import type { AnalysisContext, PageType } from "@/lib/types";
 
 const PAGE_ORDER: PageType[] = ["home", "plp", "pdp", "cart", "checkout"];
 
+// Kernzielgruppe — Alters-Schwerpunkte (Mehrfachauswahl).
+const AGE_GROUPS = ["18–24", "25–34", "35–44", "45–54", "55+"];
+
+// Geschlechter-Gewichtung (Slider) → kurzes Label für die Analyse.
+function genderLabel(female: number): string {
+  if (female >= 45 && female <= 55) return "ausgeglichen (w/m)";
+  return female > 55
+    ? `überwiegend weiblich (${female}%)`
+    : `überwiegend männlich (${100 - female}%)`;
+}
+
 // Überbrückungstexte, während die Seiten erkannt werden (Button ausgegraut).
-const WAIT_MSGS = ["Warte kurz …", "Lese deine Seiten …", "Bin gleich bereit …"];
+// Genau zwei Stufen, einmaliger Wechsel — kein Loop.
+const WAIT_MSGS = ["Warte kurz …", "Gleich bereit …"];
 
 // Geführte Schritte NACH der Landingpage (Step 1): Ablauf-Übersicht zuerst,
 // dann die Seiten-Prüfung und der Kontext.
@@ -69,7 +80,7 @@ const PAGE_STEP: Record<
     placeholder: "https://dein-shop.de/kategorie/…",
     hint: "Sortierung, Filter und Produktkacheln — hier finden Nutzer das passende Produkt. Oder eben nicht.",
     example:
-      "Nur ein Beispiel: Eine repräsentative Kategorieseite genügt — du musst nicht alle eintragen.",
+      "Bitte trage eine einzige repräsentative Product Listing Page ein — du musst nicht alle eintragen.",
   },
   pdp: {
     label: "Produktdetailseite",
@@ -77,7 +88,7 @@ const PAGE_STEP: Record<
     placeholder: "https://dein-shop.de/produkt/…",
     hint: "Produktbilder, Preis, Call-to-Action und Trust-Elemente — die wichtigste Conversion-Seite im Funnel.",
     example:
-      "Nur ein Beispiel: Eine repräsentative Produktseite genügt — du musst nicht alle eintragen.",
+      "Bitte trage eine einzige repräsentative Produktdetailseite ein — du musst nicht alle eintragen.",
   },
 };
 
@@ -103,6 +114,11 @@ export function InputStage({
   const [industry, setIndustry] = useState("");
   const [device, setDevice] = useState(60);
   const [channels, setChannels] = useState<string[]>([]);
+  // Kernzielgruppe + Herausforderungen (Step 7)
+  const [ageGroups, setAgeGroups] = useState<string[]>([]);
+  const [genderFemale, setGenderFemale] = useState(50);
+  const [audienceTraits, setAudienceTraits] = useState("");
+  const [challenges, setChallenges] = useState("");
 
   // ── Step 1 / Discovery ──────────────────────────────────────────────
   const [shopUrl, setShopUrl] = useState("");
@@ -122,14 +138,12 @@ export function InputStage({
     undefined,
   );
 
-  // Button-Text rotieren, solange die Seiten erkannt werden.
+  // Button-Text einmal wechseln (Warte kurz → Gleich bereit), kein Loop.
+  // Der Start-Index wird in runDiscover zurückgesetzt (vermeidet setState im Effect).
   useEffect(() => {
     if (!discovering) return;
-    const t = setInterval(
-      () => setWaitIdx((i) => (i + 1) % WAIT_MSGS.length),
-      1600,
-    );
-    return () => clearInterval(t);
+    const t = setTimeout(() => setWaitIdx(1), 2200);
+    return () => clearTimeout(t);
   }, [discovering]);
 
   // ── URLs der Seitentypen ────────────────────────────────────────────
@@ -150,6 +164,7 @@ export function InputStage({
   // ── Auto-Discovery ──────────────────────────────────────────────────
   const runDiscover = async (raw: string): Promise<DiscoverResult | null> => {
     if (!looksLikeUrl(raw)) return null;
+    setWaitIdx(0); // Button-Text bei jedem Lauf wieder bei "Warte kurz …" starten
     setDiscovering(true);
     setDiscoverResult(null);
     try {
@@ -236,11 +251,17 @@ export function InputStage({
         url: pageUrls[t].trim(),
         selected: true,
       })),
+      audienceAge: ageGroups.join(", ") || undefined,
+      audienceGender: genderLabel(genderFemale),
+      audienceTraits: audienceTraits.trim() || undefined,
+      challenges: challenges.trim() || undefined,
     });
   };
 
   const toggleChannel = (c: string) =>
     setChannels((p) => (p.includes(c) ? p.filter((x) => x !== c) : [...p, c]));
+  const toggleAge = (g: string) =>
+    setAgeGroups((p) => (p.includes(g) ? p.filter((x) => x !== g) : [...p, g]));
 
   // Fokussiert das URL-Feld beim Schritt-Wechsel OHNE den (durch die große Wand)
   // scrollbaren Hero-Container zu verschieben — sonst rutscht die Top-Bar raus.
@@ -285,7 +306,7 @@ export function InputStage({
     return (
       <>
         <h2 className="fstep-tophead">
-          Hilf mir schnell, die richtigen URLs zu finden
+          Check bitte kurz, ob diese URL zum Seitentyp passt
         </h2>
         <div className="fstep-body">
           <div className="fstep-main">
@@ -343,7 +364,7 @@ export function InputStage({
               <span className="fstep-confirm-box" aria-hidden="true">
                 <Check size={13} />
               </span>
-              Ich habe die URL geprüft
+              Die URL ist richtig oder ich habe sie gleich korrigiert
             </label>
           </div>
 
@@ -398,120 +419,146 @@ export function InputStage({
   const renderContext = () => {
     const valid = !!industry && channels.length > 0;
     return (
-      <div className="fstep-body">
-        <div className="fstep-main fstep-main--wide">
-          <span className="fstep-kicker">Letzter Schritt</span>
-          <h2 className="fstep-title">Kontext deiner Analyse</h2>
-          <p className="fstep-hint">
-            Branche, Traffic-Verteilung und Kanäle schärfen die Empfehlungen für
-            deinen Shop.
-          </p>
+      <div className="fstep-context">
+        <h2 className="fstep-tophead fstep-tophead--ctx">
+          Damit du hochspezifische Optimierungen erhältst, gib noch folgende
+          Informationen an
+        </h2>
 
-          <div className="field">
-            <label>
-              Branche <em>· präzisiert die Analyse</em>
-            </label>
-            <div className="chips">
-              {INDUSTRIES.map((i) => (
-                <button
-                  key={i}
-                  className={`chip ${industry === i ? "on" : ""}`}
-                  onClick={() => setIndustry(i)}
-                >
-                  {i}
-                </button>
-              ))}
+        <div className="ctx-grid">
+          {/* Spalte 1 — Shop-Kontext */}
+          <div className="ctx-col">
+            <div className="field">
+              <label>
+                Branche <em>· präzisiert die Analyse</em>
+              </label>
+              <div className="chips">
+                {INDUSTRIES.map((i) => (
+                  <button
+                    key={i}
+                    className={`chip ${industry === i ? "on" : ""}`}
+                    onClick={() => setIndustry(i)}
+                  >
+                    {i}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="field">
+              <label>Traffic-Verteilung</label>
+              <div className="device">
+                <Smartphone size={16} />
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={100 - device}
+                  onChange={(e) => setDevice(100 - Number(e.target.value))}
+                />
+                <Monitor size={16} />
+              </div>
+              <div className="device-lbl">
+                <span>{device}% Mobile</span>
+                <span>{100 - device}% Desktop</span>
+              </div>
+            </div>
+
+            <div className="field">
+              <label>
+                Wichtigste Traffic-Kanäle <em>· Mehrfachauswahl</em>
+              </label>
+              <div className="chips">
+                {CHANNELS.map((c) => (
+                  <button
+                    key={c}
+                    className={`chip ${channels.includes(c) ? "on" : ""}`}
+                    onClick={() => toggleChannel(c)}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="field">
-            <label>Traffic-Verteilung</label>
-            <div className="device">
-              <Smartphone size={16} />
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={100 - device}
-                onChange={(e) => setDevice(100 - Number(e.target.value))}
+          {/* Spalte 2 — Kernzielgruppe + Herausforderungen */}
+          <div className="ctx-col">
+            <div className="field">
+              <label>
+                Kernzielgruppe — Alters-Schwerpunkt <em>· Mehrfachauswahl</em>
+              </label>
+              <div className="chips">
+                {AGE_GROUPS.map((g) => (
+                  <button
+                    key={g}
+                    className={`chip ${ageGroups.includes(g) ? "on" : ""}`}
+                    onClick={() => toggleAge(g)}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="field">
+              <label>Geschlechter-Gewichtung</label>
+              <div className="device">
+                <span className="device-end">weiblich</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={genderFemale}
+                  onChange={(e) => setGenderFemale(Number(e.target.value))}
+                />
+                <span className="device-end">männlich</span>
+              </div>
+              <div className="device-lbl">
+                <span>{genderFemale}% weiblich</span>
+                <span>{100 - genderFemale}% männlich</span>
+              </div>
+            </div>
+
+            <div className="field">
+              <label>
+                Merkmale der Zielgruppe <em>· optional</em>
+              </label>
+              <textarea
+                className="ctx-textarea"
+                rows={2}
+                placeholder="z. B. preisbewusste Einkäufer, technikaffin, kauft Geschenke …"
+                value={audienceTraits}
+                onChange={(e) => setAudienceTraits(e.target.value)}
               />
-              <Monitor size={16} />
             </div>
-            <div className="device-lbl">
-              <span>{device}% Mobile</span>
-              <span>{100 - device}% Desktop</span>
+
+            <div className="field">
+              <label>
+                Aktuelle Shop-Herausforderungen <em>· optional</em>
+              </label>
+              <textarea
+                className="ctx-textarea"
+                rows={2}
+                placeholder="z. B. viele Warenkorbabbrüche, schwache Mobile-Conversion, hohe Retouren …"
+                value={challenges}
+                onChange={(e) => setChallenges(e.target.value)}
+              />
             </div>
-          </div>
-
-          <div className="field">
-            <label>
-              Wichtigste Traffic-Kanäle <em>· Mehrfachauswahl</em>
-            </label>
-            <div className="chips">
-              {CHANNELS.map((c) => (
-                <button
-                  key={c}
-                  className={`chip ${channels.includes(c) ? "on" : ""}`}
-                  onClick={() => toggleChannel(c)}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {!valid && (
-            <p className="fstep-warn">
-              <AlertCircle size={13} /> Bitte Branche und mindestens einen Kanal
-              wählen.
-            </p>
-          )}
-
-          <div className="fstep-actions">
-            <button className="cta" disabled={!valid} onClick={submit}>
-              Funnel-Analyse starten <ArrowRight size={18} />
-            </button>
           </div>
         </div>
 
-        <div className="fstep-aside">
-          <div className="fstep-recap">
-            <h3>
-              <Lightbulb size={15} /> Das wird analysiert
-            </h3>
-            <ul>
-              <li>
-                <span className="recap-row">
-                  <span className="hero-dot" /> Startseite
-                </span>
-                <em>{pageUrls.home || "—"}</em>
-              </li>
-              <li>
-                <span className="recap-row">
-                  <span className="hero-dot" /> Product Listing Page
-                </span>
-                <em>{pageUrls.plp || "—"}</em>
-              </li>
-              <li>
-                <span className="recap-row">
-                  <span className="hero-dot" /> Produktdetailseite
-                </span>
-                <em>{pageUrls.pdp || "—"}</em>
-              </li>
-              <li>
-                <span className="recap-row">
-                  <span className="hero-dot" /> Warenkorb
-                </span>
-                <em>automatisch</em>
-              </li>
-              <li>
-                <span className="recap-row">
-                  <span className="hero-dot" /> Checkout
-                </span>
-                <em>automatisch</em>
-              </li>
-            </ul>
-          </div>
+        {!valid && (
+          <p className="fstep-warn fstep-warn--center">
+            <AlertCircle size={13} /> Bitte Branche und mindestens einen Kanal
+            wählen.
+          </p>
+        )}
+
+        <div className="fstep-actions fstep-actions--center">
+          <button className="cta" disabled={!valid} onClick={submit}>
+            Jetzt Optimierungen erhalten <ArrowRight size={18} />
+          </button>
         </div>
       </div>
     );

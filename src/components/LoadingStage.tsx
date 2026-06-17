@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Volume2, VolumeX, Loader2 } from "lucide-react";
+import { Bell, BellOff, Loader2 } from "lucide-react";
 import type { AnalysisContext } from "@/lib/types";
 import { HeroWall } from "@/components/HeroWall";
-import { Calculator } from "@/components/Calculator";
 import { BotJourney } from "@/components/BotJourney";
 
 const PAGE_IDS = ["home", "plp", "pdp", "cart", "checkout"];
@@ -83,23 +82,6 @@ export function LoadingStage({
       <div className="flow-screens">
         <div className="aload">
           <div className="aload-inner">
-            {onToggleMuted ? (
-              <button
-                type="button"
-                className="aload-mute aload-mute--corner"
-                onClick={onToggleMuted}
-                aria-pressed={muted}
-                title={
-                  muted
-                    ? "Abschluss-Ton ist aus — zum Aktivieren klicken"
-                    : "Abschluss-Ton ist an — zum Stummschalten klicken"
-                }
-              >
-                {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                <span>{muted ? "Ton aus" : "Ton an"}</span>
-              </button>
-            ) : null}
-
             <div className="aload-intro">
               <h2 className="aload-headline2">
                 Ich durchlaufe jetzt deinen Shop und finde die wichtigsten
@@ -113,6 +95,24 @@ export function LoadingStage({
                 </span>
                 .
               </p>
+
+              {onToggleMuted ? (
+                <button
+                  type="button"
+                  className={`aload-bell ${muted ? "" : "is-on"}`}
+                  onClick={onToggleMuted}
+                  aria-pressed={!muted}
+                >
+                  {muted ? (
+                    <BellOff size={15} aria-hidden="true" />
+                  ) : (
+                    <Bell size={15} aria-hidden="true" />
+                  )}
+                  {muted
+                    ? "Ton aktivieren — klingt im Browser, sobald deine Optimierungen bereit sind"
+                    : "Ton an — klingt im Browser, sobald deine Optimierungen bereit sind"}
+                </button>
+              ) : null}
             </div>
 
             <div className="aload-progress">
@@ -127,19 +127,6 @@ export function LoadingStage({
             </div>
 
             <BotJourney />
-
-            <div className="aload-calc">
-              <header className="aload-calc-head">
-                <span className="fstep-kicker">Während du wartest</span>
-                <h3 className="ovw-calc-title">
-                  Nutze die Wartezeit — errechne deinen Business Impact
-                </h3>
-                <p className="aload-calc-sub">
-                  Was bringen dir 10 / 20 / 30 % mehr Conversion in Euro?
-                </p>
-              </header>
-              <Calculator />
-            </div>
           </div>
         </div>
       </div>

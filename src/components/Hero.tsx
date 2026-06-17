@@ -58,7 +58,7 @@ export function Hero({
 
       <div className="hero-headline-block">
         <h1 className="hero-headline">
-          In wenigen Sekunden zu 10+ personalisierten Optimierungen für deinen
+          In wenigen Minuten zu 10+ personalisierten Optimierungen für deinen
           Shop
         </h1>
       </div>

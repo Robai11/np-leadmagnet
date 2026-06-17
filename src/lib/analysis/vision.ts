@@ -159,15 +159,35 @@ function buildUserContent(
     source: { type: "base64", media_type: "image/jpeg", data },
   }));
 
+  // Zielgruppen-/Herausforderungs-Kontext (optional) — schärft die Empfehlungen.
+  const audience = [
+    ctx.audienceAge && `Alters-Schwerpunkt: ${ctx.audienceAge}`,
+    ctx.audienceGender && `Geschlechter-Gewichtung: ${ctx.audienceGender}`,
+    ctx.audienceTraits && `Merkmale: ${ctx.audienceTraits}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const audienceLine = audience ? `Kernzielgruppe: ${audience}\n` : "";
+  const challengeLine = ctx.challenges
+    ? `Aktuelle Shop-Herausforderungen: ${ctx.challenges}\n`
+    : "";
+  const tailorNote =
+    audienceLine || challengeLine
+      ? `\nWICHTIG: Schneide jede Empfehlung konkret auf diese Kernzielgruppe und die genannten Herausforderungen zu (Ansprache, Argumente, Trust-Elemente, Prioritäten) — keine generischen Hinweise.`
+      : "";
+
   return [
     ...imageBlocks,
     {
       type: "text",
       text:
         `Seitentyp: ${page.type}\nAnsicht: ${viewLabel}\nBranche: ${ctx.industry}\nDevice-Split: ${ctx.device}% Mobile / ${100 - ctx.device}% Desktop\nKanäle: ${ctx.channels.join(", ")}\n` +
+        audienceLine +
+        challengeLine +
         `Dokumentgröße: ${view.docWidth}×${view.docHeight}px\n${tileNote}\n` +
         `Gerenderte Elemente (elementId, Tag, Text):\n${elementsText}\n\n` +
-        `Analysiere diese ${view.viewport === "mobile" ? "Mobil" : "Desktop"}-Ansicht und rufe report_levers mit den 3–5 stärksten Hebeln auf.`,
+        `Analysiere diese ${view.viewport === "mobile" ? "Mobil" : "Desktop"}-Ansicht und rufe report_levers mit den 3–5 stärksten Hebeln auf.` +
+        tailorNote,
     },
   ];
 }

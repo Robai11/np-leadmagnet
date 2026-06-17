@@ -41,6 +41,14 @@ export interface AnalysisContext {
    * falls back to discovering page types from `url`.
    */
   targets?: PageTarget[];
+  /** Kernzielgruppe — Alters-Schwerpunkt (z.B. "25–34, 35–44"). */
+  audienceAge?: string;
+  /** Kernzielgruppe — Geschlechter-Gewichtung (z.B. "überwiegend weiblich"). */
+  audienceGender?: string;
+  /** Kernzielgruppe — freie Merkmale (z.B. "preisbewusste Einkäufer"). */
+  audienceTraits?: string;
+  /** Aktuelle Shop-Herausforderungen (optional, Freitext). */
+  challenges?: string;
 }
 
 /** A single conversion lever bound to one real element. */

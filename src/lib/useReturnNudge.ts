@@ -124,11 +124,12 @@ export function useReturnNudge(done: boolean): ReturnNudge {
   // window) und ohne Hydration-Risiko: die Mute-abhängige UI erscheint erst
   // nach dem Start, nie im initial gerenderten idle-Zustand.
   const [muted, setMuted] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
+    if (typeof window === "undefined") return true;
     try {
-      return localStorage.getItem(MUTE_KEY) === "1";
+      const v = localStorage.getItem(MUTE_KEY);
+      return v === null ? true : v === "1"; // Default: Ton aus (Opt-in).
     } catch {
-      return false; // localStorage kann blockiert sein — Default (laut) ist ok.
+      return true; // localStorage blockiert — Default: Ton aus.
     }
   });
   const mutedRef = useRef(muted);
