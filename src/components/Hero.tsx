@@ -7,15 +7,39 @@
 
 /* eslint-disable @next/next/no-img-element -- statisches lokales Logo */
 
-import { Loader2, Sparkles, TrendingUp } from "lucide-react";
+import {
+  Loader2,
+  TrendingUp,
+  Briefcase,
+  Trophy,
+  Users,
+  Brain,
+  Cpu,
+} from "lucide-react";
 
-// Seiten, die im Funnel analysiert werden (Anzeige im Karten-Kopf).
-const ANALYZED_PAGES = [
-  "Startseite",
-  "Product Listing Page",
-  "Produktdetailseite",
-  "Warenkorb",
-  "Checkout",
+// "Die Knowledge Engine dahinter" — die vier Wissensquellen als Module der
+// Engine, oberhalb des URL-Felds in die Eingabe-Karte eingewoben.
+const KNOWLEDGE_ENGINE = [
+  {
+    icon: Briefcase,
+    title: "10 Jahre Agenturkundenprojekte",
+    sub: "in diversen Branchen",
+  },
+  {
+    icon: Trophy,
+    title: "Tricks & Kniffe der Top-500-Shops",
+    sub: "aus echter Praxis",
+  },
+  {
+    icon: Users,
+    title: "Kuratierte Insights",
+    sub: "von Senior-Conversion-Experten",
+  },
+  {
+    icon: Brain,
+    title: "Konsumpsychologie",
+    sub: "von Nobelpreisträgern",
+  },
 ];
 
 export interface HeroProps {
@@ -70,20 +94,21 @@ export function Hero({
 
       <div className="hero-cta">
         <div className={`hero-entry ${loading ? "is-scanning" : ""}`}>
-          <div className="hero-entry-head">
-            <p className="hero-eyebrow">
-              <Sparkles size={17} aria-hidden="true" />
-              Entwickelt aus 10 Jahren Conversion-Optimierung
-            </p>
-
-            <ul className="hero-scope">
-              {ANALYZED_PAGES.map((page) => (
-                <li key={page}>
-                  <span className="hero-dot" aria-hidden="true" />
-                  {page}
-                </li>
+          <div className="kev3-head">
+            <span className="kev-kicker">
+              <Cpu size={14} aria-hidden="true" /> Die Knowledge Engine dahinter
+            </span>
+            <div className="kev3-strip">
+              {KNOWLEDGE_ENGINE.map((u) => (
+                <div className="kev3-tile" key={u.title}>
+                  <span className="kev3-ico">
+                    <u.icon size={18} aria-hidden="true" />
+                  </span>
+                  <b>{u.title}</b>
+                  <span>{u.sub}</span>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
 
           <form
