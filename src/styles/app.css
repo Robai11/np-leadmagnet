@@ -1770,7 +1770,7 @@
   letter-spacing: -0.01em;
   text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
   opacity: 0;
-  animation: hero-subline-reveal 5s cubic-bezier(0.33, 0, 0.2, 1) forwards;
+  animation: hero-subline-reveal 3.5s cubic-bezier(0.33, 0, 0.2, 1) forwards;
 }
 .hero-subline svg {
   flex: none;
