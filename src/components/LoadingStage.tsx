@@ -101,16 +101,22 @@ export function LoadingStage({
                   type="button"
                   className={`aload-bell ${muted ? "" : "is-on"}`}
                   onClick={onToggleMuted}
-                  aria-pressed={!muted}
+                  role="switch"
+                  aria-checked={!muted}
                 >
+                  <span className="aload-bell-switch" aria-hidden="true">
+                    <span className="aload-bell-knob" />
+                  </span>
                   {muted ? (
                     <BellOff size={15} aria-hidden="true" />
                   ) : (
                     <Bell size={15} aria-hidden="true" />
                   )}
-                  {muted
-                    ? "Ton aktivieren — klingt im Browser, sobald deine Optimierungen bereit sind"
-                    : "Ton an — klingt im Browser, sobald deine Optimierungen bereit sind"}
+                  <span className="aload-bell-text">
+                    {muted
+                      ? "Ton aktivieren — klingt im Browser, sobald deine Optimierungen bereit sind"
+                      : "Ton an — klingt im Browser, sobald deine Optimierungen bereit sind"}
+                  </span>
                 </button>
               ) : null}
             </div>
