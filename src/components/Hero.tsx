@@ -85,11 +85,10 @@ export function Hero({
           In wenigen Minuten zu 10+ personalisierten Optimierungen für deinen
           Shop
         </h1>
-      </div>
-
-      <div className="hero-prio">
-        <TrendingUp size={18} aria-hidden="true" />
-        Priorisiert nach Umsatz-Effekt und Änderungsaufwand
+        <p className="hero-subline">
+          <TrendingUp size={20} aria-hidden="true" />
+          Priorisiert nach Umsatz-Effekt und Änderungsaufwand
+        </p>
       </div>
 
       <div className="hero-cta">

@@ -1741,7 +1741,7 @@
 .hero-headline-block {
   margin-top: 0;
   text-align: center;
-  max-width: 860px;
+  max-width: 1080px;
   padding: 0 24px;
 }
 .hero-headline {
@@ -1750,30 +1750,29 @@
   font-size: clamp(30px, 4vw, 54px);
   line-height: 1.06;
   letter-spacing: -0.03em;
-  text-wrap: balance;
+  text-wrap: pretty;
   text-shadow: 0 2px 30px rgba(0, 0, 0, 0.6);
   margin: 0;
 }
 /* Prioritäts-Trigger unter der Headline (Landing) */
-.hero-prio {
-  display: inline-flex;
+/* "Priorisiert nach …" — als Unterzeile direkt in den Headline-Block integriert. */
+.hero-subline {
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  margin: 20px 0 0;
-  padding: 12px 22px;
-  border-radius: 999px;
-  background: rgba(9, 39, 55, 0.82);
-  border: 1px solid rgba(61, 192, 145, 0.6);
-  backdrop-filter: blur(3px);
+  margin: 14px 0 0;
   color: #6fe3b8;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(15px, 1.7vw, 20px);
-  letter-spacing: -0.005em;
-  box-shadow: 0 8px 26px rgba(6, 28, 40, 0.45);
+  font-size: clamp(16px, 1.9vw, 24px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
 }
-.hero-prio svg {
-  flex: 0 0 auto;
+.hero-subline svg {
+  flex: none;
+  color: var(--color-accent);
 }
 /* Tagline unter der Eingabe-Box (kleiner) */
 .hero-sub {
