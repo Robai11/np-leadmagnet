@@ -1755,7 +1755,12 @@
   margin: 0;
 }
 /* Prioritäts-Trigger unter der Headline (Landing) */
-/* "Priorisiert nach …" — als Unterzeile direkt in den Headline-Block integriert. */
+.hero-nowrap {
+  white-space: nowrap;
+}
+
+/* "Priorisiert nach …" — Unterzeile im Headline-Block. Wichtiger Satz, daher
+ * langsamer 5-Sekunden-Reveal nach Seitenaufruf (taucht aus der Unschärfe auf). */
 .hero-subline {
   display: flex;
   align-items: center;
@@ -1769,10 +1774,30 @@
   line-height: 1.2;
   letter-spacing: -0.01em;
   text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  animation: hero-subline-reveal 5s cubic-bezier(0.33, 0, 0.2, 1) forwards;
 }
 .hero-subline svg {
   flex: none;
   color: var(--color-accent);
+}
+@keyframes hero-subline-reveal {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-subline {
+    opacity: 1;
+    animation: none;
+  }
 }
 /* Tagline unter der Eingabe-Box (kleiner) */
 .hero-sub {
@@ -1787,7 +1812,7 @@
 
 /* CTA-Gruppe — zusammengeführte Eingabe-Karte + Status darunter */
 .hero-cta {
-  margin-top: clamp(22px, 3.5vh, 42px);
+  margin-top: clamp(34px, 6vh, 72px);
   display: flex;
   flex-direction: column;
   align-items: center;

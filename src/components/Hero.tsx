@@ -82,8 +82,8 @@ export function Hero({
 
       <div className="hero-headline-block">
         <h1 className="hero-headline">
-          In wenigen Minuten zu 10+ personalisierten Optimierungen für deinen
-          Shop
+          In wenigen Minuten zu 10+ personalisierten Optimierungen{" "}
+          <span className="hero-nowrap">für deinen Shop</span>
         </h1>
         <p className="hero-subline">
           <TrendingUp size={20} aria-hidden="true" />
