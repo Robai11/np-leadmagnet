@@ -1747,18 +1747,13 @@
 .hero-headline {
   color: #fff;
   font-weight: 800;
-  font-size: clamp(30px, 4vw, 54px);
-  line-height: 1.06;
+  font-size: clamp(28px, 3.5vw, 48px);
+  line-height: 1.08;
   letter-spacing: -0.03em;
-  text-wrap: pretty;
+  text-wrap: balance;
   text-shadow: 0 2px 30px rgba(0, 0, 0, 0.6);
   margin: 0;
 }
-/* Prioritäts-Trigger unter der Headline (Landing) */
-.hero-nowrap {
-  white-space: nowrap;
-}
-
 /* "Priorisiert nach …" — Unterzeile im Headline-Block. Wichtiger Satz, daher
  * langsamer 5-Sekunden-Reveal nach Seitenaufruf (taucht aus der Unschärfe auf). */
 .hero-subline {
@@ -1812,7 +1807,7 @@
 
 /* CTA-Gruppe — zusammengeführte Eingabe-Karte + Status darunter */
 .hero-cta {
-  margin-top: clamp(34px, 6vh, 72px);
+  margin-top: clamp(12px, 2vh, 24px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -4450,7 +4445,7 @@ h3.fstep-title {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 26px;
   padding: 16px 18px 18px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
@@ -4465,7 +4460,7 @@ h3.fstep-title {
   top: calc(100% + 2px);
   transform: translateX(-50%);
   width: 2px;
-  height: 13px;
+  height: 22px;
   background: linear-gradient(
     to bottom,
     rgba(61, 192, 145, 0.85),
@@ -4483,7 +4478,7 @@ h3.fstep-title {
 .kev3-strip::before {
   content: "";
   position: absolute;
-  top: -9px;
+  top: -13px;
   left: 12%;
   right: 12%;
   height: 2px;
@@ -4512,7 +4507,7 @@ h3.fstep-title {
 .kev3-tile::before {
   content: "";
   position: absolute;
-  top: -12px;
+  top: -16px;
   left: 50%;
   transform: translateX(-50%);
   width: 7px;
