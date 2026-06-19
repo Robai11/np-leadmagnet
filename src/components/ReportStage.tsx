@@ -27,7 +27,21 @@ export function ReportStage({
   /** Override the lead capture (preview/tests). Default POSTs to /api/lead. */
   onLead?: (data: LeadData) => Promise<{ ok: boolean; error?: string }>;
 }) {
-  const { meta, overall, pages, notes } = result;
+  const { meta, overall, notes } = result;
+  // Seitentypen IMMER in kanonischer Funnel-Reihenfolge zeigen — der Stream
+  // liefert sie je nach Analyse-Dauer in beliebiger Reihenfolge.
+  const pages = useMemo(() => {
+    const rank: Record<string, number> = {
+      home: 0,
+      plp: 1,
+      pdp: 2,
+      cart: 3,
+      checkout: 4,
+    };
+    return [...result.pages].sort(
+      (a, b) => (rank[a.type] ?? 99) - (rank[b.type] ?? 99),
+    );
+  }, [result.pages]);
   // A page may carry two views (mobile + desktop at a 50/50 split); count both.
   const pageLevers = (p: (typeof pages)[number]) => [
     ...p.levers,
