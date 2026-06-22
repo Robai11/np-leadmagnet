@@ -102,5 +102,19 @@ export async function* runMockAnalysis(
   await sleep(400);
   yield { type: "progress", step: "Hebel werden bewertet und priorisiert …", pct: 95 };
   yield { type: "overall", overall: overallUplift(pages) };
+  yield { type: "progress", step: "Fazit wird erstellt …", pct: 98 };
+  yield {
+    type: "summary",
+    summary: {
+      verdict:
+        "Über den gesamten Funnel liegen die größten Hebel auf der Produktseite und im Checkout — hier entscheidet sich, ob aus Interesse ein Kauf wird. Mobile ist besonders kritisch, da der Großteil deines Traffics dort landet. Mit gezielten Anpassungen an Kauf-Buttons, Trust-Elementen und Checkout-Reibung lässt sich das Potenzial am schnellsten heben.",
+      points: [
+        "Produktseite: klarer, durchgängig sichtbarer Kauf-Button — besonders auf dem Smartphone.",
+        "Checkout: unnötige Felder und Ablenkungen entfernen, Fortschritt sichtbar machen.",
+        "Startseite: Wertversprechen above the fold schärfen statt nur Kategorien zeigen.",
+        "Warenkorb: Versandkosten und Lieferzeit früh und transparent ausweisen.",
+      ],
+    },
+  };
   yield { type: "done" };
 }

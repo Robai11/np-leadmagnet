@@ -5,6 +5,7 @@ import { parseEvents } from "@/lib/analysis/events";
 import type {
   AnalysisContext,
   AnalysisMeta,
+  AnalysisSummary,
   AnalyzedPage,
   Lever,
   OverallUplift,
@@ -20,6 +21,8 @@ export interface AnalysisState {
   pages: AnalyzedPage[];
   overall: OverallUplift | null;
   notes: string[];
+  /** Verständliches Gesamt-Fazit (nachgeliefert vor "done"). */
+  summary: AnalysisSummary | null;
   /** The single fully-readable teaser lever (Build-Spec §9). */
   teaser: { pageId: string; lever: Lever } | null;
   error: string | null;
@@ -32,6 +35,7 @@ const initialState: AnalysisState = {
   pages: [],
   overall: null,
   notes: [],
+  summary: null,
   teaser: null,
   error: null,
 };
@@ -104,6 +108,8 @@ export function useAnalysis() {
                 return { ...s, teaser: { pageId: e.pageId, lever: e.lever } };
               case "overall":
                 return { ...s, overall: e.overall };
+              case "summary":
+                return { ...s, summary: e.summary };
               case "done":
                 return { ...s, status: "done", progress: { step: "", pct: 100 } };
               case "error":

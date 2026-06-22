@@ -553,6 +553,60 @@
   padding: 18px 22px;
   min-width: 220px;
 }
+
+/* Fazit — verständliche Einschätzung im Kopf der Ergebnisseite. */
+.report-fazit {
+  flex: 1 1 340px;
+  min-width: 280px;
+  max-width: 600px;
+  align-self: stretch;
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+}
+.report-fazit-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-accent-deep);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.report-fazit-kicker svg {
+  color: var(--color-accent);
+}
+.report-fazit-text {
+  margin: 8px 0 0;
+  color: var(--color-ink);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+.report-fazit-points {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+.report-fazit-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: rgba(9, 39, 55, 0.82);
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+.report-fazit-points svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--color-accent-deep);
+}
 .headline-uplift span {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -4543,5 +4597,279 @@ h3.fstep-title {
   .kev1-grid,
   .kev3-strip {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ── /fazit-preview — Layout-Varianten für den Ergebnis-Kopf (dev-only) ───── */
+.fzv-preview {
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+.fzv-head {
+  max-width: 1760px;
+  margin: 0 auto;
+  padding: 28px 40px 0;
+}
+.fzv-head h1 {
+  margin: 0 0 6px;
+  font-size: clamp(20px, 2.6vw, 28px);
+  font-weight: 800;
+  color: var(--color-ink);
+}
+.fzv-head p {
+  margin: 0;
+  max-width: 70ch;
+  color: var(--color-text-mute);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.fzv-variant {
+  margin-top: 30px;
+}
+.fzv-label {
+  max-width: 1760px;
+  margin: 0 auto;
+  padding: 0 40px 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.fzv-num {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Variante 1 — Fazit-Band (hell) unter dem klassischen Kopf */
+.fazit-band {
+  margin-top: 22px;
+  padding: 20px 26px;
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-top: 3px solid var(--color-accent);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+}
+.fazit-band-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-accent-deep);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.fazit-band-kicker svg {
+  color: var(--color-accent);
+}
+.fazit-band-text {
+  margin: 10px 0 0;
+  max-width: 90ch;
+  color: var(--color-ink);
+  font-size: 16px;
+  line-height: 1.55;
+}
+.fazit-band-points {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 32px;
+}
+.fazit-band-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: rgba(9, 39, 55, 0.82);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.fazit-band-points svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--color-accent-deep);
+}
+
+/* Variante 2 — vereintes Navy-Panel rechts (Potenzial + Fazit) */
+.summary-panel {
+  flex: 0 1 460px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px;
+  background: var(--color-ink);
+  color: var(--color-text-ink);
+  border-radius: 14px;
+}
+.summary-panel-uplift {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.summary-panel-uplift span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+.summary-panel-uplift strong {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--color-accent);
+}
+.summary-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.summary-panel-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.summary-panel-body p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
+}
+.summary-panel-points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+.summary-panel-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.8);
+}
+.summary-panel-points svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--color-accent);
+}
+
+/* Variante 3 — Fazit als Navy-Banner mit Potenzial-Stat */
+.fazit-slim-head h2 {
+  margin: 8px 0 10px;
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 800;
+  color: var(--color-ink);
+}
+.fazit-hero {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: clamp(20px, 3vw, 40px);
+  padding: clamp(22px, 3vw, 32px);
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0c2330, #071620);
+  color: #fff;
+}
+.fazit-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.fazit-hero-text {
+  margin: 10px 0 0;
+  max-width: 70ch;
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.92);
+}
+.fazit-hero-points {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 28px;
+}
+.fazit-hero-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.82);
+}
+.fazit-hero-points svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--color-accent);
+}
+.fazit-hero-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 180px;
+  padding-left: clamp(20px, 3vw, 36px);
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+}
+.fazit-hero-stat svg {
+  color: var(--color-accent);
+}
+.fazit-hero-stat span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+.fazit-hero-stat strong {
+  font-size: clamp(34px, 4vw, 48px);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--color-accent);
+}
+
+@media (max-width: 760px) {
+  .fazit-band-points,
+  .fazit-hero-points {
+    grid-template-columns: 1fr;
+  }
+  .fazit-hero {
+    grid-template-columns: 1fr;
+  }
+  .fazit-hero-stat {
+    padding-left: 0;
+    padding-top: 18px;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
   }
 }

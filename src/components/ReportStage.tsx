@@ -1,7 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowRight, TrendingUp, Smartphone, Monitor } from "lucide-react";
+import {
+  ArrowRight,
+  TrendingUp,
+  Smartphone,
+  Monitor,
+  Sparkles,
+  Check,
+} from "lucide-react";
 import { opportunityVar } from "@/styles/tokens";
 import { rankPages } from "@/lib/scoring";
 import type { AnalysisResult } from "@/lib/types";
@@ -27,7 +34,7 @@ export function ReportStage({
   /** Override the lead capture (preview/tests). Default POSTs to /api/lead. */
   onLead?: (data: LeadData) => Promise<{ ok: boolean; error?: string }>;
 }) {
-  const { meta, overall, notes } = result;
+  const { meta, overall, notes, summary } = result;
   // Seitentypen IMMER in kanonischer Funnel-Reihenfolge zeigen — der Stream
   // liefert sie je nach Analyse-Dauer in beliebiger Reihenfolge.
   const pages = useMemo(() => {
@@ -170,6 +177,26 @@ export function ReportStage({
             <b>{meta.channels.join(", ")}</b> · <b>{meta.industry}</b>
           </div>
         </div>
+
+        {summary ? (
+          <div className="report-fazit">
+            <span className="report-fazit-kicker">
+              <Sparkles size={14} aria-hidden="true" /> Fazit
+            </span>
+            <p className="report-fazit-text">{summary.verdict}</p>
+            {summary.points.length > 0 && (
+              <ul className="report-fazit-points">
+                {summary.points.map((p, i) => (
+                  <li key={i}>
+                    <Check size={14} aria-hidden="true" />
+                    <span>{p}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ) : null}
+
         <div className="headline-uplift">
           <span>Geschätztes Gesamtpotenzial</span>
           <strong>

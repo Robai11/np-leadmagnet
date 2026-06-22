@@ -90,8 +90,18 @@ export function App() {
       overall: state.overall,
       pages: injectTeaser(state.pages, state.teaser),
       notes: state.notes,
+      summary: state.summary ?? undefined,
     };
-  }, [ready, full, state.meta, state.overall, state.pages, state.teaser, state.notes]);
+  }, [
+    ready,
+    full,
+    state.meta,
+    state.overall,
+    state.pages,
+    state.teaser,
+    state.notes,
+    state.summary,
+  ]);
 
   return (
     <div className="cs-root">

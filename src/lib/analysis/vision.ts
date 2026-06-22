@@ -176,12 +176,18 @@ function buildUserContent(
       ? `\nWICHTIG: Schneide jede Empfehlung konkret auf diese Kernzielgruppe und die genannten Herausforderungen zu (Ansprache, Argumente, Trust-Elemente, Prioritäten) — keine generischen Hinweise.`
       : "";
 
+  // Traffic-Anteil DIESER Ansicht → fließt in die Impact-Gewichtung ein.
+  const viewShare = view.viewport === "mobile" ? ctx.device : 100 - ctx.device;
+  const shareNote = `Diese Ansicht (${view.viewport === "mobile" ? "Mobile" : "Desktop"}) trägt ${viewShare}% des Traffics — gewichte den Umsatz-Effekt entsprechend: Probleme auf der traffic-stärkeren Ansicht wiegen schwerer.\n`;
+
   return [
     ...imageBlocks,
     {
       type: "text",
       text:
-        `Seitentyp: ${page.type}\nAnsicht: ${viewLabel}\nBranche: ${ctx.industry}\nDevice-Split: ${ctx.device}% Mobile / ${100 - ctx.device}% Desktop\nKanäle: ${ctx.channels.join(", ")}\n` +
+        `Seitentyp: ${page.type}\nAnsicht: ${viewLabel}\nBranche: ${ctx.industry}\nDevice-Split: ${ctx.device}% Mobile / ${100 - ctx.device}% Desktop\n` +
+        shareNote +
+        `Kanäle: ${ctx.channels.join(", ")}\n` +
         audienceLine +
         challengeLine +
         `Dokumentgröße: ${view.docWidth}×${view.docHeight}px\n${tileNote}\n` +

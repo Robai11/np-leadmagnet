@@ -17,6 +17,7 @@ import { renderPage } from "@/lib/analysis/render";
 import { runStatefulFlow } from "@/lib/analysis/stateful";
 import { runAgentFunnel } from "@/lib/analysis/agentFunnel";
 import { analyzePageVision } from "@/lib/analysis/vision";
+import { summarizeAnalysis } from "@/lib/analysis/summary";
 import { persistScreenshot } from "@/lib/analysis/blob";
 import { opportunityClass, opportunityScore, overallUplift } from "@/lib/scoring";
 import { appendAnalysisLog } from "@/lib/analysis/log";
@@ -38,23 +39,24 @@ async function analyzeRendered(
 ): Promise<AnalyzedPage> {
   const hasMobile = Boolean(rendered.mobile);
 
-  // Choose the primary view by the device split: mobile-majority → mobile,
-  // desktop-majority → desktop, 50/50 → mobile primary + desktop secondary.
-  let primaryVp: Viewport;
-  let withSecondary = false;
-  if (ctx.device > 50 && hasMobile) {
-    primaryVp = "mobile";
-  } else if (ctx.device === 50 && hasMobile) {
-    primaryVp = "mobile";
-    withSecondary = true;
-  } else {
-    primaryVp = "desktop";
-  }
+  // IMMER beide Viewports analysieren (sofern beide gerendert wurden). Die
+  // Ansicht mit dem höheren Traffic-Anteil wird PRIMÄR (zuerst gezeigt), die
+  // andere SEKUNDÄR. Die Traffic-Gewichtung fließt zusätzlich in den Vision-
+  // Prompt → höherer Traffic = höher priorisierter Impact.
+  const mobileFirst = ctx.device >= 50; // mobile-/gleichgewichtet → Mobile primär
+  const order: Viewport[] = hasMobile
+    ? mobileFirst
+      ? ["mobile", "desktop"]
+      : ["desktop", "mobile"]
+    : ["desktop"];
 
-  const primaryView = primaryVp === "mobile" ? rendered.mobile! : rendered.desktop;
+  const viewFor = (vp: Viewport) =>
+    vp === "mobile" ? rendered.mobile! : rendered.desktop;
+
+  const primaryVp = order[0];
   const primaryLevers = await analyzePageVision(rendered, ctx, primaryVp);
   const screenshotUrl = await persistScreenshot(
-    primaryView.screenshot,
+    viewFor(primaryVp).screenshot,
     `${rendered.type}-${primaryVp}`,
   );
 
@@ -68,14 +70,15 @@ async function analyzeRendered(
     levers: primaryLevers,
   };
 
-  if (withSecondary) {
-    const secLevers = await analyzePageVision(rendered, ctx, "desktop");
+  const secondaryVp = order[1];
+  if (secondaryVp) {
+    const secLevers = await analyzePageVision(rendered, ctx, secondaryVp);
     const secShot = await persistScreenshot(
-      rendered.desktop.screenshot,
-      `${rendered.type}-desktop`,
+      viewFor(secondaryVp).screenshot,
+      `${rendered.type}-${secondaryVp}`,
     );
     page.secondary = {
-      viewport: "desktop",
+      viewport: secondaryVp,
       screenshotUrl: secShot,
       levers: secLevers,
     };
@@ -319,5 +322,10 @@ export async function* runRealAnalysis(
     return;
   }
   yield { type: "overall", overall: overallUplift(pages) };
+
+  // Verständliches Gesamt-Fazit (KI mit Fallback — wirft nie).
+  yield { type: "progress", step: "Fazit wird erstellt …", pct: 98 };
+  yield { type: "summary", summary: await summarizeAnalysis(ctx, pages) };
+
   yield { type: "done" };
 }

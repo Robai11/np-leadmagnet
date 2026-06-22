@@ -117,10 +117,20 @@ export interface OverallUplift {
   note: string;
 }
 
+/** Verständliches Fazit der Analyse (KI-generiert, mit Fallback). */
+export interface AnalysisSummary {
+  /** 2–4 Sätze Klartext-Einschätzung für Shop-Betreiber. */
+  verdict: string;
+  /** 3–5 konkrete, priorisierte Stichpunkte. */
+  points: string[];
+}
+
 /** The complete analysis result (assembled client-side from the stream). */
 export interface AnalysisResult {
   meta: AnalysisMeta;
   overall: OverallUplift;
   pages: AnalyzedPage[];
   notes: string[];
+  /** Verständliches Gesamt-Fazit (optional — kann nachgeliefert werden). */
+  summary?: AnalysisSummary;
 }

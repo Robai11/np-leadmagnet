@@ -509,8 +509,10 @@ export function InputStage({
                   type="range"
                   min={0}
                   max={100}
-                  value={genderFemale}
-                  onChange={(e) => setGenderFemale(Number(e.target.value))}
+                  value={100 - genderFemale}
+                  onChange={(e) =>
+                    setGenderFemale(100 - Number(e.target.value))
+                  }
                 />
                 <span className="device-end">männlich</span>
               </div>

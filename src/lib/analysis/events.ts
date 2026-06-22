@@ -10,6 +10,7 @@
 
 import type {
   AnalysisMeta,
+  AnalysisSummary,
   AnalyzedPage,
   Lever,
   OverallUplift,
@@ -21,6 +22,7 @@ export type AnalysisEvent =
   | { type: "page"; page: AnalyzedPage }
   | { type: "note"; note: string }
   | { type: "overall"; overall: OverallUplift }
+  | { type: "summary"; summary: AnalysisSummary }
   // The single fully-readable teaser lever (Build-Spec §9). Sent after the
   // hero page is known; all other lever prose stays server-side until unlock.
   | { type: "teaser"; pageId: string; lever: Lever }
