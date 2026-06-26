@@ -166,43 +166,48 @@ export function ReportStage({
 
   return (
     <div className="stage report-stage">
-      <div className="report-head">
-        <div>
-          <span className="kicker">Funnel-Analyse · {meta.url}</span>
-          <h2>
-            {totalLevers} Conversion-Hebel über {pages.length} Seiten gefunden
-          </h2>
-          <div className="ctx-frame">
-            Analysiert mit Blick auf: <b>{meta.device}% Mobile</b> ·{" "}
-            <b>{meta.channels.join(", ")}</b> · <b>{meta.industry}</b>
-          </div>
+      <div className="fazit-slim-head">
+        <span className="kicker">Funnel-Analyse · {meta.url}</span>
+        <h2>
+          {totalLevers} Conversion-Hebel über {pages.length} Seiten gefunden
+        </h2>
+        <div className="ctx-frame">
+          Analysiert mit Blick auf: <b>{meta.device}% Mobile</b> ·{" "}
+          <b>{meta.channels.join(", ")}</b> · <b>{meta.industry}</b>
         </div>
+      </div>
 
-        {summary ? (
-          <div className="report-fazit">
-            <span className="report-fazit-kicker">
-              <Sparkles size={14} aria-hidden="true" /> Fazit
-            </span>
-            <p className="report-fazit-text">{summary.verdict}</p>
-            {summary.points.length > 0 && (
-              <ul className="report-fazit-points">
-                {summary.points.map((p, i) => (
-                  <li key={i}>
-                    <Check size={14} aria-hidden="true" />
-                    <span>{p}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ) : null}
-
-        <div className="headline-uplift">
+      <div className="fazit-hero">
+        <div className="fazit-hero-main">
+          <span className="fazit-hero-kicker">
+            <Sparkles size={15} aria-hidden="true" /> Fazit
+          </span>
+          {summary ? (
+            <>
+              <p className="fazit-hero-text">{summary.verdict}</p>
+              {summary.points.length > 0 && (
+                <ul className="fazit-hero-points">
+                  {summary.points.map((p, i) => (
+                    <li key={i}>
+                      <Check size={14} aria-hidden="true" />
+                      <span>{p}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          ) : (
+            <p className="fazit-hero-text">
+              {overall.note} Eure echten Funnel-Daten können das verschieben.
+            </p>
+          )}
+        </div>
+        <div className="fazit-hero-stat">
+          <TrendingUp size={18} aria-hidden="true" />
           <span>Geschätztes Gesamtpotenzial</span>
           <strong>
             +{overall.low}–{overall.high}%
           </strong>
-          <em>{overall.note} Eure echten Funnel-Daten können das verschieben.</em>
         </div>
       </div>
 

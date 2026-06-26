@@ -554,59 +554,6 @@
   min-width: 220px;
 }
 
-/* Fazit — verständliche Einschätzung im Kopf der Ergebnisseite. */
-.report-fazit {
-  flex: 1 1 340px;
-  min-width: 280px;
-  max-width: 600px;
-  align-self: stretch;
-  background: #fff;
-  border: 1px solid var(--color-line);
-  border-left: 3px solid var(--color-accent);
-  border-radius: 12px;
-  padding: 16px 20px;
-  box-shadow: var(--shadow-card);
-}
-.report-fazit-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--color-accent-deep);
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.report-fazit-kicker svg {
-  color: var(--color-accent);
-}
-.report-fazit-text {
-  margin: 8px 0 0;
-  color: var(--color-ink);
-  font-size: 14.5px;
-  line-height: 1.5;
-}
-.report-fazit-points {
-  list-style: none;
-  margin: 12px 0 0;
-  padding: 0;
-  display: grid;
-  gap: 7px;
-}
-.report-fazit-points li {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  color: rgba(9, 39, 55, 0.82);
-  font-size: 13.5px;
-  line-height: 1.4;
-}
-.report-fazit-points svg {
-  flex: none;
-  margin-top: 2px;
-  color: var(--color-accent-deep);
-}
 .headline-uplift span {
   font-family: var(--font-mono);
   font-size: 10px;
