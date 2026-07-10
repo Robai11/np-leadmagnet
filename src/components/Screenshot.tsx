@@ -6,6 +6,9 @@ import { MOCK_SCREENS } from "@/components/MockScreens";
 import { impactVar } from "@/styles/tokens";
 import type { AnalyzedPage, Lever, Viewport } from "@/lib/types";
 
+/** Aktiver Hebel + woher der Hover kommt (Pin oder Karte). */
+type Hovered = { id: string; from: "pin" | "card" } | null;
+
 /** iOS status-bar icons (signal · wifi · battery) as crisp inline SVG. */
 function PhoneStatusIcons() {
   return (
@@ -48,8 +51,8 @@ function Screen({
   screenshotUrl?: string;
   levers: Lever[];
   showLabel: boolean;
-  hovered: string | null;
-  setHovered: (id: string | null) => void;
+  hovered: Hovered;
+  setHovered: (h: Hovered) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const Mock = MOCK_SCREENS[pageId];
@@ -69,9 +72,11 @@ function Screen({
     c.scrollTo({ top: Math.max(0, top), behavior: smooth ? "smooth" : "auto" });
   };
 
-  // Hover a lever card (or pin) → scroll its pin into view.
+  // Nur wenn der Hover von einer KARTE kommt, scrollt der Frame zum Pin. Kommt
+  // er vom Pin selbst, bleibt der Frame stehen (sonst rutscht der Pin unter dem
+  // Cursor weg → Ruckeln).
   useEffect(() => {
-    if (hovered) scrollToPin(hovered, true);
+    if (hovered && hovered.from === "card") scrollToPin(hovered.id, true);
   }, [hovered]);
 
   // Initial scroll-to-first-pin runs on IMAGE LOAD (onLoad below), not on mount,
@@ -99,7 +104,7 @@ function Screen({
             <button
               key={lv.id}
               data-pin={lv.id}
-              className={`pin ${hovered === lv.id ? "active" : ""}`}
+              className={`pin ${hovered?.id === lv.id ? "active" : ""}`}
               style={
                 {
                   left: `${lv.pin.x}%`,
@@ -107,7 +112,7 @@ function Screen({
                   "--c": impactVar(lv.impact),
                 } as CSSProperties
               }
-              onMouseEnter={() => setHovered(lv.id)}
+              onMouseEnter={() => setHovered({ id: lv.id, from: "pin" })}
               onMouseLeave={() => setHovered(null)}
               aria-label={lv.title || `Hebel ${lv.n}`}
             >
@@ -182,8 +187,8 @@ export function Screenshot({
   /** Kept for API compatibility (ReportStage passes meta.url); unused now that
    *  the desktop frame is a MacBook mockup without a browser URL bar. */
   url?: string;
-  hovered: string | null;
-  setHovered: (id: string | null) => void;
+  hovered: Hovered;
+  setHovered: (h: Hovered) => void;
 }) {
   const hasTwo = Boolean(page.secondary);
   return (

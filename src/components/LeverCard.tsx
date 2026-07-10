@@ -26,29 +26,31 @@ export function LeverCard({
 }: {
   lv: Lever;
   locked: boolean;
-  hovered: string | null;
-  setHovered: (id: string | null) => void;
+  hovered: { id: string; from: "pin" | "card" } | null;
+  setHovered: (h: { id: string; from: "pin" | "card" } | null) => void;
   onUnlock: () => void;
 }) {
-  const active = hovered === lv.id;
+  const active = hovered?.id === lv.id;
   const Icon = CATEGORY_META[lv.category].icon;
   const cVar = { "--c": impactVar(lv.impact) } as CSSProperties;
   const quick = isQuickWin(lv);
   const ref = useRef<HTMLDivElement>(null);
 
-  // When this lever becomes active (e.g. its pin in the screenshot is hovered),
-  // scroll this card into view. `block: nearest` makes it a no-op when the card
-  // is already visible (i.e. when the hover started on the card itself).
+  // Diese Karte NUR in den Blick scrollen, wenn der Hover vom PIN kommt (nicht
+  // von der Karte selbst) — sonst rutscht die Karte unterm Cursor weg. `block:
+  // nearest` ist ohnehin ein No-op, wenn die Karte schon sichtbar ist.
+  const scrollIn = active && hovered?.from === "pin";
   useEffect(() => {
-    if (active) ref.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }, [active]);
+    if (scrollIn)
+      ref.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [scrollIn]);
 
   if (locked) {
     return (
       <div
         ref={ref}
         className={`card locked ${active ? "active" : ""}`}
-        onMouseEnter={() => setHovered(lv.id)}
+        onMouseEnter={() => setHovered({ id: lv.id, from: "card" })}
         onMouseLeave={() => setHovered(null)}
       >
         <div className="card-top">
@@ -75,7 +77,7 @@ export function LeverCard({
     <div
       ref={ref}
       className={`card ${active ? "active" : ""}`}
-      onMouseEnter={() => setHovered(lv.id)}
+      onMouseEnter={() => setHovered({ id: lv.id, from: "card" })}
       onMouseLeave={() => setHovered(null)}
     >
       <div className="card-top">

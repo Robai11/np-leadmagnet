@@ -74,7 +74,13 @@ export function ReportStage({
     initialSelected ?? (summary ? FAZIT_TAB : freeId),
   );
   const isFazit = selected === FAZIT_TAB;
-  const [hovered, setHovered] = useState<string | null>(null);
+  // Hover-Verknüpfung Pin ↔ Karte inkl. Quelle: gehovert wird immer nur die
+  // JEWEILS ANDERE Seite gescrollt (sonst bewegt sich das Element unterm Cursor
+  // weg → Ruckeln).
+  const [hovered, setHovered] = useState<{
+    id: string;
+    from: "pin" | "card";
+  } | null>(null);
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [gateError, setGateError] = useState<string | null>(null);
