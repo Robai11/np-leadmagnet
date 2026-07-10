@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Runtime analysis log (admin view)
 .data/
+
+# Lokale Claude-Code-Konfiguration (maschinenspezifisch, z.B. Desktop-Spiegel-Hook)
+.claude/settings.local.json
