@@ -10,7 +10,7 @@ import {
   Check,
 } from "lucide-react";
 import { opportunityVar } from "@/styles/tokens";
-import { rankPages } from "@/lib/scoring";
+import { rankPages, prioritize } from "@/lib/scoring";
 import type { AnalysisResult } from "@/lib/types";
 import { LEAD_GATE_ENABLED } from "@/lib/flags";
 import { FunnelStrip } from "@/components/FunnelStrip";
@@ -171,6 +171,16 @@ export function ReportStage({
 
   if (!activePage) return null;
 
+  // Hebel nach Priorität (Umsatz-Effekt × Aufwand) sortieren + neu nummerieren —
+  // "Quick Wins" zuerst. Cards UND Pins lesen dieselbe sortierte Liste.
+  const displayPage = {
+    ...activePage,
+    levers: prioritize(activePage.levers),
+    secondary: activePage.secondary
+      ? { ...activePage.secondary, levers: prioritize(activePage.secondary.levers) }
+      : undefined,
+  };
+
   return (
     <div className="stage report-stage">
       <div className="fazit-slim-head">
@@ -241,12 +251,12 @@ export function ReportStage({
             <div className="shot-tag">
               <span
                 className="opp"
-                style={{ background: opportunityVar(activePage.opportunity) }}
+                style={{ background: opportunityVar(displayPage.opportunity) }}
               />{" "}
-              {activePage.name} · {pageLevers(activePage).length} Hebel
+              {displayPage.name} · {pageLevers(displayPage).length} Hebel
             </div>
             <Screenshot
-              page={activePage}
+              page={displayPage}
               url={meta.url}
               hovered={hovered}
               setHovered={setHovered}
@@ -262,12 +272,12 @@ export function ReportStage({
               </div>
             )}
             {[
-              { viewport: activePage.viewport, levers: activePage.levers },
-              ...(activePage.secondary
+              { viewport: displayPage.viewport, levers: displayPage.levers },
+              ...(displayPage.secondary
                 ? [
                     {
-                      viewport: activePage.secondary.viewport,
-                      levers: activePage.secondary.levers,
+                      viewport: displayPage.secondary.viewport,
+                      levers: displayPage.secondary.levers,
                     },
                   ]
                 : []),

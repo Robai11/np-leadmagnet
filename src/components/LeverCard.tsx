@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, type CSSProperties } from "react";
-import { Lock } from "lucide-react";
+import { Lock, Zap } from "lucide-react";
 import { impactVar } from "@/styles/tokens";
 import { CATEGORY_META } from "@/lib/taxonomy";
-import { IMPACT_LABELS } from "@/lib/labels";
+import { IMPACT_LABELS, EFFORT_LABELS } from "@/lib/labels";
+import { isQuickWin } from "@/lib/scoring";
 import type { Lever, LeverType } from "@/lib/types";
 
 function Range({ range, type }: { range: [number, number]; type: LeverType }) {
@@ -32,6 +33,7 @@ export function LeverCard({
   const active = hovered === lv.id;
   const Icon = CATEGORY_META[lv.category].icon;
   const cVar = { "--c": impactVar(lv.impact) } as CSSProperties;
+  const quick = isQuickWin(lv);
   const ref = useRef<HTMLDivElement>(null);
 
   // When this lever becomes active (e.g. its pin in the screenshot is hovered),
@@ -83,9 +85,19 @@ export function LeverCard({
         <span className="cat">
           <Icon size={13} /> {lv.categoryLabel}
         </span>
+        {quick && (
+          <span className="quickwin">
+            <Zap size={11} aria-hidden="true" /> Quick Win
+          </span>
+        )}
         <span className="badge" style={cVar}>
-          {IMPACT_LABELS[lv.impact]}
+          Effekt: {IMPACT_LABELS[lv.impact]}
         </span>
+        {lv.effort && (
+          <span className={`effort effort--${lv.effort}`}>
+            Aufwand: {EFFORT_LABELS[lv.effort]}
+          </span>
+        )}
         <Range range={lv.range} type={lv.type} />
       </div>
       <h4 className="card-title">{lv.title}</h4>

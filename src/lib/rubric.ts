@@ -30,6 +30,24 @@ const RUBRIC: Record<LeverCategory, Bands> = {
   tech: { high: [0.5, 1.5], mid: [0.3, 0.8], low: [0.1, 0.4] },
 };
 
+// Typischer Umsetzungsaufwand je Kategorie (Fallback, wenn die KI keinen
+// Aufwand liefert). Copy/Sichtbarkeit/Platzierung = gering; Layout/Content/
+// Flow = mittel; technische Themen = hoch.
+const EFFORT_BY_CATEGORY: Record<LeverCategory, ImpactLevel> = {
+  cta: "low",
+  trust: "low",
+  atf: "low",
+  price: "mid",
+  product: "mid",
+  crosssell: "mid",
+  friction: "mid",
+  tech: "high",
+};
+
+/** Änderungsaufwand-Fallback für eine Kategorie. */
+export const effortForCategory = (category: LeverCategory): ImpactLevel =>
+  EFFORT_BY_CATEGORY[category];
+
 export const isAovCategory = (category: LeverCategory): boolean =>
   category === "crosssell";
 

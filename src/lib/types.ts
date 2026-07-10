@@ -64,6 +64,8 @@ export interface Lever {
   /** Specific display label (may be finer than the taxonomy default). */
   categoryLabel: string;
   impact: ImpactLevel;
+  /** Änderungsaufwand der Umsetzung (low=gering … high=hoch). */
+  effort?: ImpactLevel;
   /** CR uplift band in percentage points [low, high]; from the rubric. */
   range: [number, number];
   type: LeverType;

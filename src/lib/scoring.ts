@@ -36,6 +36,29 @@ export function opportunityClass(score: number): ImpactLevel {
   return "low";
 }
 
+// Geringer Aufwand ⇒ höhere Priorität (leicht umsetzbar zuerst).
+const EFFORT_EASE: Record<ImpactLevel, number> = { low: 3, mid: 2, high: 1 };
+
+/**
+ * Priorität eines Hebels: Umsatz-Effekt zählt zehnfach (dominiert), der
+ * Änderungsaufwand bricht Gleichstände (geringer Aufwand zuerst).
+ */
+export function priorityScore(l: Lever): number {
+  return IMPACT_WEIGHT[l.impact] * 10 + EFFORT_EASE[l.effort ?? "mid"];
+}
+
+/** Quick Win = hoher Umsatz-Effekt bei geringem Aufwand. */
+export function isQuickWin(l: Lever): boolean {
+  return l.impact === "high" && l.effort === "low";
+}
+
+/** Hebel nach Priorität sortieren und 1..n durchnummerieren (für die Anzeige). */
+export function prioritize(levers: Lever[]): Lever[] {
+  return [...levers]
+    .sort((a, b) => priorityScore(b) - priorityScore(a))
+    .map((l, i) => ({ ...l, n: i + 1 }));
+}
+
 /** Rank pages by opportunity, highest first — the first is the teaser hero. */
 export function rankPages(pages: AnalyzedPage[]): AnalyzedPage[] {
   return [...pages].sort(

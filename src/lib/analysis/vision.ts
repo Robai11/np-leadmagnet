@@ -17,7 +17,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import sharp from "sharp";
 import { readEnv } from "@/lib/analysis/config";
-import { rangeFor, leverTypeFor } from "@/lib/rubric";
+import { rangeFor, leverTypeFor, effortForCategory } from "@/lib/rubric";
 import { knowledgePromptBlock } from "@/lib/knowledge";
 import { CATEGORY_META, type LeverCategory } from "@/lib/taxonomy";
 import type { ImpactLevel, } from "@/styles/tokens";
@@ -78,7 +78,8 @@ ${knowledgePromptBlock()}
 
 Eiserne Regeln:
 - JEDER Befund ist an genau EIN Element aus der mitgelieferten Liste gebunden (elementId). Findest du kein passendes Element, gib den Befund NICHT aus. Kein Element → kein Befund.
-- Du wählst NUR Kategorie und Schweregrad (severity: high/mid/low). Impact-Range und Pin-Position werden NICHT von dir gesetzt.
+- Du wählst NUR Kategorie, Schweregrad (severity: high/mid/low) und Umsetzungsaufwand (effort: high/mid/low). Impact-Range und Pin-Position werden NICHT von dir gesetzt.
+- effort = wie aufwendig die Umsetzung ist, unabhängig vom Effekt: low = schnell (Text, Sichtbarkeit, Platzierung), mid = mittel (Layout, Content, Flow), high = hoch (technisch/aufwendig). Ein starker Hebel kann trotzdem gering im Aufwand sein (Quick Win).
 - Erfinde nichts, was nicht im Screenshot/Elementen belegt ist. Kontext (Branche, Device-Split, Kanäle) gewichtet und rahmt Befunde — erfindet sie nie. Technische Performance (tech) NUR melden, wenn im Bild klar erkennbar (z.B. Ladeplatzhalter) — niemals Ladezeiten raten.
 - mechanism soll das verletzte Fachprinzip widerspiegeln (das WARUM aus dem Prüfraster), bleibt aber an der konkreten Beobachtung verankert.
 - Schreibqualität: observation = was konkret beobachtet (element-verankert), mechanism = warum das die Conversion kostet, test = ein konkreter, umsetzbarer Testvorschlag. Deutsch, prägnant, kein Marketing-Sprech.
@@ -88,6 +89,7 @@ interface RawFinding {
   elementId: string;
   category: LeverCategory;
   severity: ImpactLevel;
+  effort?: ImpactLevel;
   title: string;
   observation: string;
   mechanism: string;
@@ -116,6 +118,12 @@ const TOOL: Anthropic.Tool = {
             },
             category: { type: "string", enum: CATEGORIES },
             severity: { type: "string", enum: ["high", "mid", "low"] },
+            effort: {
+              type: "string",
+              enum: ["high", "mid", "low"],
+              description:
+                "Umsetzungsaufwand: low=gering (Text/Sichtbarkeit/Platzierung), mid=mittel (Layout/Content/Flow), high=hoch (technisch/aufwendig).",
+            },
             title: { type: "string" },
             observation: { type: "string" },
             mechanism: { type: "string" },
@@ -126,6 +134,7 @@ const TOOL: Anthropic.Tool = {
             "elementId",
             "category",
             "severity",
+            "effort",
             "title",
             "observation",
             "mechanism",
@@ -220,6 +229,10 @@ function toLever(
     category: f.category,
     categoryLabel: CATEGORY_META[f.category]?.label ?? f.category,
     impact: f.severity,
+    effort:
+      f.effort === "high" || f.effort === "mid" || f.effort === "low"
+        ? f.effort
+        : effortForCategory(f.category),
     range: rangeFor(f.category, f.severity),
     type: leverTypeFor(f.category),
     title: f.title,

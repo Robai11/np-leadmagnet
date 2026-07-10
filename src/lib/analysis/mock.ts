@@ -9,6 +9,7 @@
 
 import { PAGES, LEVERS, type MockLever } from "@/lib/mock-data";
 import { opportunityClass, opportunityScore, overallUplift } from "@/lib/scoring";
+import { effortForCategory } from "@/lib/rubric";
 import type {
   AnalysisContext,
   AnalyzedPage,
@@ -26,6 +27,7 @@ const toLever = (m: MockLever): Lever => ({
   category: m.category,
   categoryLabel: m.categoryLabel,
   impact: m.impact,
+  effort: effortForCategory(m.category),
   range: m.range,
   type: m.type,
   title: m.title,
