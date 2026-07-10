@@ -10,13 +10,13 @@
 
 import { useMemo, useState } from "react";
 import { notFound } from "next/navigation";
-import { ReportStage } from "@/components/ReportStage";
+import { ReportStage, FAZIT_TAB } from "@/components/ReportStage";
 import { buildMockResult } from "@/lib/mock-result";
 
 export default function GatePreviewPage() {
   const result = useMemo(() => buildMockResult(), []);
   const [replay, setReplay] = useState(0);
-  const [initial, setInitial] = useState("pdp");
+  const [initial, setInitial] = useState<string>(FAZIT_TAB);
 
   if (process.env.NODE_ENV === "production") notFound();
 
@@ -29,6 +29,9 @@ export default function GatePreviewPage() {
     <div className="cs-root cs-root--preview">
       <div className="gate-preview-bar">
         <span className="gpb-title">Gate-Vorschau · Mock-Report</span>
+        <button className="gpb-btn" onClick={() => show(FAZIT_TAB)}>
+          Fazit-Tab
+        </button>
         <button className="gpb-btn" onClick={() => show("pdp")}>
           Gesperrter Tab
         </button>

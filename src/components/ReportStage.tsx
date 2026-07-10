@@ -19,6 +19,9 @@ import { LeverCard } from "@/components/LeverCard";
 import { Calculator } from "@/components/Calculator";
 import { LeadForm, type LeadData } from "@/components/LeadForm";
 
+/** Sentinel-„Seite" für den Fazit-Tab (erster, farblich abgesetzter Tab). */
+export const FAZIT_TAB = "__fazit__";
+
 export function ReportStage({
   result,
   unlocked,
@@ -67,7 +70,10 @@ export function ReportStage({
     [pages],
   );
 
-  const [selected, setSelected] = useState(initialSelected ?? freeId);
+  const [selected, setSelected] = useState(
+    initialSelected ?? (summary ? FAZIT_TAB : freeId),
+  );
+  const isFazit = selected === FAZIT_TAB;
   const [hovered, setHovered] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -85,7 +91,8 @@ export function ReportStage({
   const [revealed, setRevealed] = useState(false);
   const [revealing, setRevealing] = useState(false);
 
-  const isLocked = gateOn && !revealed && activePage.type !== "home";
+  const isLocked =
+    gateOn && !revealed && !isFazit && activePage.type !== "home";
   const showGate = gateOn && (isLocked || revealing);
   const bodyBlurred = isLocked && !revealing;
   const lockedIds = useMemo(
@@ -177,45 +184,12 @@ export function ReportStage({
         </div>
       </div>
 
-      <div className="fazit-hero">
-        <div className="fazit-hero-main">
-          <span className="fazit-hero-kicker">
-            <Sparkles size={15} aria-hidden="true" /> Fazit
-          </span>
-          {summary ? (
-            <>
-              <p className="fazit-hero-text">{summary.verdict}</p>
-              {summary.points.length > 0 && (
-                <ul className="fazit-hero-points">
-                  {summary.points.map((p, i) => (
-                    <li key={i}>
-                      <Check size={14} aria-hidden="true" />
-                      <span>{p}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </>
-          ) : (
-            <p className="fazit-hero-text">
-              {overall.note} Eure echten Funnel-Daten können das verschieben.
-            </p>
-          )}
-        </div>
-        <div className="fazit-hero-stat">
-          <TrendingUp size={18} aria-hidden="true" />
-          <span>Geschätztes Gesamtpotenzial</span>
-          <strong>
-            +{overall.low}–{overall.high}%
-          </strong>
-        </div>
-      </div>
-
       <FunnelStrip
         pages={pages}
         lockedIds={lockedIds}
         selected={selected}
         setSelected={setSelected}
+        fazit={!!summary}
       />
 
       {notes.length > 0 && (
@@ -226,6 +200,41 @@ export function ReportStage({
         </div>
       )}
 
+      {isFazit ? (
+        <div className="fazit-hero fazit-hero--tab">
+          <div className="fazit-hero-main">
+            <span className="fazit-hero-kicker">
+              <Sparkles size={15} aria-hidden="true" /> Fazit
+            </span>
+            {summary ? (
+              <>
+                <p className="fazit-hero-text">{summary.verdict}</p>
+                {summary.points.length > 0 && (
+                  <ul className="fazit-hero-points">
+                    {summary.points.map((p, i) => (
+                      <li key={i}>
+                        <Check size={14} aria-hidden="true" />
+                        <span>{p}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            ) : (
+              <p className="fazit-hero-text">
+                {overall.note} Eure echten Funnel-Daten können das verschieben.
+              </p>
+            )}
+          </div>
+          <div className="fazit-hero-stat">
+            <TrendingUp size={18} aria-hidden="true" />
+            <span>Geschätztes Gesamtpotenzial</span>
+            <strong>
+              +{overall.low}–{overall.high}%
+            </strong>
+          </div>
+        </div>
+      ) : (
       <div className="report-tabzone">
         <div className={`report-body ${bodyBlurred ? "is-locked" : ""}`}>
           <div className="shot-col">
@@ -331,6 +340,7 @@ export function ReportStage({
           </div>
         )}
       </div>
+      )}
 
       <Calculator />
     </div>

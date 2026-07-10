@@ -4232,6 +4232,36 @@ h3.fstep-title {
   border-style: dashed;
 }
 
+/* Fazit-Tab — erster, farblich abgesetzter Tab (grün statt neutral). */
+.fpage--fazit {
+  border-color: rgba(61, 192, 145, 0.55);
+  background: rgba(61, 192, 145, 0.12);
+}
+.fpage--fazit .fname {
+  color: var(--color-accent-deep);
+}
+.fpage--fazit .fmeta {
+  color: var(--color-accent-deep);
+  opacity: 0.75;
+}
+.fpage-fazit-ico {
+  flex: none;
+  color: var(--color-accent);
+}
+.fpage--fazit.click:hover {
+  border-color: var(--color-accent);
+}
+.fpage--fazit.sel {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.fpage--fazit.sel .fname,
+.fpage--fazit.sel .fmeta,
+.fpage--fazit.sel .fpage-fazit-ico {
+  color: var(--color-ink);
+  opacity: 1;
+}
+
 /* Dev-only gate preview route (/gate-preview). */
 .cs-root--preview {
   padding-top: 44px;
