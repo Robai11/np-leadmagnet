@@ -73,31 +73,24 @@
 .effort {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 2px 10px 2px 9px;
+  padding: 2px 10px;
   border-radius: 20px;
-  border: 1px solid var(--color-line-ink);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--color-text-ink-mute);
+  border: 1px solid transparent;
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 700;
 }
-.effort::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--color-text-mute);
-}
-.effort--low::before {
+.effort--low {
   background: var(--color-accent);
+  color: var(--color-ink);
 }
-.effort--mid::before {
+.effort--mid {
   background: var(--color-impact-mid);
+  color: var(--color-ink);
 }
-.effort--high::before {
+.effort--high {
   background: var(--color-impact-high);
+  color: #fff;
 }
 
 /* topbar */
@@ -1059,7 +1052,8 @@
 .badge {
   font-size: 12.5px;
   font-weight: 700;
-  color: var(--c);
+  color: #fff;
+  background: var(--c);
   border: 1px solid var(--c);
   padding: 2px 10px;
   border-radius: 20px;
