@@ -4787,7 +4787,7 @@ h3.fstep-title {
   margin: 8px 0 10px;
   font-size: clamp(22px, 2.6vw, 30px);
   font-weight: 800;
-  color: var(--color-ink);
+  color: var(--color-text-ink);
 }
 .fazit-hero {
   margin-top: 18px;
@@ -4879,4 +4879,86 @@ h3.fstep-title {
     border-left: none;
     border-top: 1px solid rgba(255, 255, 255, 0.14);
   }
+}
+
+/* ── Ergebnisseite: dunkle Navy-Bühne wie die Shop-URL-Analyse ───────────── */
+.cs-root--report {
+  background: #07171f;
+  color: var(--color-text-ink);
+}
+.cs-root--report .topbar {
+  position: relative;
+  z-index: 2;
+}
+.cs-root--report .foot {
+  position: relative;
+  z-index: 1;
+  color: var(--color-text-ink-mute);
+  border-top-color: var(--color-line-ink);
+}
+
+/* Fester, unscharfer + abgedunkelter Screenshot-Wand-Hintergrund. */
+.report-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #07171f;
+  pointer-events: none;
+}
+.report-bg .hero-wall {
+  transform: rotate(-8deg) scale(1.28);
+  filter: blur(13px) brightness(0.42) saturate(0.9);
+}
+.report-bg .hero-deep-veil {
+  opacity: 1;
+}
+
+.report-stage {
+  position: relative;
+  z-index: 1;
+}
+
+/* Kopf + Mono-Labels hell. */
+.report-stage .kicker,
+.report-stage .funnel-label,
+.report-stage .shot-tag,
+.report-stage .lever-group-head,
+.report-stage .report-notes,
+.report-stage .farrow {
+  color: var(--color-text-ink-mute);
+}
+.fazit-slim-head .ctx-frame {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--color-line-ink);
+  color: var(--color-text-ink-mute);
+}
+.fazit-slim-head .ctx-frame b {
+  color: var(--color-text-ink);
+}
+
+/* Funnel-Leiste auf Dunkel (Fazit-Tab bleibt grün). */
+.report-stage .funnel {
+  background: transparent;
+  border-color: var(--color-line-ink);
+}
+.report-stage .fpage:not(.fpage--fazit) {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--color-line-ink);
+}
+.report-stage .fpage:not(.fpage--fazit) .fname {
+  color: var(--color-text-ink);
+}
+.report-stage .fpage:not(.fpage--fazit) .fmeta {
+  color: var(--color-text-ink-mute);
+}
+.report-stage .fpage.click:not(.fpage--fazit):hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.report-stage .fpage.sel:not(.fpage--fazit) {
+  background: var(--color-ink-2);
+  border-color: var(--color-accent);
+}
+.report-stage .fpage.sel:not(.fpage--fazit) .fname {
+  color: #fff;
 }

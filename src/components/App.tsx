@@ -104,7 +104,7 @@ export function App() {
   ]);
 
   return (
-    <div className="cs-root">
+    <div className={`cs-root ${ready ? "cs-root--report" : ""}`}>
       <header className="topbar">
         <div className="brand">
           {/* eslint-disable-next-line @next/next/no-img-element -- statisches SVG-Markenlogo; next/image bringt für SVG keinen Vorteil */}

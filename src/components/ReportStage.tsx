@@ -13,6 +13,7 @@ import { opportunityVar } from "@/styles/tokens";
 import { rankPages, prioritize } from "@/lib/scoring";
 import type { AnalysisResult } from "@/lib/types";
 import { LEAD_GATE_ENABLED } from "@/lib/flags";
+import { HeroWall } from "@/components/HeroWall";
 import { FunnelStrip } from "@/components/FunnelStrip";
 import { Screenshot } from "@/components/Screenshot";
 import { LeverCard } from "@/components/LeverCard";
@@ -188,7 +189,14 @@ export function ReportStage({
   };
 
   return (
-    <div className="stage report-stage">
+    <>
+      <div className="report-bg" aria-hidden="true">
+        <HeroWall />
+        <div className="hero-scrim hero-scrim--radial" />
+        <div className="hero-scrim hero-scrim--vert" />
+        <div className="hero-deep-veil" />
+      </div>
+      <div className="stage report-stage">
       <div className="fazit-slim-head">
         <span className="kicker">Funnel-Analyse · {meta.url}</span>
         <h2>
@@ -359,6 +367,7 @@ export function ReportStage({
       )}
 
       <Calculator />
-    </div>
+      </div>
+    </>
   );
 }
