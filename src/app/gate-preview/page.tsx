@@ -11,6 +11,7 @@
 import { useMemo, useState } from "react";
 import { notFound } from "next/navigation";
 import { ReportStage, FAZIT_TAB } from "@/components/ReportStage";
+import { Topbar } from "@/components/Topbar";
 import { buildMockResult } from "@/lib/mock-result";
 
 export default function GatePreviewPage() {
@@ -26,7 +27,7 @@ export default function GatePreviewPage() {
   };
 
   return (
-    <div className="cs-root cs-root--preview">
+    <div className="cs-root cs-root--preview cs-root--report">
       <div className="gate-preview-bar">
         <span className="gpb-title">Gate-Vorschau · Mock-Report</span>
         <button className="gpb-btn" onClick={() => show(FAZIT_TAB)}>
@@ -46,6 +47,8 @@ export default function GatePreviewPage() {
           Vorschau speichert keinen Lead.
         </span>
       </div>
+
+      <Topbar />
 
       <ReportStage
         key={replay}

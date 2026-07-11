@@ -10,6 +10,7 @@ import type {
 import { useAnalysis } from "@/lib/useAnalysis";
 import { useReturnNudge } from "@/lib/useReturnNudge";
 import { GATE_ENABLED } from "@/lib/flags";
+import { Topbar } from "@/components/Topbar";
 import { InputStage } from "@/components/InputStage";
 import { LoadingStage } from "@/components/LoadingStage";
 import { ReportStage } from "@/components/ReportStage";
@@ -105,29 +106,9 @@ export function App() {
 
   return (
     <div className={`cs-root ${ready ? "cs-root--report" : ""}`}>
-      <header className="topbar">
-        <div className="brand">
-          {/* eslint-disable-next-line @next/next/no-img-element -- statisches SVG-Markenlogo; next/image bringt für SVG keinen Vorteil */}
-          <img
-            className="brand-logo"
-            src="/brand/netzproduzenten-logo-weiss.svg"
-            alt="Netzproduzenten"
-          />
-          <span className="brand-sep" aria-hidden="true" />
-          ConversionScan
-        </div>
-        <div className="topbar-actions">
-          {(ready || state.status === "error") && (
-            <button className="restart" onClick={restart}>
-              Neue Analyse
-            </button>
-          )}
-          {/* TODO: Buchungs-URL (Calendly o.ä.) eintragen. */}
-          <a className="topbar-cta" href="#kontakt">
-            Jetzt Gespräch vereinbaren
-          </a>
-        </div>
-      </header>
+      <Topbar
+        onRestart={ready || state.status === "error" ? restart : undefined}
+      />
 
       {state.status === "idle" && <InputStage onStart={onStart} />}
 
