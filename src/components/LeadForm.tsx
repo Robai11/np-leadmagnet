@@ -66,46 +66,49 @@ function Field({
   );
 }
 
-/** The "Ich habe X … und Y …" headline, plural-aware and graceful at zero. */
-function FoundHeadline({
-  critical,
-  upside,
-}: {
-  critical: number;
-  upside: number;
-}) {
-  const critPart = (
-    <>
-      <b className="lg-num lg-num--crit">{critical}</b>{" "}
-      {critical === 1 ? "kritische Stelle" : "kritische Stellen"} gefunden,{" "}
-      {critical === 1 ? "an der" : "an denen"} du{" "}
-      <span className="lg-hot">Geld verbrennst</span>
-    </>
-  );
-  const upPart = (
-    <>
-      <b className="lg-num lg-num--up">{upside}</b>{" "}
-      {upside === 1 ? "Stelle" : "Stellen"}, {upside === 1 ? "an der" : "wo"} du{" "}
-      <span className="lg-up">mehr Umsatz</span> herausholen kannst
-    </>
-  );
-
-  let body: React.ReactNode;
-  if (critical > 0 && upside > 0) {
-    body = (
-      <>
-        Ich habe {critPart} – und {upPart}.
-      </>
+/**
+ * Right-hand column: what the scan found — one stat block for the critical
+ * spots (Geld verbrennen) and one for the upside (mehr Umsatz). Plural-aware,
+ * graceful at zero.
+ */
+function FoundAside({ critical, upside }: { critical: number; upside: number }) {
+  if (critical <= 0 && upside <= 0) {
+    return (
+      <aside className="leadform-side">
+        <p className="lf-side-empty">
+          Ich habe deinen Funnel analysiert — sieh dir die Ergebnisse an.
+        </p>
+      </aside>
     );
-  } else if (critical > 0) {
-    body = <>Ich habe {critPart}.</>;
-  } else if (upside > 0) {
-    body = <>Ich habe {upPart}.</>;
-  } else {
-    body = <>Ich habe deinen Funnel analysiert — sieh dir die Ergebnisse an.</>;
   }
 
-  return <p className="leadgate-found">{body}</p>;
+  return (
+    <aside className="leadform-side">
+      <span className="lf-side-kicker">Das habe ich gefunden</span>
+      <div className="lf-finds">
+        {critical > 0 && (
+          <div className="lf-find lf-find--crit">
+            <span className="lf-find-num">{critical}</span>
+            <span className="lf-find-txt">
+              {critical === 1 ? "kritische Stelle" : "kritische Stellen"},{" "}
+              {critical === 1 ? "an der" : "an denen"} du{" "}
+              <b>Geld verbrennst</b>
+            </span>
+          </div>
+        )}
+        {upside > 0 && (
+          <div className="lf-find lf-find--up">
+            <span className="lf-find-num">{upside}</span>
+            <span className="lf-find-txt">
+              {upside === 1 ? "Stelle" : "Stellen"},{" "}
+              {upside === 1 ? "an der" : "wo"} du <b>mehr Umsatz</b> herausholen
+              kannst
+            </span>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
 }
 
 export function LeadForm({
@@ -178,84 +181,86 @@ export function LeadForm({
       aria-modal="true"
       aria-label="Schwachstellen ansehen"
     >
-      <FoundHeadline critical={critical} upside={upside} />
+      <div className="leadform-cols">
+        <div className="leadform-main">
+          <div className="leadgate-form-head">
+            <span className="leadgate-form-badge">
+              <Lock size={13} aria-hidden="true" /> Auswertung freischalten
+            </span>
+            <h3 className="leadgate-form-title">Schwachstellen ansehen</h3>
+          </div>
 
-      <form className="leadgate-form" onSubmit={handleSubmit} noValidate>
-        <div className="leadgate-form-head">
-          <span className="leadgate-form-badge">
-            <Lock size={13} aria-hidden="true" /> Auswertung freischalten
-          </span>
-          <h3 className="leadgate-form-title">Jetzt Schwachstellen ansehen</h3>
-          <p className="leadgate-form-sub">
-            Trag deine Kontaktdaten ein — danach siehst du sofort alle
-            Optimierungen über den kompletten Funnel.
-          </p>
+          <form className="leadgate-form" onSubmit={handleSubmit} noValidate>
+            <div className="lg-grid">
+              <Field
+                label="Vorname"
+                name="firstName"
+                value={data.firstName}
+                onChange={set("firstName")}
+                autoComplete="given-name"
+                placeholder="Max"
+                error={errors.firstName}
+              />
+              <Field
+                label="Nachname"
+                name="lastName"
+                value={data.lastName}
+                onChange={set("lastName")}
+                autoComplete="family-name"
+                placeholder="Mustermann"
+                error={errors.lastName}
+              />
+              <div className="lg-field-full">
+                <Field
+                  label="Geschäftliche E-Mail"
+                  name="email"
+                  type="email"
+                  value={data.email}
+                  onChange={set("email")}
+                  autoComplete="email"
+                  placeholder="max@dein-unternehmen.de"
+                  error={errors.email}
+                />
+              </div>
+              <div className="lg-field-full">
+                <Field
+                  label="Telefonnummer"
+                  name="phone"
+                  type="tel"
+                  value={data.phone}
+                  onChange={set("phone")}
+                  autoComplete="tel"
+                  placeholder="+49 …"
+                  error={errors.phone}
+                />
+              </div>
+            </div>
+
+            {serverError ? (
+              <p className="lg-server-error">{serverError}</p>
+            ) : null}
+
+            <button className="lg-submit" type="submit" disabled={submitting}>
+              {submitting ? (
+                <>
+                  <Loader2 size={17} className="spin" /> Wird geöffnet …
+                </>
+              ) : (
+                <>
+                  Schwachstellen ansehen <ArrowRight size={17} />
+                </>
+              )}
+            </button>
+
+            <p className="lg-fineprint">
+              Wir nutzen deine Daten ausschließlich für deine Auswertung und die
+              Kontaktaufnahme dazu.
+            </p>
+          </form>
         </div>
 
-        <div className="lg-grid">
-          <Field
-            label="Vorname"
-            name="firstName"
-            value={data.firstName}
-            onChange={set("firstName")}
-            autoComplete="given-name"
-            placeholder="Max"
-            error={errors.firstName}
-          />
-          <Field
-            label="Nachname"
-            name="lastName"
-            value={data.lastName}
-            onChange={set("lastName")}
-            autoComplete="family-name"
-            placeholder="Mustermann"
-            error={errors.lastName}
-          />
-          <div className="lg-field-full">
-            <Field
-              label="Geschäftliche E-Mail"
-              name="email"
-              type="email"
-              value={data.email}
-              onChange={set("email")}
-              autoComplete="email"
-              placeholder="max@dein-unternehmen.de"
-              error={errors.email}
-            />
-          </div>
-          <div className="lg-field-full">
-            <Field
-              label="Telefonnummer"
-              name="phone"
-              type="tel"
-              value={data.phone}
-              onChange={set("phone")}
-              autoComplete="tel"
-              placeholder="+49 …"
-              error={errors.phone}
-            />
-          </div>
-        </div>
-
-        {serverError ? <p className="lg-server-error">{serverError}</p> : null}
-
-        <button className="lg-submit" type="submit" disabled={submitting}>
-          {submitting ? (
-            <>
-              <Loader2 size={17} className="spin" /> Wird geöffnet …
-            </>
-          ) : (
-            <>
-              Schwachstellen ansehen <ArrowRight size={17} />
-            </>
-          )}
-        </button>
-
-        <p className="lg-fineprint">
-          Wir nutzen deine Daten ausschließlich für deine Auswertung und die
-          Kontaktaufnahme dazu.
-        </p>
-      </form>
+        <FoundAside critical={critical} upside={upside} />
+      </div>
     </div>
   );
 }

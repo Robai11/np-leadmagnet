@@ -4044,16 +4044,41 @@ h3.fstep-title {
 .leadgate-panel {
   position: relative;
   z-index: 2;
-  width: min(520px, 100%);
+  width: min(880px, 100%);
   max-height: 100%;
   overflow: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 30px clamp(20px, 3.4vw, 36px);
+  padding: 30px clamp(22px, 3vw, 38px);
   background: var(--color-ink-2);
   border-radius: var(--radius-lg);
   box-shadow: 0 26px 70px rgba(6, 28, 40, 0.55);
+}
+
+/* Two columns: form (left) + what-we-found (right); stacks on narrow. */
+.leadform-cols {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.leadform-main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+@media (min-width: 720px) {
+  .leadform-cols {
+    flex-direction: row;
+    align-items: stretch;
+  }
+  .leadform-main {
+    flex: 1.05 1 0;
+    padding-right: 30px;
+  }
+  .leadform-side {
+    flex: 0.95 1 0;
+    padding-left: 30px;
+    border-left: 1px solid var(--color-line-ink);
+  }
 }
 .tabgate .leadform-panel {
   animation: leadform-pop 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -4076,33 +4101,76 @@ h3.fstep-title {
     transform 300ms ease;
 }
 
-/* "Ich habe X … und Y …" headline. */
-.leadgate-found {
+/* Right column — what the scan found. */
+.leadform-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+.lf-side-kicker {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-ink-mute);
+}
+.lf-side-empty {
   margin: 0;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(20px, 2.4vw, 27px);
-  line-height: 1.28;
-  letter-spacing: -0.01em;
+  font-size: 15px;
+  line-height: 1.45;
   color: var(--color-text-ink);
 }
-.lg-num {
-  font-size: 1.16em;
+.lf-finds {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.lf-find {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 16px 18px;
+  border: 1px solid var(--color-line-ink);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.04);
+}
+.lf-find--crit {
+  border-left-color: var(--color-impact-high);
+}
+.lf-find--up {
+  border-left-color: var(--color-accent);
+}
+.lf-find-num {
+  flex: none;
+  font-family: var(--font-display);
   font-weight: 900;
+  font-size: 42px;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
 }
-.lg-num--crit {
+.lf-find--crit .lf-find-num {
   color: var(--color-impact-high);
 }
-.lg-num--up {
+.lf-find--up .lf-find-num {
   color: var(--color-accent);
 }
-.lg-hot {
+.lf-find-txt {
+  font-size: 14.5px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--color-text-ink);
+}
+.lf-find-txt b {
+  font-weight: 800;
+}
+.lf-find--crit .lf-find-txt b {
   color: var(--color-impact-high);
-  font-weight: 800;
 }
-.lg-up {
+.lf-find--up .lf-find-txt b {
   color: var(--color-accent);
-  font-weight: 800;
 }
 
 /* Form. */
@@ -4110,8 +4178,6 @@ h3.fstep-title {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding-top: 22px;
-  border-top: 1px solid var(--color-line-ink);
 }
 .leadgate-form-head {
   display: flex;
@@ -4139,12 +4205,6 @@ h3.fstep-title {
   font-weight: 800;
   font-size: clamp(19px, 2vw, 23px);
   color: var(--color-text-ink);
-}
-.leadgate-form-sub {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.45;
-  color: var(--color-text-ink-mute);
 }
 .lg-grid {
   display: grid;
@@ -4246,9 +4306,6 @@ h3.fstep-title {
 @media (max-width: 540px) {
   .lg-grid {
     grid-template-columns: 1fr;
-  }
-  .leadgate-found {
-    font-size: clamp(18px, 5.5vw, 22px);
   }
 }
 
