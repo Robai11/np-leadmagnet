@@ -8,15 +8,6 @@ import { BotJourney } from "@/components/BotJourney";
 
 const PAGE_IDS = ["home", "plp", "pdp", "cart", "checkout"];
 
-// Dynamisch wechselnde Beispiele, was man sich in der Wartezeit holen kann.
-const SNACKS = [
-  "einen Kaffee",
-  "einen Schokoriegel",
-  "ein paar Gummibären",
-  "einen Tee",
-  "einen Snack",
-];
-
 export function LoadingStage({
   ctx,
   analyzedIds,
@@ -37,15 +28,6 @@ export function LoadingStage({
   const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setElapsed((s) => s + 1), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  const [snackIdx, setSnackIdx] = useState(0);
-  useEffect(() => {
-    const t = setInterval(
-      () => setSnackIdx((n) => (n + 1) % SNACKS.length),
-      4200,
-    );
     return () => clearInterval(t);
   }, []);
 
@@ -89,11 +71,7 @@ export function LoadingStage({
                 Änderungsaufwand.
               </h2>
               <p className="aload-subhead">
-                Warte ein paar Minuten hier — oder hol dir{" "}
-                <span className="aload-snack" key={snackIdx}>
-                  {SNACKS[snackIdx]}
-                </span>
-                .
+                Warte ein paar Minuten hier — oder komm einfach später wieder.
               </p>
 
               {onToggleMuted ? (

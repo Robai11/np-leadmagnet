@@ -3941,27 +3941,6 @@ h3.fstep-title {
 .aload-bell.is-on .aload-bell-knob {
   transform: translateX(16px);
 }
-.aload-snack {
-  display: inline-block;
-  font-weight: 800;
-  color: #7fe6bd;
-  animation: snack-in 420ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-@keyframes snack-in {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .aload-snack {
-    animation: none;
-  }
-}
 .aload-progress {
   margin: 0 auto;
   width: 100%;
