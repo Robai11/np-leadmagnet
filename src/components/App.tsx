@@ -116,11 +116,17 @@ export function App() {
           <span className="brand-sep" aria-hidden="true" />
           ConversionScan
         </div>
-        {(ready || state.status === "error") && (
-          <button className="restart" onClick={restart}>
-            Neue Analyse
-          </button>
-        )}
+        <div className="topbar-actions">
+          {(ready || state.status === "error") && (
+            <button className="restart" onClick={restart}>
+              Neue Analyse
+            </button>
+          )}
+          {/* TODO: Buchungs-URL (Calendly o.ä.) eintragen. */}
+          <a className="topbar-cta" href="#kontakt">
+            Jetzt Gespräch vereinbaren
+          </a>
+        </div>
       </header>
 
       {state.status === "idle" && <InputStage onStart={onStart} />}

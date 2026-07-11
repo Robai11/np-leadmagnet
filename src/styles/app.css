@@ -148,6 +148,29 @@
   cursor: pointer;
   letter-spacing: 0.05em;
 }
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.topbar-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 18px;
+  border-radius: 6px;
+  background: var(--color-accent);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 140ms ease;
+}
+.topbar-cta:hover {
+  background: var(--color-accent-deep);
+}
 .restart:hover {
   border-color: var(--color-accent);
   color: var(--color-accent);
@@ -1062,13 +1085,13 @@
   margin-left: auto;
 }
 .card-title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   margin: 11px 0 9px;
   color: var(--color-text-ink);
 }
 .card-body {
-  font-size: 13.5px;
+  font-size: 16px;
   color: var(--color-text-ink-mute);
   display: flex;
   flex-direction: column;

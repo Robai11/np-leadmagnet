@@ -105,13 +105,13 @@ export function LeverCard({
       <h4 className="card-title">{lv.title}</h4>
       <div className="card-body">
         <p>
-          <b>Beobachtung.</b> {lv.observation}
-        </p>
-        <p>
-          <b>Mechanismus.</b> {lv.mechanism}
+          <b>Problem &amp; Potenzial:</b> {lv.observation}
         </p>
         <p className="test">
-          <b>Test.</b> {lv.test}
+          <b>Optimierungsempfehlung:</b> {lv.test}
+        </p>
+        <p>
+          <b>Psychologischer Hintergrund:</b> {lv.mechanism}
         </p>
       </div>
     </div>
