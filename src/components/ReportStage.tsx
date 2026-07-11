@@ -225,6 +225,7 @@ export function ReportStage({
       )}
 
       {isFazit ? (
+        <>
         <div className="fazit-hero fazit-hero--tab">
           <div className="fazit-hero-main">
             <span className="fazit-hero-kicker">
@@ -258,6 +259,8 @@ export function ReportStage({
             </strong>
           </div>
         </div>
+        <Calculator />
+        </>
       ) : (
       <div className="report-tabzone">
         <div className={`report-body ${bodyBlurred ? "is-locked" : ""}`}>
@@ -366,7 +369,6 @@ export function ReportStage({
       </div>
       )}
 
-      <Calculator />
       </div>
     </>
   );

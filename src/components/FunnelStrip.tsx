@@ -31,8 +31,8 @@ export function FunnelStrip({
             onClick={() => setSelected(FAZIT_TAB)}
           >
             <Sparkles size={13} className="fpage-fazit-ico" aria-hidden="true" />
-            <span className="fname">Fazit</span>
-            <span className="fmeta">Zusammenfassung</span>
+            <span className="fname">Fazit und Conversion-Kalkulator</span>
+            <span className="fmeta">Zusammenfassung + Rechner</span>
           </button>
         )}
         {pages.map((p, idx) => {
