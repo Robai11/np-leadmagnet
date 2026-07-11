@@ -4906,6 +4906,10 @@ h3.fstep-title {
 .cs-root--report .topbar {
   position: relative;
   z-index: 2;
+  max-width: 1760px;
+  margin: 0 auto;
+  padding: 18px 40px;
+  background: transparent;
 }
 .cs-root--report .foot {
   position: relative;
