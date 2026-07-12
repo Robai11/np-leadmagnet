@@ -12,7 +12,7 @@
  */
 
 import { useState } from "react";
-import { ArrowRight, Loader2, Lock } from "lucide-react";
+import { ArrowRight, Check, Loader2, Lock } from "lucide-react";
 import { isBusinessEmail, isValidEmail } from "@/lib/email";
 
 /** Kundenlogos für die Vertrauens-Leiste (weiße SVGs auf Navy). */
@@ -94,7 +94,9 @@ function TeamStrip() {
   return (
     <figure className="lf-team">
       <img src="/brand/team.jpg" alt="Das Team von Netzproduzenten" />
-      <figcaption>Dein Team bei Netzproduzenten</figcaption>
+      <figcaption>
+        Netzproduzenten – Performance Marketing für Online-Shops
+      </figcaption>
     </figure>
   );
 }
@@ -147,6 +149,20 @@ function FoundAside() {
   return (
     <aside className="leadform-side">
       <TeamStrip />
+      <ul className="lf-checks">
+        <li>
+          <Check size={18} aria-hidden="true" />
+          Sofort-Auswertung über den kompletten Funnel
+        </li>
+        <li>
+          <Check size={18} aria-hidden="true" />
+          Priorisiert nach Umsatz-Effekt &amp; Aufwand
+        </li>
+        <li>
+          <Check size={18} aria-hidden="true" />
+          Kostenlos &amp; unverbindlich
+        </li>
+      </ul>
       <TrustLogos />
     </aside>
   );

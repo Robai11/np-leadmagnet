@@ -4149,12 +4149,36 @@ h3.fstep-title {
   text-align: center;
 }
 
-/* Client-logo trust strip (unter dem Teamfoto). */
+/* Drei Checkmarks unter dem Teamfoto. */
+.lf-checks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.lf-checks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--color-text-ink);
+}
+.lf-checks svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--color-accent);
+}
+
+/* Client-logo trust strip (unter dem Teamfoto). Groß — füllt den Rest. */
 .lf-trust {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 22px;
 }
 .lf-trust-label {
   font-family: var(--font-mono);
@@ -4169,14 +4193,14 @@ h3.fstep-title {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 18px 28px;
+  gap: 34px 46px;
 }
 .lf-logo {
-  height: 28px;
+  height: 50px;
   width: auto;
-  max-width: 112px;
+  max-width: 200px;
   object-fit: contain;
-  opacity: 0.62;
+  opacity: 0.66;
   /* Alle Logos einheitlich weiß rendern (auch mehrfarbige Teile wie bei Speidel). */
   filter: brightness(0) invert(1);
   transition: opacity 140ms ease;
@@ -4287,7 +4311,7 @@ h3.fstep-title {
   border: none;
   border-radius: var(--radius);
   background: var(--color-accent);
-  color: var(--color-ink);
+  color: #fff;
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 17.5px;
