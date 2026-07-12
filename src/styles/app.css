@@ -4946,6 +4946,28 @@ h3.fstep-title {
   font-weight: 800;
   color: var(--color-text-ink);
 }
+/* Fazit + Kalkulator als EIN zusammenhängender Block. */
+.fazit-merged {
+  margin-top: 18px;
+  padding: clamp(24px, 3vw, 34px);
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0c2330, #071620);
+  color: #fff;
+}
+.fazit-merged .fazit-hero {
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+}
+.fazit-merged .calc {
+  margin-top: 28px;
+  padding: 28px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0;
+  background: none;
+}
+
 .fazit-hero {
   margin-top: 18px;
   display: grid;
@@ -4957,16 +4979,18 @@ h3.fstep-title {
   background: linear-gradient(135deg, #0c2330, #071620);
   color: #fff;
 }
-.fazit-hero-kicker {
+.fazit-hero-title {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 9px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  color: #fff;
+}
+.fazit-hero-title svg {
   color: var(--color-accent);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 .fazit-hero-text {
   margin: 10px 0 0;

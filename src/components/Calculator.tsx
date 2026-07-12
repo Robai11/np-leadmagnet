@@ -74,8 +74,7 @@ export function Calculator() {
   return (
     <div className="calc">
       <div className="calc-head">
-        <span className="kicker">Unabhängiges Tool</span>
-        <h3>Uplift-Kalkulator</h3>
+        <h3>Berechne gleich deinen Mehrumsatz</h3>
         <p>
           Spiel mit deinen eigenen Zahlen — unabhängig von der Seitenanalyse.
           Was bedeuten 10 / 20 / 30 % mehr Conversion in Euro?

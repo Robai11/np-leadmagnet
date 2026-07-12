@@ -225,12 +225,12 @@ export function ReportStage({
       )}
 
       {isFazit ? (
-        <>
+        <div className="fazit-merged">
         <div className="fazit-hero fazit-hero--tab">
           <div className="fazit-hero-main">
-            <span className="fazit-hero-kicker">
-              <Sparkles size={15} aria-hidden="true" /> Fazit
-            </span>
+            <h3 className="fazit-hero-title">
+              <Sparkles size={20} aria-hidden="true" /> Fazit
+            </h3>
             {summary ? (
               <>
                 <p className="fazit-hero-text">{summary.verdict}</p>
@@ -260,7 +260,7 @@ export function ReportStage({
           </div>
         </div>
         <Calculator />
-        </>
+        </div>
       ) : (
       <div className="report-tabzone">
         <div className={`report-body ${bodyBlurred ? "is-locked" : ""}`}>
