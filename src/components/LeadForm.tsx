@@ -12,7 +12,14 @@
  */
 
 import { useState } from "react";
-import { ArrowRight, Check, Loader2, Lock } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Check,
+  Loader2,
+  Lock,
+  TrendingUp,
+} from "lucide-react";
 import { isBusinessEmail, isValidEmail } from "@/lib/email";
 
 /** Kundenlogos für die Vertrauens-Leiste (weiße SVGs auf Navy). */
@@ -101,48 +108,44 @@ function TeamStrip() {
   );
 }
 
-/** Headline über dem rechten Bereich — plural-aware, graceful bei 0. */
-function AnalysisHeadline({
+/** Fund-Aussage als zwei kompakte Kacheln (Verlust / Potenzial), graceful bei 0. */
+function FoundTiles({
   critical,
   upside,
 }: {
   critical: number;
   upside: number;
 }) {
-  const critPart = (
-    <>
-      <b className="lf-head-crit">{critical}</b>{" "}
-      {critical === 1 ? "kritische Stelle" : "kritische Stellen"} gefunden,{" "}
-      {critical === 1 ? "an der" : "an denen"} du{" "}
-      <b className="lf-head-crit">Geld verbrennst</b>
-    </>
-  );
-  const upPart = (
-    <>
-      <b className="lf-head-up">{upside}</b>{" "}
-      {upside === 1 ? "Stelle" : "Stellen"}, {upside === 1 ? "an der" : "wo"} du{" "}
-      <b className="lf-head-up">mehr Umsatz</b> herausholen kannst
-    </>
-  );
+  if (critical <= 0 && upside <= 0) return null;
 
-  let body: React.ReactNode;
-  if (critical > 0 && upside > 0) {
-    body = (
-      <>
-        Unsere KI-Analyse hat {critPart} – und {upPart}.
-      </>
-    );
-  } else if (critical > 0) {
-    body = <>Unsere KI-Analyse hat {critPart}.</>;
-  } else if (upside > 0) {
-    body = <>Unsere KI-Analyse hat {upPart}.</>;
-  } else {
-    body = (
-      <>Unsere KI-Analyse hat deinen Funnel durchleuchtet — sieh dir an, wo.</>
-    );
-  }
-
-  return <p className="lf-found-line">{body}</p>;
+  return (
+    <div className="lf-tiles">
+      {critical > 0 && (
+        <div className="lf-tile lf-tile--crit">
+          <div className="lf-tile-top">
+            <AlertTriangle size={15} aria-hidden="true" />
+            <span className="lf-tile-num">{critical}</span>
+          </div>
+          <span className="lf-tile-label">
+            {critical === 1
+              ? "kritische Schwachstelle"
+              : "kritische Schwachstellen"}
+          </span>
+          <span className="lf-tile-sub">hier geht Umsatz verloren</span>
+        </div>
+      )}
+      {upside > 0 && (
+        <div className="lf-tile lf-tile--up">
+          <div className="lf-tile-top">
+            <TrendingUp size={15} aria-hidden="true" />
+            <span className="lf-tile-num">{upside}</span>
+          </div>
+          <span className="lf-tile-label">Umsatz-Hebel</span>
+          <span className="lf-tile-sub">ungenutztes Potenzial</span>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function FoundAside() {
@@ -259,7 +262,7 @@ export function LeadForm({
               <Lock size={13} aria-hidden="true" /> Auswertung freischalten
             </span>
             <h3 className="leadgate-form-title">Schwachstellen ansehen</h3>
-            <AnalysisHeadline critical={critical} upside={upside} />
+            <FoundTiles critical={critical} upside={upside} />
           </div>
 
           <form className="leadgate-form" onSubmit={handleSubmit} noValidate>
