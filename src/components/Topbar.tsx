@@ -10,7 +10,7 @@ import type { CSSProperties } from "react";
  * zwei Gründer mittig + zwei weitere Gesichter.
  * TODO: --fx nach Einsetzen des echten Fotos feinjustieren.
  */
-const TEAM_FACES: number[] = [46, 53, 38, 61]; // background-position-x in %
+const TEAM_FACES: number[] = [37, 43, 50, 56]; // background-position-x in % (helle Mitte)
 
 /**
  * Globale Topbar: NP-Logo oben links, Aktionen oben rechts (Team-Avatare +
