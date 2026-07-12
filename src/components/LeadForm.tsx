@@ -99,43 +99,58 @@ function TeamStrip() {
   );
 }
 
-function FoundAside({ critical, upside }: { critical: number; upside: number }) {
-  if (critical <= 0 && upside <= 0) {
-    return (
-      <aside className="leadform-side">
-        <p className="lf-side-empty">
-          Ich habe deinen Funnel analysiert — sieh dir die Ergebnisse an.
-        </p>
-        <TeamStrip />
-      </aside>
+/** Headline über dem rechten Bereich — plural-aware, graceful bei 0. */
+function AnalysisHeadline({
+  critical,
+  upside,
+}: {
+  critical: number;
+  upside: number;
+}) {
+  const critPart = (
+    <>
+      <b className="lf-head-crit">{critical}</b>{" "}
+      {critical === 1 ? "kritische Stelle" : "kritische Stellen"} gefunden,{" "}
+      {critical === 1 ? "an der" : "an denen"} du{" "}
+      <b className="lf-head-crit">Geld verbrennst</b>
+    </>
+  );
+  const upPart = (
+    <>
+      <b className="lf-head-up">{upside}</b>{" "}
+      {upside === 1 ? "Stelle" : "Stellen"}, {upside === 1 ? "an der" : "wo"} du{" "}
+      <b className="lf-head-up">mehr Umsatz</b> herausholen kannst
+    </>
+  );
+
+  let body: React.ReactNode;
+  if (critical > 0 && upside > 0) {
+    body = (
+      <>
+        Unsere KI-Analyse hat {critPart} – und {upPart}.
+      </>
+    );
+  } else if (critical > 0) {
+    body = <>Unsere KI-Analyse hat {critPart}.</>;
+  } else if (upside > 0) {
+    body = <>Unsere KI-Analyse hat {upPart}.</>;
+  } else {
+    body = (
+      <>Unsere KI-Analyse hat deinen Funnel durchleuchtet — sieh dir an, wo.</>
     );
   }
 
+  return <p className="lf-side-head">{body}</p>;
+}
+
+function FoundAside({ critical, upside }: { critical: number; upside: number }) {
   return (
     <aside className="leadform-side">
-      <span className="lf-side-kicker">Das habe ich gefunden</span>
-      <div className="lf-finds">
-        {critical > 0 && (
-          <div className="lf-find lf-find--crit">
-            <span className="lf-find-num">{critical}</span>
-            <span className="lf-find-txt">
-              {critical === 1 ? "kritische Stelle" : "kritische Stellen"},{" "}
-              {critical === 1 ? "an der" : "an denen"} du{" "}
-              <b>Geld verbrennst</b>
-            </span>
-          </div>
-        )}
-        {upside > 0 && (
-          <div className="lf-find lf-find--up">
-            <span className="lf-find-num">{upside}</span>
-            <span className="lf-find-txt">
-              {upside === 1 ? "Stelle" : "Stellen"},{" "}
-              {upside === 1 ? "an der" : "wo"} du <b>mehr Umsatz</b> herausholen
-              kannst
-            </span>
-          </div>
-        )}
-      </div>
+      <AnalysisHeadline critical={critical} upside={upside} />
+      {/* TODO: echte Buchungs-URL (Calendly o.ä.) statt Platzhalter eintragen. */}
+      <a className="lf-side-cta" href="#kontakt">
+        Jetzt Gespräch vereinbaren <ArrowRight size={18} />
+      </a>
       <TeamStrip />
     </aside>
   );
