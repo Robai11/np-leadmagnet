@@ -4080,7 +4080,17 @@ h3.fstep-title {
   .leadform-side {
     flex: 0.95 1 0;
     padding-left: 30px;
-    border-left: 1px solid var(--color-line-ink);
+  }
+  /* Durchgehende Trennlinie — schließt oben und unten am Panelrand ab
+     (−40px = vertikales Panel-Padding). */
+  .leadform-side::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -40px;
+    bottom: -40px;
+    width: 1px;
+    background: var(--color-line-ink);
   }
 }
 .tabgate .leadform-panel {
@@ -4175,6 +4185,7 @@ h3.fstep-title {
 
 /* Right column — team photo + client logos. */
 .leadform-side {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -4224,32 +4235,24 @@ h3.fstep-title {
   color: var(--color-accent);
 }
 
-/* Client-logo trust strip (unter dem Teamfoto). Groß — füllt den Rest. */
+/* Client-logo trust strip (unter dem Teamfoto). Neun Logos als 3×3-Raster. */
 .lf-trust {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 22px;
-}
-.lf-trust-label {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--color-text-ink-mute);
 }
 .lf-logos {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   align-items: center;
-  justify-content: center;
-  gap: 34px 46px;
+  justify-items: center;
+  gap: 30px 22px;
+  width: 100%;
 }
 .lf-logo {
-  height: 50px;
+  height: 62px;
   width: auto;
-  max-width: 200px;
+  max-width: 100%;
   object-fit: contain;
   opacity: 0.66;
   /* Alle Logos einheitlich weiß rendern (auch mehrfarbige Teile wie bei Speidel). */

@@ -33,7 +33,6 @@ const CLIENT_LOGOS: { src: string; alt: string }[] = [
   { src: "/brand/clients/fust.svg", alt: "Fust" },
   { src: "/brand/clients/chamaeleon.svg", alt: "Chamäleon" },
   { src: "/brand/clients/steinbach.svg", alt: "Steinbach" },
-  { src: "/brand/clients/sgs.svg", alt: "SGS" },
 ];
 
 export interface LeadData {
@@ -159,15 +158,15 @@ function FoundAside() {
       <ul className="lf-checks">
         <li>
           <Check size={18} aria-hidden="true" />
-          Sofort-Auswertung über den kompletten Funnel
+          Top-15 unter 1.396 Google-Partnern im deutschsprachigen Raum
         </li>
         <li>
           <Check size={18} aria-hidden="true" />
-          Priorisiert nach Umsatz-Effekt &amp; Aufwand
+          18-köpfiges Performance-Marketing-Team
         </li>
         <li>
           <Check size={18} aria-hidden="true" />
-          Kostenlos &amp; unverbindlich
+          Seit 10 Jahren vertrauen uns namhafte Marken
         </li>
       </ul>
       <TrustLogos />
@@ -179,7 +178,6 @@ function FoundAside() {
 function TrustLogos() {
   return (
     <div className="lf-trust">
-      <span className="lf-trust-label">Diese Marken vertrauen auf uns</span>
       <div className="lf-logos">
         {CLIENT_LOGOS.map((l) => (
           <img key={l.src} className="lf-logo" src={l.src} alt={l.alt} />
