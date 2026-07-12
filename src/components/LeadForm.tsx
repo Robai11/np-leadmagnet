@@ -1,15 +1,33 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- lokale statische Marken-/Team-Assets; next/image bringt hier keinen Vorteil */
+
 /*
  * LeadForm — the lead-capture panel shown over the blurred, locked report tabs
  * (see LEAD_GATE_ENABLED). The Startseite tab is free; every other tab blurs its
  * content and renders this panel on top, scoped to the tab content area (not
- * full-screen). A captured lead unlocks the whole report.
+ * full-screen). A captured lead unlocks the whole report. Alongside the form it
+ * carries social proof: the team photo (right column) and a client-logo strip
+ * (footer).
  */
 
 import { useState } from "react";
 import { ArrowRight, Loader2, Lock } from "lucide-react";
 import { isBusinessEmail, isValidEmail } from "@/lib/email";
+
+/** Kundenlogos für die Vertrauens-Leiste (weiße SVGs auf Navy). */
+const CLIENT_LOGOS: { src: string; alt: string }[] = [
+  { src: "/brand/clients/urlaubsguru.svg", alt: "Urlaubsguru" },
+  { src: "/brand/clients/electropapa.svg", alt: "ElectroPapa" },
+  { src: "/brand/clients/pfh.svg", alt: "PFH" },
+  { src: "/brand/clients/speidel.svg", alt: "Speidel" },
+  { src: "/brand/clients/brandible.svg", alt: "brandible" },
+  { src: "/brand/clients/little-john-bikes.svg", alt: "Little John Bikes" },
+  { src: "/brand/clients/fust.svg", alt: "Fust" },
+  { src: "/brand/clients/chamaeleon.svg", alt: "Chamäleon" },
+  { src: "/brand/clients/steinbach.svg", alt: "Steinbach" },
+  { src: "/brand/clients/sgs.svg", alt: "SGS" },
+];
 
 export interface LeadData {
   firstName: string;
@@ -71,6 +89,16 @@ function Field({
  * spots (Geld verbrennen) and one for the upside (mehr Umsatz). Plural-aware,
  * graceful at zero.
  */
+/** Teamfoto-Streifen — menschlicher Vertrauensanker in der rechten Spalte. */
+function TeamStrip() {
+  return (
+    <figure className="lf-team">
+      <img src="/brand/team.jpg" alt="Das Team von Netzproduzenten" />
+      <figcaption>Dein Team bei Netzproduzenten</figcaption>
+    </figure>
+  );
+}
+
 function FoundAside({ critical, upside }: { critical: number; upside: number }) {
   if (critical <= 0 && upside <= 0) {
     return (
@@ -78,6 +106,7 @@ function FoundAside({ critical, upside }: { critical: number; upside: number }) 
         <p className="lf-side-empty">
           Ich habe deinen Funnel analysiert — sieh dir die Ergebnisse an.
         </p>
+        <TeamStrip />
       </aside>
     );
   }
@@ -107,7 +136,22 @@ function FoundAside({ critical, upside }: { critical: number; upside: number }) 
           </div>
         )}
       </div>
+      <TeamStrip />
     </aside>
+  );
+}
+
+/** Kundenlogo-Leiste — Social Proof im Panel-Fuß. */
+function TrustLogos() {
+  return (
+    <div className="lf-trust">
+      <span className="lf-trust-label">Diese Marken vertrauen auf uns</span>
+      <div className="lf-logos">
+        {CLIENT_LOGOS.map((l) => (
+          <img key={l.src} className="lf-logo" src={l.src} alt={l.alt} />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -261,6 +305,8 @@ export function LeadForm({
 
         <FoundAside critical={critical} upside={upside} />
       </div>
+
+      <TrustLogos />
     </div>
   );
 }

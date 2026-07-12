@@ -176,55 +176,6 @@
   color: var(--color-accent);
 }
 
-/* Team-Avatar-Cluster neben dem CTA (Variante 1) — nur im Report-Kontext. */
-.topbar-team {
-  display: none;
-}
-.cs-root--report .topbar-team {
-  display: inline-flex;
-  align-items: center;
-  gap: 11px;
-}
-.topbar-team-avs {
-  display: inline-flex;
-}
-.topbar-team-av {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  margin-left: -11px;
-  border: 2px solid #07171f;
-  background-color: #0b2438;
-  background-image: url(/brand/team.jpg);
-  background-repeat: no-repeat;
-  background-size: auto 360%;
-  background-position: var(--fx, 50%) 30%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
-.topbar-team-av:first-child {
-  margin-left: 0;
-}
-.topbar-team-note {
-  display: inline-flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-.topbar-team-note small {
-  font-size: 11px;
-  color: var(--color-text-ink-mute);
-}
-.topbar-team-note strong {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 13.5px;
-  color: #fff;
-}
-@media (max-width: 720px) {
-  .cs-root--report .topbar-team-note {
-    display: none;
-  }
-}
-
 .stage {
   max-width: 1760px;
   margin: 0 auto;
@@ -4096,6 +4047,9 @@ h3.fstep-title {
   width: min(880px, 100%);
   max-height: 100%;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
   padding: 30px clamp(22px, 3vw, 38px);
   background: var(--color-ink-2);
   border-radius: var(--radius-lg);
@@ -4150,12 +4104,12 @@ h3.fstep-title {
     transform 300ms ease;
 }
 
-/* Right column — what the scan found. */
+/* Right column — what the scan found + team photo. */
 .leadform-side {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 14px;
+  justify-content: flex-start;
+  gap: 16px;
 }
 .lf-side-kicker {
   font-family: var(--font-mono);
@@ -4220,6 +4174,66 @@ h3.fstep-title {
 }
 .lf-find--up .lf-find-txt b {
   color: var(--color-accent);
+}
+
+/* Team photo strip (right column). Wide banner cropped to a tidy rectangle. */
+.lf-team {
+  margin-top: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lf-team img {
+  display: block;
+  width: 100%;
+  height: 116px;
+  object-fit: cover;
+  object-position: 50% 30%;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-line-ink);
+}
+.lf-team figcaption {
+  font-size: 12.5px;
+  color: var(--color-text-ink-mute);
+  text-align: center;
+}
+
+/* Client-logo trust strip (panel footer). */
+.lf-trust {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-line-ink);
+}
+.lf-trust-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-text-ink-mute);
+}
+.lf-logos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px 30px;
+}
+.lf-logo {
+  height: 26px;
+  width: auto;
+  max-width: 118px;
+  object-fit: contain;
+  opacity: 0.6;
+  /* Alle Logos einheitlich weiß rendern (auch mehrfarbige Teile wie bei Speidel). */
+  filter: brightness(0) invert(1);
+  transition: opacity 140ms ease;
+}
+.lf-logo:hover {
+  opacity: 0.95;
 }
 
 /* Form. */
