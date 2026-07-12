@@ -32,7 +32,6 @@ export function FunnelStrip({
           >
             <Sparkles size={13} className="fpage-fazit-ico" aria-hidden="true" />
             <span className="fname">Fazit und Conversion-Kalkulator</span>
-            <span className="fmeta">Zusammenfassung + Rechner</span>
           </button>
         )}
         {pages.map((p, idx) => {

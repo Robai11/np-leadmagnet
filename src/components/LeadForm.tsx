@@ -328,11 +328,6 @@ export function LeadForm({
                 </>
               )}
             </button>
-
-            <p className="lg-fineprint">
-              Wir nutzen deine Daten ausschließlich für deine Auswertung und die
-              Kontaktaufnahme dazu.
-            </p>
           </form>
         </div>
 

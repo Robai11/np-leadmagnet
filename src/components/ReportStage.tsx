@@ -198,7 +198,7 @@ export function ReportStage({
       </div>
       <div className="stage report-stage">
       <div className="fazit-slim-head">
-        <span className="kicker">Funnel-Analyse · {meta.url}</span>
+        <span className="kicker">E-Commerce-Analyse · {meta.url}</span>
         <h2>
           {totalLevers} Conversion-Hebel über {pages.length} Seiten gefunden
         </h2>

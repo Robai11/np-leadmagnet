@@ -23,10 +23,6 @@ export function Topbar({ onRestart }: { onRestart?: () => void }) {
             Neue Analyse
           </button>
         )}
-        {/* TODO: echte Buchungs-URL (Calendly o.ä.) statt Platzhalter eintragen. */}
-        <a className="topbar-cta" href="#kontakt">
-          Jetzt Gespräch vereinbaren
-        </a>
       </div>
     </header>
   );
