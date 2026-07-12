@@ -4112,7 +4112,10 @@ h3.fstep-title {
 }
 .lf-tile {
   position: relative;
-  padding: 11px 13px 12px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 11px 14px;
   border-radius: var(--radius);
   border: 1px solid var(--color-line-ink);
   background: rgba(255, 255, 255, 0.03);
@@ -4133,9 +4136,10 @@ h3.fstep-title {
   background: var(--color-accent);
 }
 .lf-tile-top {
+  flex: none;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
 }
 .lf-tile--crit .lf-tile-top {
   color: var(--color-impact-high);
@@ -4146,22 +4150,26 @@ h3.fstep-title {
 .lf-tile-num {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 27px;
+  font-size: 30px;
   line-height: 1;
   letter-spacing: -0.02em;
 }
+.lf-tile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
 .lf-tile-label {
-  display: block;
-  margin-top: 6px;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 13.5px;
+  line-height: 1.2;
   color: #fff;
 }
 .lf-tile-sub {
-  display: block;
-  margin-top: 1px;
   font-size: 11.5px;
+  line-height: 1.2;
   color: var(--color-text-ink-mute);
 }
 

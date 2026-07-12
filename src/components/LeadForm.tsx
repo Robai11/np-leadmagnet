@@ -126,12 +126,14 @@ function FoundTiles({
             <AlertTriangle size={15} aria-hidden="true" />
             <span className="lf-tile-num">{critical}</span>
           </div>
-          <span className="lf-tile-label">
-            {critical === 1
-              ? "kritische Schwachstelle"
-              : "kritische Schwachstellen"}
-          </span>
-          <span className="lf-tile-sub">hier geht Umsatz verloren</span>
+          <div className="lf-tile-text">
+            <span className="lf-tile-label">
+              {critical === 1
+                ? "kritische Schwachstelle"
+                : "kritische Schwachstellen"}
+            </span>
+            <span className="lf-tile-sub">hier geht Umsatz verloren</span>
+          </div>
         </div>
       )}
       {upside > 0 && (
@@ -140,8 +142,10 @@ function FoundTiles({
             <TrendingUp size={15} aria-hidden="true" />
             <span className="lf-tile-num">{upside}</span>
           </div>
-          <span className="lf-tile-label">Umsatz-Hebel</span>
-          <span className="lf-tile-sub">ungenutztes Potenzial</span>
+          <div className="lf-tile-text">
+            <span className="lf-tile-label">Umsatz-Hebel</span>
+            <span className="lf-tile-sub">ungenutztes Potenzial</span>
+          </div>
         </div>
       )}
     </div>
