@@ -89,7 +89,7 @@ function Field({
  * spots (Geld verbrennen) and one for the upside (mehr Umsatz). Plural-aware,
  * graceful at zero.
  */
-/** Teamfoto-Streifen — menschlicher Vertrauensanker in der rechten Spalte. */
+/** Teamfoto — vollständig dargestellt (kein Crop), menschlicher Vertrauensanker. */
 function TeamStrip() {
   return (
     <figure className="lf-team">
@@ -140,18 +140,14 @@ function AnalysisHeadline({
     );
   }
 
-  return <p className="lf-side-head">{body}</p>;
+  return <p className="lf-found-line">{body}</p>;
 }
 
-function FoundAside({ critical, upside }: { critical: number; upside: number }) {
+function FoundAside() {
   return (
     <aside className="leadform-side">
-      <AnalysisHeadline critical={critical} upside={upside} />
-      {/* TODO: echte Buchungs-URL (Calendly o.ä.) statt Platzhalter eintragen. */}
-      <a className="lf-side-cta" href="#kontakt">
-        Jetzt Gespräch vereinbaren <ArrowRight size={18} />
-      </a>
       <TeamStrip />
+      <TrustLogos />
     </aside>
   );
 }
@@ -247,6 +243,7 @@ export function LeadForm({
               <Lock size={13} aria-hidden="true" /> Auswertung freischalten
             </span>
             <h3 className="leadgate-form-title">Schwachstellen ansehen</h3>
+            <AnalysisHeadline critical={critical} upside={upside} />
           </div>
 
           <form className="leadgate-form" onSubmit={handleSubmit} noValidate>
@@ -318,10 +315,8 @@ export function LeadForm({
           </form>
         </div>
 
-        <FoundAside critical={critical} upside={upside} />
+        <FoundAside />
       </div>
-
-      <TrustLogos />
     </div>
   );
 }
