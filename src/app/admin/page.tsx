@@ -6,6 +6,7 @@
  * it always reflects the latest log rather than a build-time snapshot.
  */
 
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { readAnalysisLog, type AnalysisLogEntry } from "@/lib/analysis/log";
 
@@ -38,6 +39,9 @@ const cell: React.CSSProperties = {
 };
 
 export default async function AdminPage() {
+  // Dev-Only: kein Auth-Schutz — in Produktion (z. B. Vercel) daher sperren,
+  // damit /admin auf einer öffentlichen Domain nicht frei erreichbar ist.
+  if (process.env.NODE_ENV === "production") notFound();
   const entries: AnalysisLogEntry[] = await readAnalysisLog();
 
   return (
