@@ -100,6 +100,16 @@ export async function runAgentFunnel(pdpUrl: string, device: number): Promise<Ag
       apiKey: env.anthropicApiKey,
     },
     verbose: 0,
+    // Serverless-Fix: eigenen Logger übergeben → Stagehand nutzt NICHT den
+    // internen Pino-Logger mit pino-pretty-Transport (fehlt im Function-Bundle,
+    // sonst crasht sh.init(): "unable to determine transport target for pino-pretty").
+    logger: (line) => {
+      const msg =
+        typeof line === "string"
+          ? line
+          : (line as { message?: string })?.message;
+      if (msg) console.log("[stagehand]", msg);
+    },
     actTimeoutMs: 60_000,
   });
 
