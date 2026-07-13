@@ -35,7 +35,7 @@ function PhoneStatusIcons() {
  * frame so that lever's pin comes into view (and on mount it rests on the first
  * pin), so pins are always reachable without an endless page.
  */
-function Screen({
+export function Screen({
   pageId,
   name,
   viewport,

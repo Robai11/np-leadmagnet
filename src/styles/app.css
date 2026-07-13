@@ -730,12 +730,59 @@
   color: var(--color-text-mute);
 }
 
-/* report body */
+/* report body — gestapelte Device-Sections (Mobile / Desktop). */
 .report-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dev-section {
+  margin-top: 6px;
+}
+.dev-section + .dev-section {
+  margin-top: 30px;
+}
+/* Prominenter Device-Kopf + klarer Trennstrich. */
+.dev-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--color-line-ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 19px;
+  color: #fff;
+}
+.dev-head svg {
+  flex: none;
+  color: var(--color-accent);
+}
+.dev-head-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-ink-mute);
+}
+.dev-grid {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
   gap: 30px;
   align-items: start;
+}
+.dev-shot {
+  position: sticky;
+  top: 20px;
+  min-width: 0;
+}
+.dev-levers {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 .shot-col {
   position: sticky;
@@ -1049,7 +1096,20 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+/* Badges/Range bleiben in EINER Zeile — nur die Kategorie kürzt bei Platznot. */
+.card-top > .pin-num,
+.card-top > .quickwin,
+.card-top > .badge,
+.card-top > .effort,
+.card-top .range {
+  flex: none;
+}
+.cat-txt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .pin-num {
   width: 25px;
@@ -1069,10 +1129,15 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
+  flex: 0 1 auto;
   font-family: var(--font-mono);
   font-size: 12.5px;
   color: var(--color-text-ink-mute);
   letter-spacing: 0.03em;
+}
+.cat svg {
+  flex: none;
 }
 .badge {
   font-size: 12.5px;
@@ -1393,14 +1458,15 @@
 
 @media (max-width: 920px) {
   .input-stage,
-  .report-body,
+  .dev-grid,
   .calc-grid {
     grid-template-columns: 1fr;
   }
   .input-right {
     position: static;
   }
-  .shot-col {
+  .shot-col,
+  .dev-shot {
     position: static;
   }
   .headline-uplift {
@@ -4011,15 +4077,16 @@ h3.fstep-title {
   transition: filter 300ms ease;
 }
 
-/* In-place gate overlay over the blurred tab content. */
+/* In-place gate overlay over the blurred tab content. Formular sitzt oben,
+   damit es sofort sichtbar ist (nicht erst nach dem Scrollen). */
 .tabgate {
   position: absolute;
   inset: 0;
   z-index: 5;
   display: flex;
-  align-items: safe center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 24px;
+  padding: 8px 24px 24px;
   overflow-y: auto;
   background: radial-gradient(
     120% 90% at 50% 38%,

@@ -9,13 +9,12 @@ import {
   Sparkles,
   Check,
 } from "lucide-react";
-import { opportunityVar } from "@/styles/tokens";
 import { rankPages, prioritize } from "@/lib/scoring";
 import type { AnalysisResult } from "@/lib/types";
 import { LEAD_GATE_ENABLED } from "@/lib/flags";
 import { HeroWall } from "@/components/HeroWall";
 import { FunnelStrip } from "@/components/FunnelStrip";
-import { Screenshot } from "@/components/Screenshot";
+import { Screen } from "@/components/Screenshot";
 import { LeverCard } from "@/components/LeverCard";
 import { Calculator } from "@/components/Calculator";
 import { LeadForm, type LeadData } from "@/components/LeadForm";
@@ -38,7 +37,7 @@ export function ReportStage({
   /** Override the lead capture (preview/tests). Default POSTs to /api/lead. */
   onLead?: (data: LeadData) => Promise<{ ok: boolean; error?: string }>;
 }) {
-  const { meta, overall, notes, summary } = result;
+  const { meta, overall, summary } = result;
   // Seitentypen IMMER in kanonischer Funnel-Reihenfolge zeigen — der Stream
   // liefert sie je nach Analyse-Dauer in beliebiger Reihenfolge.
   const pages = useMemo(() => {
@@ -216,14 +215,6 @@ export function ReportStage({
         fazit={!!summary}
       />
 
-      {notes.length > 0 && (
-        <div className="report-notes">
-          {notes.map((note, i) => (
-            <span key={i}>{note}</span>
-          ))}
-        </div>
-      )}
-
       {isFazit ? (
         <div className="fazit-merged">
         <div className="fazit-hero fazit-hero--tab">
@@ -264,97 +255,102 @@ export function ReportStage({
       ) : (
       <div className="report-tabzone">
         <div className={`report-body ${bodyBlurred ? "is-locked" : ""}`}>
-          <div className="shot-col">
-            <div className="shot-tag">
-              <span
-                className="opp"
-                style={{ background: opportunityVar(displayPage.opportunity) }}
-              />{" "}
-              {displayPage.name} · {pageLevers(displayPage).length} Hebel
+          {!unlocked && (
+            <div className="teaser-note">
+              <TrendingUp size={15} /> Stärkster Hebel sichtbar.{" "}
+              {totalLevers - 1} weitere — inkl. Warenkorb & Checkout — nach
+              Freischaltung.
             </div>
-            <Screenshot
-              page={displayPage}
-              url={meta.url}
-              hovered={hovered}
-              setHovered={setHovered}
-            />
-          </div>
+          )}
 
-          <div className="cards-col">
-            {!unlocked && (
-              <div className="teaser-note">
-                <TrendingUp size={15} /> Stärkster Hebel sichtbar.{" "}
-                {totalLevers - 1} weitere — inkl. Warenkorb & Checkout — nach
-                Freischaltung.
-              </div>
-            )}
-            {[
-              { viewport: displayPage.viewport, levers: displayPage.levers },
-              ...(displayPage.secondary
-                ? [
-                    {
-                      viewport: displayPage.secondary.viewport,
-                      levers: displayPage.secondary.levers,
-                    },
-                  ]
-                : []),
-            ]
-              .filter((g) => g.levers.length > 0)
-              .map((g) => (
-                <div className="lever-group" key={g.viewport}>
-                  <div className="lever-group-head">
-                    {g.viewport === "mobile" ? (
-                      <Smartphone size={14} />
-                    ) : (
-                      <Monitor size={14} />
-                    )}
-                    {g.viewport === "mobile" ? "Mobile" : "Desktop"} ·{" "}
-                    {g.levers.length}{" "}
-                    {g.levers.length === 1 ? "Hebel" : "Hebel"}
+          {[
+            {
+              viewport: displayPage.viewport,
+              levers: displayPage.levers,
+              screenshotUrl: displayPage.screenshotUrl,
+            },
+            ...(displayPage.secondary
+              ? [
+                  {
+                    viewport: displayPage.secondary.viewport,
+                    levers: displayPage.secondary.levers,
+                    screenshotUrl: displayPage.secondary.screenshotUrl,
+                  },
+                ]
+              : []),
+          ]
+            .filter((g) => g.levers.length > 0)
+            .map((g) => (
+              <section className="dev-section" key={g.viewport}>
+                <div className="dev-head">
+                  {g.viewport === "mobile" ? (
+                    <Smartphone size={18} aria-hidden="true" />
+                  ) : (
+                    <Monitor size={18} aria-hidden="true" />
+                  )}
+                  <span className="dev-head-name">
+                    {g.viewport === "mobile" ? "Mobile" : "Desktop"}
+                  </span>
+                  <span className="dev-head-meta">{g.levers.length} Hebel</span>
+                </div>
+                <div className="dev-grid">
+                  <div className="dev-shot">
+                    <Screen
+                      pageId={displayPage.id}
+                      name={displayPage.name}
+                      viewport={g.viewport}
+                      screenshotUrl={g.screenshotUrl}
+                      levers={g.levers}
+                      showLabel={false}
+                      hovered={hovered}
+                      setHovered={setHovered}
+                    />
                   </div>
-                  {g.levers.map((lv) => {
-                    const isTeaserLever = lv.id === teaserLeverId;
-                    const locked = lockedNow && !isTeaserLever;
-                    return (
-                      <LeverCard
-                        key={lv.id}
-                        lv={lv}
-                        locked={locked}
-                        hovered={hovered}
-                        setHovered={setHovered}
-                        onUnlock={scrollToGate}
-                      />
-                    );
-                  })}
+                  <div className="dev-levers">
+                    {g.levers.map((lv) => {
+                      const isTeaserLever = lv.id === teaserLeverId;
+                      const locked = lockedNow && !isTeaserLever;
+                      return (
+                        <LeverCard
+                          key={lv.id}
+                          lv={lv}
+                          locked={locked}
+                          hovered={hovered}
+                          setHovered={setHovered}
+                          onUnlock={scrollToGate}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
-              ))}
+              </section>
+            ))}
 
-            {!unlocked && (
-              <div className="gate" id="gate">
-                <h3>Vollständige Analyse freischalten</h3>
-                <p>
-                  Alle {totalLevers} Hebel mit Hypothesen & Testvorschlägen über
-                  den kompletten Funnel — inkl. Warenkorb und Checkout.
-                </p>
-                <div className="gate-row">
-                  <input
-                    placeholder="deine@email.de"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && submit()}
-                  />
-                  <button onClick={submit} disabled={submitting}>
-                    {submitting ? "Wird geladen …" : "Freischalten"}{" "}
-                    <ArrowRight size={16} />
-                  </button>
-                </div>
-                <span className="gate-hint">
-                  {gateError ??
-                    "Die gesperrten Hebel liegen serverseitig und werden erst nach Eingabe nachgeladen."}
-                </span>
+          {!unlocked && (
+            <div className="gate" id="gate">
+              <h3>Vollständige Analyse freischalten</h3>
+              <p>
+                Alle {totalLevers} Hebel mit Hypothesen & Testvorschlägen über
+                den kompletten Funnel — inkl. Warenkorb und Checkout.
+              </p>
+              <div className="gate-row">
+                <input
+                  placeholder="deine@email.de"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && submit()}
+                />
+                <button onClick={submit} disabled={submitting}>
+                  {submitting ? "Wird geladen …" : "Freischalten"}{" "}
+                  <ArrowRight size={16} />
+                </button>
               </div>
-            )}
-          </div>
+              <span className="gate-hint">
+                {gateError ??
+                  "Die gesperrten Hebel liegen serverseitig und werden erst nach Eingabe nachgeladen."}
+              </span>
+            </div>
+          )}
         </div>
 
         {showGate && (

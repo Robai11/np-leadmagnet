@@ -85,7 +85,7 @@ export function LeverCard({
           {lv.n}
         </span>
         <span className="cat">
-          <Icon size={13} /> {lv.categoryLabel}
+          <Icon size={13} /> <span className="cat-txt">{lv.categoryLabel}</span>
         </span>
         {quick && (
           <span className="quickwin">
