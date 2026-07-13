@@ -7,6 +7,12 @@ import { gateStream, eventsFromResult } from "@/lib/analysis/gate";
 import { encodeEvent, type AnalysisEvent } from "@/lib/analysis/events";
 import type { AnalysisContext } from "@/lib/types";
 
+// Vollständige Funnel-Analyse (Browserbase + Claude Vision + Checkout-Agent) läuft
+// mehrere Minuten. Node-Runtime (kein Edge — braucht Playwright/Stagehand/sharp).
+// maxDuration 800 s = Vercel-Pro-Maximum (Hobby deckelt bei 300 s und reicht nicht).
+export const runtime = "nodejs";
+export const maxDuration = 800;
+
 const PAGE_TYPES = ["home", "plp", "pdp", "cart", "checkout"];
 
 function isValidContext(b: unknown): b is AnalysisContext {
