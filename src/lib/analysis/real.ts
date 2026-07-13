@@ -304,7 +304,12 @@ export async function* runRealAnalysis(
     }
   }
 
-  for (const note of notes) yield { type: "note", note };
+  // Notizen (inkl. Warenkorb/Checkout-Gründe) zusätzlich ins Server-Log — auf
+  // Vercel ist das die einzige Stelle, an der man den Funnel-Ausgang sieht.
+  for (const note of notes) {
+    console.log("[analysis:note]", note);
+    yield { type: "note", note };
+  }
 
   // ── Score + finish ────────────────────────────────────────
   yield { type: "progress", step: "Hebel werden bewertet und priorisiert …", pct: 95 };
