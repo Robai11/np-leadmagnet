@@ -72,7 +72,20 @@ export default async function AdminPage() {
             ({leads.length})
           </span>
         </h1>
-        <LeadsCsv leads={leads} />
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <LeadsCsv leads={leads} />
+          <a
+            href="/api/admin/logout"
+            style={{
+              fontSize: 13,
+              color: "#5a6677",
+              textDecoration: "none",
+              padding: "9px 12px",
+            }}
+          >
+            Abmelden
+          </a>
+        </div>
       </div>
 
       {!configured && (

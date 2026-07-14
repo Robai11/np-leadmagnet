@@ -1,34 +1,26 @@
 /*
- * Proxy (früher „Middleware", ab Next 16 umbenannt). Schützt den /admin-Bereich
- * per HTTP Basic Auth. Zugangsdaten aus ADMIN_USER / ADMIN_PASSWORD (Env).
- * Sind sie nicht gesetzt, wird /admin komplett gesperrt (sicherer Default).
+ * Proxy (Next 16, früher „Middleware"). Schützt /admin über ein Session-Cookie
+ * (siehe admin-auth.ts). Ohne gültiges Cookie → Redirect auf die eigene,
+ * gebrandete Login-Seite /admin/login. Die Login-Seite selbst bleibt frei.
  */
 
 import { NextResponse, type NextRequest } from "next/server";
+import { ADMIN_COOKIE, adminToken } from "@/lib/admin-auth";
 
-export function proxy(request: NextRequest) {
-  const user = process.env.ADMIN_USER;
-  const pass = process.env.ADMIN_PASSWORD;
-  const auth = request.headers.get("authorization");
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-  if (user && pass && auth?.startsWith("Basic ")) {
-    try {
-      const decoded = atob(auth.slice(6));
-      const idx = decoded.indexOf(":");
-      const u = decoded.slice(0, idx);
-      const p = decoded.slice(idx + 1);
-      if (u === user && p === pass) return NextResponse.next();
-    } catch {
-      // fällt durch zum 401
-    }
-  }
+  // Login-Seite immer durchlassen (sonst Redirect-Schleife).
+  if (pathname === "/admin/login") return NextResponse.next();
 
-  return new NextResponse("Authentifizierung erforderlich.", {
-    status: 401,
-    headers: {
-      "WWW-Authenticate": 'Basic realm="ConversionScan Admin", charset="UTF-8"',
-    },
-  });
+  const token = await adminToken();
+  const cookie = request.cookies.get(ADMIN_COOKIE)?.value;
+  if (token && cookie && cookie === token) return NextResponse.next();
+
+  const url = request.nextUrl.clone();
+  url.pathname = "/admin/login";
+  url.search = pathname !== "/admin" ? `?next=${encodeURIComponent(pathname)}` : "";
+  return NextResponse.redirect(url);
 }
 
 export const config = {

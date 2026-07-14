@@ -5218,3 +5218,60 @@ h3.fstep-title {
 .report-stage .fpage.sel:not(.fpage--fazit) .fname {
   color: #fff;
 }
+
+/* ── Admin-Login (eigene, gebrandete Seite statt Basic-Auth-Popup) ───────── */
+.adm-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(120% 90% at 50% 0%, #0e2c44 0%, #07171f 60%);
+}
+.adm-card {
+  width: min(400px, 100%);
+  gap: 14px;
+  padding: 34px clamp(24px, 4vw, 40px);
+  background: var(--color-ink-2);
+  border: 1px solid var(--color-line-ink);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 26px 70px rgba(6, 28, 40, 0.55);
+}
+.adm-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.adm-brand img {
+  height: 22px;
+  width: auto;
+  display: block;
+}
+.adm-brand-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+  color: #fff;
+}
+.adm-title {
+  margin: 4px 0 2px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  color: #fff;
+}
+.adm-sub {
+  margin: 0 0 6px;
+  font-size: 13.5px;
+  color: var(--color-text-ink-mute);
+}
+.adm-err {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  background: rgba(226, 60, 52, 0.16);
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff9b95;
+}
