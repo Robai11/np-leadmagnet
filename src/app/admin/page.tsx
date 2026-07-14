@@ -1,19 +1,17 @@
 /*
- * Internal admin view: which shop URLs were analyzed.
- *
- * Server component — reads the append-only analysis log directly and renders it.
- * Local/dev tool: no auth (runs on the operator's machine). `force-dynamic` so
- * it always reflects the latest log rather than a build-time snapshot.
+ * Geschützter Lead-Bereich (/admin). Zugriff via Basic-Auth (src/middleware.ts,
+ * ADMIN_USER/ADMIN_PASSWORD). Zeigt alle erfassten Leads aus dem privaten
+ * Store (leads-store.ts) als Tabelle, neueste zuerst, mit CSV-Export.
  */
 
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { readAnalysisLog, type AnalysisLogEntry } from "@/lib/analysis/log";
+import { listLeads, hasLeadStore } from "@/lib/leads-store";
+import { LeadsCsv } from "./LeadsCsv";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export const metadata = {
-  title: "Analyse-Protokoll — ConversionScan",
+  title: "Leads — ConversionScan",
 };
 
 function fmtDate(iso: string): string {
@@ -27,119 +25,117 @@ function fmtDate(iso: string): string {
   }
 }
 
-function isHttp(url: string): boolean {
-  return /^https?:\/\//i.test(url);
-}
-
-const cell: React.CSSProperties = {
+const th: React.CSSProperties = {
+  textAlign: "left",
+  padding: "8px 14px",
+  fontSize: 11,
+  letterSpacing: "0.05em",
+  textTransform: "uppercase",
+  color: "#5a6677",
+  borderBottom: "1px solid #e1e4ea",
+  whiteSpace: "nowrap",
+};
+const td: React.CSSProperties = {
   padding: "10px 14px",
-  borderTop: "1px solid #eef2f8",
   fontSize: 14,
-  verticalAlign: "middle",
+  borderTop: "1px solid #eef2f8",
+  verticalAlign: "top",
+  color: "#092737",
 };
 
 export default async function AdminPage() {
-  // Dev-Only: kein Auth-Schutz — in Produktion (z. B. Vercel) daher sperren,
-  // damit /admin auf einer öffentlichen Domain nicht frei erreichbar ist.
-  if (process.env.NODE_ENV === "production") notFound();
-  const entries: AnalysisLogEntry[] = await readAnalysisLog();
+  const leads = await listLeads();
+  const configured = hasLeadStore();
 
   return (
     <main
       style={{
-        maxWidth: 820,
+        maxWidth: 1100,
         margin: "0 auto",
         padding: "40px 24px 80px",
-        fontFamily:
-          "var(--font-gantari), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         color: "#092737",
       }}
     >
-      <div style={{ display: "flex", alignItems: "baseline", gap: 14, marginBottom: 6 }}>
-        <h1 style={{ fontSize: 26, margin: 0 }}>Analyse-Protokoll</h1>
-        <Link href="/" style={{ fontSize: 14, color: "#2f9b78" }}>
-          ← zur Startseite
-        </Link>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+          marginBottom: 24,
+        }}
+      >
+        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800 }}>
+          Leads{" "}
+          <span style={{ color: "#5a6677", fontWeight: 500 }}>
+            ({leads.length})
+          </span>
+        </h1>
+        <LeadsCsv leads={leads} />
       </div>
-      <p style={{ color: "#5a6677", fontSize: 14, marginTop: 0 }}>
-        {entries.length === 0
-          ? "Noch keine Analysen protokolliert."
-          : `${entries.length} Analyse${entries.length === 1 ? "" : "n"} · neueste zuerst`}
-      </p>
 
-      {entries.length === 0 ? (
-        <div
+      {!configured && (
+        <p
           style={{
-            border: "1px dashed #cdd5e0",
-            borderRadius: 12,
-            padding: 28,
-            textAlign: "center",
-            color: "#5a6677",
-            marginTop: 20,
+            padding: "12px 16px",
+            borderRadius: 8,
+            background: "#fff7ed",
+            border: "1px solid #fed7aa",
+            color: "#9a3412",
+            fontSize: 14,
           }}
         >
-          Starte eine Analyse auf der{" "}
-          <Link href="/" style={{ color: "#2f9b78" }}>
-            Startseite
-          </Link>
-          . Jede analysierte Shop-URL wird hier aufgelistet.
-        </div>
+          ⚠️ Kein Lead-Store konfiguriert — es fehlen die Env-Variablen
+          <code> KV_REST_API_URL</code> / <code>KV_REST_API_TOKEN</code>. Bis
+          dahin werden Leads nur ins Server-Log geschrieben, nicht hier
+          angezeigt.
+        </p>
+      )}
+
+      {leads.length === 0 ? (
+        <p style={{ color: "#5a6677", fontSize: 15 }}>
+          Noch keine Leads erfasst.
+        </p>
       ) : (
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            marginTop: 18,
-            border: "1px solid #e1e4ea",
-            borderRadius: 12,
-            overflow: "hidden",
-            background: "#fff",
-          }}
-        >
-          <thead>
-            <tr style={{ background: "#f2f5fb", textAlign: "left" }}>
-              <th style={{ ...cell, borderTop: "none", color: "#5a6677", fontWeight: 600, width: 190 }}>
-                Datum
-              </th>
-              <th style={{ ...cell, borderTop: "none", color: "#5a6677", fontWeight: 600 }}>
-                Shop-URL
-              </th>
-              <th style={{ ...cell, borderTop: "none", color: "#5a6677", fontWeight: 600, width: 130 }}>
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e, i) => (
-              <tr key={i}>
-                <td style={{ ...cell, color: "#5a6677", whiteSpace: "nowrap" }}>{fmtDate(e.date)}</td>
-                <td style={{ ...cell, wordBreak: "break-all" }}>
-                  {isHttp(e.shopUrl) ? (
-                    <a href={e.shopUrl} target="_blank" rel="noreferrer" style={{ color: "#2f9b78" }}>
-                      {e.shopUrl}
-                    </a>
-                  ) : (
-                    e.shopUrl
-                  )}
-                </td>
-                <td style={cell}>
-                  <span
-                    style={{
-                      fontSize: 12.5,
-                      fontWeight: 700,
-                      padding: "2px 8px",
-                      borderRadius: 999,
-                      background: e.ok ? "#e6f7f0" : "#fbe7e5",
-                      color: e.ok ? "#2f9b78" : "#c93128",
-                    }}
-                  >
-                    {e.ok ? "✓ analysiert" : "⚠ fehlgeschlagen"}
-                  </span>
-                </td>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ borderCollapse: "collapse", width: "100%" }}>
+            <thead>
+              <tr>
+                <th style={th}>Erfasst</th>
+                <th style={th}>Name</th>
+                <th style={th}>E-Mail</th>
+                <th style={th}>Telefon</th>
+                <th style={th}>Shop</th>
+                <th style={th}>Branche</th>
+                <th style={th}>Mobile</th>
+                <th style={th}>Kanäle</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {leads.map((l, i) => (
+                <tr key={`${l.email}-${l.capturedAt}-${i}`}>
+                  <td style={{ ...td, whiteSpace: "nowrap" }}>
+                    {fmtDate(l.capturedAt)}
+                  </td>
+                  <td style={td}>
+                    {`${l.firstName ?? ""} ${l.lastName ?? ""}`.trim() || "—"}
+                  </td>
+                  <td style={td}>
+                    <a href={`mailto:${l.email}`} style={{ color: "#0b6" }}>
+                      {l.email}
+                    </a>
+                  </td>
+                  <td style={td}>{l.phone || "—"}</td>
+                  <td style={td}>{l.url}</td>
+                  <td style={td}>{l.industry}</td>
+                  <td style={td}>{l.device}%</td>
+                  <td style={td}>{l.channels.join(", ")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </main>
   );

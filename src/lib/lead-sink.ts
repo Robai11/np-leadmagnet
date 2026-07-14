@@ -1,15 +1,16 @@
 /*
  * Lead sink — offene Schnittstelle (Build-Spec §9).
  *
- * Prod (Vercel): Leads sind PII → NICHT in den öffentlichen Blob. Wenn
- * RESEND_API_KEY + LEAD_NOTIFY_TO gesetzt sind, wird pro Lead eine private
- * E-Mail verschickt (dauerhaft + sofortige Benachrichtigung). Sonst (lokal/Dev)
- * Append in .data/leads.jsonl. Ein echtes CRM (HubSpot o.ä.) lässt sich später
- * durch eine weitere LeadSink-Implementierung ergänzen.
+ * Ein erfasster Lead wird:
+ *  1) dauerhaft in den privaten Store geschrieben (leads-store.ts → Redis/KV),
+ *     damit er im geschützten /admin-Bereich sichtbar ist;
+ *  2) optional per E-Mail (Resend) sofort zugestellt, wenn RESEND_API_KEY +
+ *     LEAD_NOTIFY_TO gesetzt sind;
+ *  3) immer ins Server-Log geschrieben (Fallback / Nachvollziehbarkeit).
+ * Keiner dieser Schritte darf den Reveal-Flow brechen (alles best-effort).
  */
 
-import { appendFile, mkdir } from "node:fs/promises";
-import { join } from "node:path";
+import { saveLead } from "@/lib/leads-store";
 
 export interface Lead {
   email: string;
@@ -55,60 +56,51 @@ function leadHtml(lead: Lead): string {
     </div>`;
 }
 
-/** Prod: private E-Mail-Benachrichtigung pro Lead über die Resend-API (fetch, kein SDK). */
-class EmailLeadSink implements LeadSink {
-  async capture(lead: Lead): Promise<void> {
-    console.log("[lead]", JSON.stringify(lead));
-    const key = process.env.RESEND_API_KEY;
-    const to = process.env.LEAD_NOTIFY_TO;
-    const from =
-      process.env.LEAD_NOTIFY_FROM || "ConversionScan <onboarding@resend.dev>";
-    if (!key || !to) return;
-    try {
-      const name = `${lead.firstName ?? ""} ${lead.lastName ?? ""}`.trim();
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          authorization: `Bearer ${key}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          from,
-          to: to.split(",").map((s) => s.trim()),
-          reply_to: lead.email,
-          subject: `Neuer Lead: ${name || lead.email} · ${lead.url}`,
-          html: leadHtml(lead),
-        }),
-      });
-      if (!res.ok) {
-        console.error(
-          "[lead] resend failed",
-          res.status,
-          await res.text().catch(() => ""),
-        );
-      }
-    } catch (err) {
-      // Lead-Zustellung darf den Reveal-Flow nie brechen.
-      console.error("[lead] resend error", err);
+/** Optionale sofortige E-Mail-Benachrichtigung über die Resend-API (fetch, kein SDK). */
+async function emailLead(lead: Lead): Promise<void> {
+  const key = process.env.RESEND_API_KEY;
+  const to = process.env.LEAD_NOTIFY_TO;
+  if (!key || !to) return;
+  const from =
+    process.env.LEAD_NOTIFY_FROM || "ConversionScan <onboarding@resend.dev>";
+  try {
+    const name = `${lead.firstName ?? ""} ${lead.lastName ?? ""}`.trim();
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${key}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: to.split(",").map((s) => s.trim()),
+        reply_to: lead.email,
+        subject: `Neuer Lead: ${name || lead.email} · ${lead.url}`,
+        html: leadHtml(lead),
+      }),
+    });
+    if (!res.ok) {
+      console.error(
+        "[lead] resend failed",
+        res.status,
+        await res.text().catch(() => ""),
+      );
     }
+  } catch (err) {
+    console.error("[lead] resend error", err);
   }
 }
 
-/** Dev/lokal: Append in .data/leads.jsonl (auf Serverless flüchtig — nur Dev). */
-class LocalLeadSink implements LeadSink {
+class DefaultLeadSink implements LeadSink {
   async capture(lead: Lead): Promise<void> {
     console.log("[lead]", JSON.stringify(lead));
     try {
-      const dir = join(process.cwd(), ".data");
-      await mkdir(dir, { recursive: true });
-      await appendFile(join(dir, "leads.jsonl"), JSON.stringify(lead) + "\n");
+      await saveLead(lead);
     } catch (err) {
-      console.error("[lead] local persist failed", err);
+      console.error("[lead] store persist failed", err);
     }
+    await emailLead(lead);
   }
 }
 
-/** E-Mail-Sink, sobald Resend konfiguriert ist; sonst lokaler Datei-Append (Dev). */
-export const leadSink: LeadSink = process.env.RESEND_API_KEY
-  ? new EmailLeadSink()
-  : new LocalLeadSink();
+export const leadSink: LeadSink = new DefaultLeadSink();
