@@ -5221,14 +5221,47 @@ h3.fstep-title {
 
 /* ── Admin-Login (eigene, gebrandete Seite statt Basic-Auth-Popup) ───────── */
 .adm-login {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: radial-gradient(120% 90% at 50% 0%, #0e2c44 0%, #07171f 60%);
+  overflow: hidden;
+  background: #07171f;
+}
+/* Landing-Hintergrund (driftende Screenshot-Wand) mit kräftigem blauem Blur. */
+.adm-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.adm-bg-wall {
+  position: absolute;
+  inset: 0;
+  filter: blur(18px) saturate(1.05);
+  transform: scale(1.12); /* Rand-Unschärfe kaschieren */
+  opacity: 0.9;
+}
+.adm-bg-tint {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(
+      110% 85% at 50% 32%,
+      rgba(31, 110, 210, 0.5) 0%,
+      rgba(17, 70, 140, 0.5) 38%,
+      rgba(9, 39, 66, 0.72) 72%,
+      rgba(7, 23, 31, 0.9) 100%
+    );
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 .adm-card {
+  position: relative;
+  z-index: 1;
   width: min(400px, 100%);
   gap: 14px;
   padding: 34px clamp(24px, 4vw, 40px);

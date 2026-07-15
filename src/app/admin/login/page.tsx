@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { Lock, ArrowRight, Loader2 } from "lucide-react";
+import { HeroWall } from "@/components/HeroWall";
 
 export default function AdminLoginPage() {
   const [user, setUser] = useState("");
@@ -42,6 +43,12 @@ export default function AdminLoginPage() {
 
   return (
     <div className="adm-login">
+      <div className="adm-bg" aria-hidden="true">
+        <div className="adm-bg-wall">
+          <HeroWall />
+        </div>
+        <div className="adm-bg-tint" />
+      </div>
       <form className="adm-card leadgate-form" onSubmit={submit} noValidate>
         <div className="adm-brand">
           <img
