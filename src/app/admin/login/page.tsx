@@ -47,7 +47,9 @@ export default function AdminLoginPage() {
         <div className="adm-bg-wall">
           <HeroWall />
         </div>
-        <div className="adm-bg-tint" />
+        {/* Exakt die Scrims der Landingpage → gleicher Navy-/Blauton. */}
+        <div className="hero-scrim hero-scrim--radial" />
+        <div className="hero-scrim hero-scrim--vert" />
       </div>
       <form className="adm-card leadgate-form" onSubmit={submit} noValidate>
         <div className="adm-brand">

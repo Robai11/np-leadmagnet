@@ -5244,21 +5244,6 @@ h3.fstep-title {
   transform: scale(1.12); /* Rand-Unschärfe kaschieren */
   opacity: 0.9;
 }
-.adm-bg-tint {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    radial-gradient(
-      110% 85% at 50% 32%,
-      rgba(31, 110, 210, 0.5) 0%,
-      rgba(17, 70, 140, 0.5) 38%,
-      rgba(9, 39, 66, 0.72) 72%,
-      rgba(7, 23, 31, 0.9) 100%
-    );
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
 .adm-card {
   position: relative;
   z-index: 1;
