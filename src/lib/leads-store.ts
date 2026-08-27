@@ -28,6 +28,25 @@ export function hasLeadStore(): boolean {
   return redis !== null;
 }
 
+/**
+ * Erreichbarkeit des Stores prüfen (für /admin-Diagnose und /api/health).
+ * Gibt niemals einen Fehler weiter — immer ein Status-Objekt.
+ */
+export async function pingLeadStore(): Promise<{
+  ok: boolean;
+  error?: string;
+  count?: number;
+}> {
+  if (!redis) return { ok: false, error: "not_configured" };
+  try {
+    await redis.ping();
+    const count = await redis.llen(KEY);
+    return { ok: true, count };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
 /** Neuen Lead vorne anhängen (neueste zuerst). Wirft bei Store-Fehlern — Aufrufer fängt ab. */
 export async function saveLead(lead: Lead): Promise<void> {
   if (!redis) return;

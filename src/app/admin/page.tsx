@@ -1,10 +1,13 @@
 /*
- * Geschützter Lead-Bereich (/admin). Zugriff via Basic-Auth (src/middleware.ts,
- * ADMIN_USER/ADMIN_PASSWORD). Zeigt alle erfassten Leads aus dem privaten
- * Store (leads-store.ts) als Tabelle, neueste zuerst, mit CSV-Export.
+ * Geschützter Lead-Bereich (/admin). Zugriff via Session-Cookie (src/proxy.ts,
+ * admin-auth.ts, ADMIN_USER/ADMIN_PASSWORD). Zeigt alle erfassten Leads aus dem
+ * privaten Store (leads-store.ts) als Tabelle, neueste zuerst, mit CSV-Export.
+ * Ist der Store nicht erreichbar, wird eine klare Fehlermeldung gezeigt statt
+ * die ganze Seite abstürzen zu lassen (500).
  */
 
 import { listLeads, hasLeadStore } from "@/lib/leads-store";
+import type { Lead } from "@/lib/lead-sink";
 import { LeadsCsv } from "./LeadsCsv";
 
 export const dynamic = "force-dynamic";
@@ -44,8 +47,16 @@ const td: React.CSSProperties = {
 };
 
 export default async function AdminPage() {
-  const leads = await listLeads();
   const configured = hasLeadStore();
+  let leads: Lead[] = [];
+  let loadError: string | null = null;
+  if (configured) {
+    try {
+      leads = await listLeads();
+    } catch (e) {
+      loadError = e instanceof Error ? e.message : String(e);
+    }
+  }
 
   return (
     <main
@@ -106,11 +117,33 @@ export default async function AdminPage() {
         </p>
       )}
 
-      {leads.length === 0 ? (
+      {configured && loadError && (
+        <div
+          style={{
+            padding: "14px 16px",
+            borderRadius: 8,
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            color: "#991b1b",
+            fontSize: 14,
+            marginBottom: 20,
+          }}
+        >
+          <strong>⚠️ Lead-Store nicht erreichbar.</strong>
+          <br />
+          Die Zugangsdaten sind gesetzt, aber die Verbindung zur Upstash/KV-
+          Datenbank schlägt fehl. Prüfe in Vercel die Upstash-Integration
+          (Datenbank noch aktiv? Token gültig?).
+          <br />
+          <code style={{ fontSize: 12, opacity: 0.85 }}>{loadError}</code>
+        </div>
+      )}
+
+      {leads.length === 0 && !loadError ? (
         <p style={{ color: "#5a6677", fontSize: 15 }}>
           Noch keine Leads erfasst.
         </p>
-      ) : (
+      ) : leads.length === 0 ? null : (
         <div style={{ overflowX: "auto" }}>
           <table style={{ borderCollapse: "collapse", width: "100%" }}>
             <thead>
