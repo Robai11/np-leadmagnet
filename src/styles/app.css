@@ -4740,8 +4740,9 @@ h3.fstep-title {
   flex-direction: column;
   align-items: center;
   gap: 26px;
-  padding: 16px 18px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 18px 18px 18px;
+  /* Feld liegt jetzt oben → Trennlinie oberhalb der Engine. */
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 /* Engine-Label mit Stamm nach unten zur Schiene */
 .kev3-head .kev-kicker {

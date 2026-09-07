@@ -93,23 +93,7 @@ export function Hero({
 
       <div className="hero-cta">
         <div className={`hero-entry ${loading ? "is-scanning" : ""}`}>
-          <div className="kev3-head">
-            <span className="kev-kicker">
-              <Cpu size={14} aria-hidden="true" /> Die Knowledge Engine dahinter
-            </span>
-            <div className="kev3-strip">
-              {KNOWLEDGE_ENGINE.map((u) => (
-                <div className="kev3-tile" key={u.title}>
-                  <span className="kev3-ico">
-                    <u.icon size={18} aria-hidden="true" />
-                  </span>
-                  <b>{u.title}</b>
-                  <span>{u.sub}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
+          {/* Analyse-Feld oben (CTA-first), Knowledge Engine darunter. */}
           <form
             className="hero-form"
             onSubmit={(e) => {
@@ -145,6 +129,23 @@ export function Hero({
               )}
             </button>
           </form>
+
+          <div className="kev3-head">
+            <span className="kev-kicker">
+              <Cpu size={14} aria-hidden="true" /> Die Knowledge Engine dahinter
+            </span>
+            <div className="kev3-strip">
+              {KNOWLEDGE_ENGINE.map((u) => (
+                <div className="kev3-tile" key={u.title}>
+                  <span className="kev3-ico">
+                    <u.icon size={18} aria-hidden="true" />
+                  </span>
+                  <b>{u.title}</b>
+                  <span>{u.sub}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {status ? <div className="hero-status">{status}</div> : null}
