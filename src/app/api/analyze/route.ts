@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { normalizeUrl } from "@/lib/url";
 import { checkRateLimit, clientIpFrom } from "@/lib/rate-limit";
+import { checkAnalysisQuota } from "@/lib/analysis-guard";
 import { getCached, setCached } from "@/lib/cache";
 import { runAnalysis } from "@/lib/analysis/run";
 import { gateStream, eventsFromResult } from "@/lib/analysis/gate";
@@ -87,6 +88,21 @@ export async function POST(req: NextRequest) {
   };
 
   const cached = getCached(norm.normalized);
+
+  // Kostenschutz: nur echte (nicht gecachte) Analysen zählen gegen das Limit —
+  // Cache-Replays sind gratis und bleiben unbegrenzt.
+  if (!cached) {
+    const quota = await checkAnalysisQuota(ip);
+    if (!quota.allowed) {
+      return jsonError(
+        quota.reason === "ip"
+          ? "Du hast dein Analyse-Limit für heute erreicht. Bitte versuch es morgen wieder — oder melde dich direkt bei uns."
+          : "Unser Analyse-Kontingent für heute ist gerade ausgeschöpft. Bitte versuch es später noch einmal.",
+        429,
+      );
+    }
+  }
+
   const enc = new TextEncoder();
 
   const stream = new ReadableStream<Uint8Array>({
