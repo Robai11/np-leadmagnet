@@ -18,6 +18,7 @@ import { Hero } from "@/components/Hero";
 import { HeroWall } from "@/components/HeroWall";
 import { Wireframe } from "@/components/Wireframes";
 import { OverviewStep } from "@/components/OverviewStep";
+import { LegalFooter } from "@/components/LegalFooter";
 import type { AnalysisContext, PageType } from "@/lib/types";
 
 const PAGE_ORDER: PageType[] = ["home", "plp", "pdp", "cart", "checkout"];
@@ -611,6 +612,10 @@ export function InputStage({
           </div>
         )}
       </div>
+
+      {/* Rechtliche Links — auf der Landing (der fixe Hero verdeckt den
+          globalen App-Footer, daher hier zusätzlich). */}
+      {step === 1 && <LegalFooter className="hero-legal" />}
     </div>
   );
 }

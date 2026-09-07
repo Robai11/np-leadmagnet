@@ -649,15 +649,22 @@
 .funnel {
   margin: 28px 0;
   padding: 16px 18px;
-  background: var(--color-paper-2);
-  border: 1px solid var(--color-line);
+  /* Farblich hervorgehoben — hier wählt der Nutzer die Seitentypen. */
+  background: rgba(61, 192, 145, 0.06);
+  border: 1px solid rgba(61, 192, 145, 0.45);
   border-radius: 12px;
+  box-shadow: 0 10px 34px rgba(61, 192, 145, 0.08);
 }
 .funnel-label {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: var(--color-accent);
+}
+.funnel-hint {
+  text-transform: none;
+  letter-spacing: 0.02em;
   color: var(--color-text-mute);
 }
 .funnel-pages {
@@ -672,10 +679,11 @@
   min-width: 110px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding: 12px 14px;
+  text-align: center;
+  gap: 4px;
+  padding: 10px 12px;
   border: 1.5px solid var(--color-line);
   border-radius: 9px;
   background: var(--color-paper);
@@ -683,10 +691,15 @@
 }
 .fpage.click {
   cursor: pointer;
-  transition: all 0.12s;
+  transition:
+    border-color 0.14s ease,
+    transform 0.14s ease,
+    box-shadow 0.14s ease;
 }
 .fpage.click:hover {
-  border-color: var(--color-text-mute);
+  border-color: var(--color-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(61, 192, 145, 0.16);
 }
 .fpage.sel {
   border-color: var(--color-ink);
@@ -4492,7 +4505,13 @@ h3.fstep-title {
   color: var(--color-accent);
 }
 .fpage.locked:not(.sel) {
-  border-style: dashed;
+  /* Nicht mehr gestrichelt (wirkte deaktiviert) — solide, anklickbar. */
+  border-style: solid;
+}
+/* Alle Seitentyp-Kacheln (nicht Fazit, nicht ausgewählt) einheitlich mit
+   dezentem Akzent-Rahmen → klar als klickbare Tabs erkennbar. */
+.fpage.click:not(.fpage--fazit):not(.sel) {
+  border-color: rgba(61, 192, 145, 0.3);
 }
 
 /* Fazit-Tab — erster, farblich abgesetzter Tab (grün statt neutral). */
@@ -5499,5 +5518,60 @@ h3.fstep-title {
   .scen-sub {
     margin-top: 7px;
     font-size: 11px;
+  }
+}
+
+/* ── Rechtlicher Footer (Impressum/Datenschutz/AGB/Kontakt) ─────────────── */
+.legal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px 20px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.legal-footer a {
+  color: var(--color-text-mute);
+  text-decoration: none;
+  transition: color 140ms ease;
+}
+.legal-footer a:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+/* Auf der Landing dezent unten über der cinematic Bühne. */
+.hero-legal {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  z-index: 6;
+  padding: 0 16px;
+  pointer-events: none;
+}
+.hero-legal a {
+  pointer-events: auto;
+  color: rgba(255, 255, 255, 0.55);
+}
+.hero-legal a:hover {
+  color: var(--color-accent);
+}
+
+/* Funnel-Kacheln auf dem Handy kompakter. */
+@media (max-width: 600px) {
+  .funnel {
+    margin: 20px 0;
+    padding: 14px;
+  }
+  .funnel-pages {
+    gap: 8px;
+  }
+  .fpage {
+    padding: 9px 10px;
+  }
+  /* Landing-Footer auf dem Handy nicht mit dem Analyse-Button kollidieren. */
+  .hero-legal {
+    bottom: 10px;
   }
 }

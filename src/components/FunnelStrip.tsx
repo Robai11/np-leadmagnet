@@ -21,7 +21,9 @@ export function FunnelStrip({
 }) {
   return (
     <div className="funnel">
-      <span className="funnel-label">Gescannter Funnel</span>
+      <span className="funnel-label">
+        Gescannter Funnel <span className="funnel-hint">· wähle eine Seite</span>
+      </span>
       <div className="funnel-pages">
         {fazit && (
           <button

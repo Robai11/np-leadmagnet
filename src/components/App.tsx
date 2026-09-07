@@ -14,6 +14,7 @@ import { Topbar } from "@/components/Topbar";
 import { InputStage } from "@/components/InputStage";
 import { LoadingStage } from "@/components/LoadingStage";
 import { ReportStage } from "@/components/ReportStage";
+import { LegalFooter } from "@/components/LegalFooter";
 
 /** Splice the single full teaser lever back into the redacted pages. */
 function injectTeaser(
@@ -148,8 +149,7 @@ export function App() {
       )}
 
       <footer className="foot">
-        Analyse über streamende API · gesperrte Hebel serverseitig bis zur
-        Freischaltung
+        <LegalFooter />
       </footer>
     </div>
   );
