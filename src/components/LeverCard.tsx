@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
-import { Lock, Zap } from "lucide-react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { Lock, Zap, ChevronDown } from "lucide-react";
 import { impactVar } from "@/styles/tokens";
 import { CATEGORY_META } from "@/lib/taxonomy";
 import { IMPACT_LABELS, EFFORT_LABELS } from "@/lib/labels";
 import { isQuickWin } from "@/lib/scoring";
+import { useIsMobile } from "@/lib/useIsMobile";
 import type { Lever, LeverType } from "@/lib/types";
 
 function Range({ range, type }: { range: [number, number]; type: LeverType }) {
@@ -35,6 +36,13 @@ export function LeverCard({
   const cVar = { "--c": impactVar(lv.impact) } as CSSProperties;
   const quick = isQuickWin(lv);
   const ref = useRef<HTMLDivElement>(null);
+
+  // Mobile: Karte eingeklappt zeigen (Titel + Badges + 1 Zeile Teaser), per Tap
+  // aufklappen. Auf Desktop unverändert (collapsible = false → voller Inhalt).
+  const isMobile = useIsMobile();
+  const [open, setOpen] = useState(false);
+  const collapsible = isMobile;
+  const showFull = !collapsible || open;
 
   // Diese Karte NUR in den Blick scrollen, wenn der Hover vom PIN kommt (nicht
   // von der Karte selbst) — sonst rutscht die Karte unterm Cursor weg. `block:
@@ -76,9 +84,23 @@ export function LeverCard({
   return (
     <div
       ref={ref}
-      className={`card ${active ? "active" : ""}`}
+      className={`card ${active ? "active" : ""} ${collapsible ? "card--mob" : ""} ${collapsible && open ? "is-open" : ""}`}
       onMouseEnter={() => setHovered({ id: lv.id, from: "card" })}
       onMouseLeave={() => setHovered(null)}
+      onClick={collapsible ? () => setOpen((o) => !o) : undefined}
+      role={collapsible ? "button" : undefined}
+      tabIndex={collapsible ? 0 : undefined}
+      aria-expanded={collapsible ? open : undefined}
+      onKeyDown={
+        collapsible
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setOpen((o) => !o);
+              }
+            }
+          : undefined
+      }
     >
       <div className="card-top">
         <span className="pin-num" style={cVar}>
@@ -103,17 +125,30 @@ export function LeverCard({
         <Range range={lv.range} type={lv.type} />
       </div>
       <h4 className="card-title">{lv.title}</h4>
-      <div className="card-body">
-        <p>
+      {collapsible && !open && (
+        <p className="card-teaser">
           <b>Problem &amp; Potenzial:</b> {lv.observation}
         </p>
-        <p className="test">
-          <b>Optimierungsempfehlung:</b> {lv.test}
-        </p>
-        <p>
-          <b>Psychologischer Hintergrund:</b> {lv.mechanism}
-        </p>
-      </div>
+      )}
+      {showFull && (
+        <div className="card-body">
+          <p>
+            <b>Problem &amp; Potenzial:</b> {lv.observation}
+          </p>
+          <p className="test">
+            <b>Optimierungsempfehlung:</b> {lv.test}
+          </p>
+          <p>
+            <b>Psychologischer Hintergrund:</b> {lv.mechanism}
+          </p>
+        </div>
+      )}
+      {collapsible && (
+        <span className="card-toggle">
+          <ChevronDown size={15} aria-hidden="true" />
+          {open ? "Weniger anzeigen" : "Mehr anzeigen"}
+        </span>
+      )}
     </div>
   );
 }

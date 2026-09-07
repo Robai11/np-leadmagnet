@@ -8,8 +8,10 @@ import {
   Monitor,
   Sparkles,
   Check,
+  ChevronDown,
 } from "lucide-react";
 import { rankPages, prioritize } from "@/lib/scoring";
+import { useIsMobile } from "@/lib/useIsMobile";
 import type { AnalysisResult } from "@/lib/types";
 import { LEAD_GATE_ENABLED } from "@/lib/flags";
 import { HeroWall } from "@/components/HeroWall";
@@ -84,6 +86,11 @@ export function ReportStage({
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [gateError, setGateError] = useState<string | null>(null);
+
+  // Mobile-only: Geräte-Umschalter (statt Mobile+Desktop gestapelt) + Fazit-Teaser.
+  const isMobile = useIsMobile();
+  const [deviceView, setDeviceView] = useState<"mobile" | "desktop">("mobile");
+  const [fazitOpen, setFazitOpen] = useState(false);
 
   const lockedNow = !unlocked;
   const activePageId = unlocked ? selected : teaserPageId;
@@ -187,6 +194,35 @@ export function ReportStage({
       : undefined,
   };
 
+  // Geräte-Ansichten (Mobile/Desktop) dieser Seite. Auf Desktop bleiben beide
+  // gestapelt (wie bisher); auf dem Handy zeigt der Umschalter nur eine davon.
+  const deviceGroups = [
+    {
+      viewport: displayPage.viewport,
+      levers: displayPage.levers,
+      screenshotUrl: displayPage.screenshotUrl,
+    },
+    ...(displayPage.secondary
+      ? [
+          {
+            viewport: displayPage.secondary.viewport,
+            levers: displayPage.secondary.levers,
+            screenshotUrl: displayPage.secondary.screenshotUrl,
+          },
+        ]
+      : []),
+  ].filter((g) => g.levers.length > 0);
+  const hasBothDevices =
+    deviceGroups.some((g) => g.viewport === "mobile") &&
+    deviceGroups.some((g) => g.viewport === "desktop");
+  const deviceSwitch = isMobile && hasBothDevices;
+  const activeDevice = deviceGroups.some((g) => g.viewport === deviceView)
+    ? deviceView
+    : deviceGroups[0]?.viewport ?? "mobile";
+  const visibleGroups = deviceSwitch
+    ? deviceGroups.filter((g) => g.viewport === activeDevice)
+    : deviceGroups;
+
   return (
     <>
       <div className="report-bg" aria-hidden="true">
@@ -224,8 +260,14 @@ export function ReportStage({
             </h3>
             {summary ? (
               <>
-                <p className="fazit-hero-text">{summary.verdict}</p>
-                {summary.points.length > 0 && (
+                <p
+                  className={`fazit-hero-text ${
+                    isMobile && !fazitOpen ? "is-clamped" : ""
+                  }`}
+                >
+                  {summary.verdict}
+                </p>
+                {(!isMobile || fazitOpen) && summary.points.length > 0 && (
                   <ul className="fazit-hero-points">
                     {summary.points.map((p, i) => (
                       <li key={i}>
@@ -234,6 +276,17 @@ export function ReportStage({
                       </li>
                     ))}
                   </ul>
+                )}
+                {isMobile && (
+                  <button
+                    type="button"
+                    className="mob-more"
+                    onClick={() => setFazitOpen((o) => !o)}
+                    aria-expanded={fazitOpen}
+                  >
+                    <ChevronDown size={15} aria-hidden="true" />
+                    {fazitOpen ? "Weniger anzeigen" : "Mehr anzeigen"}
+                  </button>
                 )}
               </>
             ) : (
@@ -263,24 +316,34 @@ export function ReportStage({
             </div>
           )}
 
-          {[
-            {
-              viewport: displayPage.viewport,
-              levers: displayPage.levers,
-              screenshotUrl: displayPage.screenshotUrl,
-            },
-            ...(displayPage.secondary
-              ? [
-                  {
-                    viewport: displayPage.secondary.viewport,
-                    levers: displayPage.secondary.levers,
-                    screenshotUrl: displayPage.secondary.screenshotUrl,
-                  },
-                ]
-              : []),
-          ]
-            .filter((g) => g.levers.length > 0)
-            .map((g) => (
+          {deviceSwitch && (
+            <div
+              className="dev-switch"
+              role="tablist"
+              aria-label="Geräte-Ansicht"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeDevice === "mobile"}
+                className={`dev-switch-btn ${activeDevice === "mobile" ? "on" : ""}`}
+                onClick={() => setDeviceView("mobile")}
+              >
+                <Smartphone size={16} aria-hidden="true" /> Mobile
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeDevice === "desktop"}
+                className={`dev-switch-btn ${activeDevice === "desktop" ? "on" : ""}`}
+                onClick={() => setDeviceView("desktop")}
+              >
+                <Monitor size={16} aria-hidden="true" /> Desktop
+              </button>
+            </div>
+          )}
+
+          {visibleGroups.map((g) => (
               <section className="dev-section" key={g.viewport}>
                 <div className="dev-head">
                   {g.viewport === "mobile" ? (

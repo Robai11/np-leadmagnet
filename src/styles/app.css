@@ -2869,13 +2869,20 @@ h3.fstep-title {
     align-content: start;
     overflow-y: auto;
     padding-top: 4px;
-    padding-bottom: 8vh;
+    /* Großzügiges Bottom-Padding: der fixierte Container reicht auf Handys hinter
+       die Browser-Leiste; sonst verschwindet der Weiter-/Absenden-Button dahinter. */
+    padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
   }
   .fstep-aside .wf {
     max-width: 300px;
   }
   .fstep-recap {
     max-width: none;
+  }
+  /* Kontext-Schritt (Step 7) hatte nur 4vh → Absenden-Button lag hinter der
+     Handy-Browserleiste. Gleiche großzügige Freiheit wie die URL-Schritte. */
+  .fstep-context {
+    padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -5292,4 +5299,204 @@ h3.fstep-title {
   font-size: 13px;
   font-weight: 600;
   color: #ff9b95;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Mobile-Optimierung — öffentliche Strecke (Handy ≤ 600px).
+   Nur additive Regeln; das Desktop-Layout bleibt unangetastet. Der Block
+   steht bewusst am Dateiende, damit er bei gleicher Spezifität gewinnt.
+   ══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  /* 1) Landing: URL-Feld + Button stapeln statt sich zu quetschen.
+        Zeile 1 = KI-Analyse-Label + Eingabefeld, Zeile 2 = Button (voll breit). */
+  .hero-form {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 12px 12px 16px;
+  }
+  .hero-form-label {
+    font-size: 13px;
+    padding-right: 10px;
+  }
+  .hero-input {
+    flex: 1 1 120px;
+    font-size: 16px;
+  }
+  .hero-submit {
+    flex: 1 0 100%;
+    justify-content: center;
+    padding: 14px 20px;
+  }
+
+  /* 2) Lead-Formular: die beiden Fund-Kacheln untereinander (voll breit),
+        damit der Text neben der Zahl nicht mehr abgeschnitten wird. */
+  .lf-tiles {
+    grid-template-columns: 1fr;
+  }
+
+  /* 3) Hebel-Karten: Badge-Zeile darf umbrechen, damit der Uplift-Wert
+        (z. B. „+11%") nicht rechts abgeschnitten wird. */
+  .card-top {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  /* 4) Report-Funnel: die ›-Pfeile ergeben nur in einer Reihe Sinn; bei
+        umbrochenen Kacheln wirken sie verloren → auf dem Handy ausblenden. */
+  .farrow {
+    display: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Mobile-Report (Handy ≤600px): kompakter, einklappbare Texte,
+   Mobile/Desktop-Umschalter. Nur additiv — Desktop rendert identisch.
+   ══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  /* Report generell etwas dichter. */
+  .report-stage {
+    padding-top: 8px;
+  }
+  .fazit-slim-head h2 {
+    font-size: 25px;
+    line-height: 1.12;
+  }
+  .dev-section {
+    margin-top: 14px;
+  }
+
+  /* Badge-Zeile: Uplift fließt inline statt rechts abgesetzt (sonst orphan-Zeile). */
+  .card-top .range {
+    margin-left: 0;
+  }
+
+  /* ── Hebel-Karte eingeklappt (Teaser) ── */
+  .card--mob {
+    cursor: pointer;
+    padding-bottom: 14px;
+  }
+  .card-teaser {
+    margin: 9px 0 0;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--color-text-ink-mute);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card-teaser b {
+    color: var(--color-text-ink);
+    font-weight: 700;
+  }
+  .card-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 11px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--color-accent);
+  }
+  .card-toggle svg {
+    transition: transform 180ms ease;
+  }
+  .card--mob.is-open .card-toggle svg {
+    transform: rotate(180deg);
+  }
+
+  /* ── Fazit-Teaser ── */
+  .fazit-hero-text.is-clamped {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .mob-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 12px;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--color-accent);
+  }
+  .mob-more svg {
+    transition: transform 180ms ease;
+  }
+  .mob-more[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+  }
+
+  /* ── Mobile/Desktop-Umschalter (segmented control) ── */
+  .dev-switch {
+    display: flex;
+    gap: 5px;
+    margin: 2px 0 16px;
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-line-ink);
+    border-radius: 999px;
+  }
+  .dev-switch-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 8px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-text-ink-mute);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition:
+      background 160ms ease,
+      color 160ms ease;
+  }
+  .dev-switch-btn.on {
+    background: var(--color-accent);
+    color: #07171f;
+  }
+
+  /* ── Rechner deutlich kompakter ── */
+  .calc-head p {
+    display: none; /* Erklärtext raus — Titel genügt auf dem Handy */
+  }
+  .calc-head h3 {
+    margin-bottom: 14px;
+  }
+  .calc-field {
+    margin-bottom: 12px;
+  }
+  .calc-now {
+    margin-top: 10px;
+  }
+  .calc-scen {
+    gap: 8px;
+  }
+  .scen {
+    padding: 10px 13px;
+  }
+  .scen-head {
+    margin-bottom: 7px;
+  }
+  .scen-fig b {
+    font-size: 18px;
+  }
+  .scen-sub {
+    margin-top: 7px;
+    font-size: 11px;
+  }
 }
