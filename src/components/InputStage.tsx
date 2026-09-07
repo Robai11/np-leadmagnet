@@ -123,6 +123,7 @@ export function InputStage({
 
   // ── Step 1 / Discovery ──────────────────────────────────────────────
   const [shopUrl, setShopUrl] = useState("");
+  const [urlError, setUrlError] = useState(false);
   const [discovering, setDiscovering] = useState(false);
   const [discoverResult, setDiscoverResult] = useState<DiscoverResult | null>(
     null,
@@ -188,6 +189,7 @@ export function InputStage({
 
   const onUrlChange = (value: string) => {
     setShopUrl(value);
+    setUrlError(false);
     setDiscoverResult(null);
     clearTimeout(debounceRef.current);
     if (looksLikeUrl(value)) {
@@ -216,7 +218,11 @@ export function InputStage({
   // Landing → SOFORT in die Übersicht eintauchen. Die Seiten-Erkennung läuft im
   // Hintergrund weiter und füllt die URL-Felder nach, sobald sie da ist.
   const startFunnel = () => {
-    if (!looksLikeUrl(shopUrl) || transitioning) return;
+    if (transitioning) return;
+    if (!looksLikeUrl(shopUrl)) {
+      setUrlError(true);
+      return;
+    }
     if (discoverResult) {
       applyDiscovery(discoverResult);
     } else if (discovering && discoverPromiseRef.current) {
@@ -271,7 +277,12 @@ export function InputStage({
   }, []);
 
   // ── Step 1 — cinematic Hero ─────────────────────────────────────────
-  const heroStatus = discovering ? (
+  const heroStatus = urlError ? (
+    <span className="err">
+      <AlertCircle size={13} /> Bitte gib deine Shop-URL ein — z. B.
+      www.dein-shop.de
+    </span>
+  ) : discovering ? (
     <>
       <Loader2 size={14} className="spin" /> Seiten werden erkannt …
     </>
@@ -336,8 +347,11 @@ export function InputStage({
             )}
 
             <input
-              type="url"
+              type="text"
               inputMode="url"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               placeholder={meta.placeholder}
               value={pageUrls[type]}
               onChange={(e) => {

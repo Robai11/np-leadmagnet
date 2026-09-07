@@ -104,9 +104,12 @@ export function Hero({
             <span className="hero-form-label">KI-Analyse</span>
             <input
               className="hero-input"
-              type="url"
+              type="text"
               inputMode="url"
-              placeholder="https://dein-shop.de"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              placeholder="www.dein-shop.de"
               value={value}
               onChange={(e) => onChange(e.target.value)}
               aria-label="Shop-URL"
