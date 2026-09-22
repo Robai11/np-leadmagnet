@@ -105,23 +105,27 @@ export async function POST(req: NextRequest) {
   }
 
   // URL-Log (unabhängig von Leads): jede tatsächlich gestartete Analyse
-  // festhalten — Fire-and-forget, darf die Analyse nie blockieren.
-  void saveAnalyzedUrl({
-    url: norm.normalized,
-    at: new Date().toISOString(),
-    industry: ctx.industry,
-    device: ctx.device,
-    channels: ctx.channels,
-    audienceAge: ctx.audienceAge,
-    audienceGender: ctx.audienceGender,
-    audienceTraits: ctx.audienceTraits,
-    challenges: ctx.challenges,
-  }).catch((e) =>
+  // festhalten. Bewusst AWAIT (nicht fire-and-forget) — in einer Streaming-
+  // Route läuft eine lose Promise auf Serverless nicht zuverlässig durch.
+  // try/catch: ein Store-Fehler darf die Analyse nie blockieren.
+  try {
+    await saveAnalyzedUrl({
+      url: norm.normalized,
+      at: new Date().toISOString(),
+      industry: ctx.industry,
+      device: ctx.device,
+      channels: ctx.channels,
+      audienceAge: ctx.audienceAge,
+      audienceGender: ctx.audienceGender,
+      audienceTraits: ctx.audienceTraits,
+      challenges: ctx.challenges,
+    });
+  } catch (e) {
     console.error(
       "[analyzed-url] save failed:",
       e instanceof Error ? e.message : e,
-    ),
-  );
+    );
+  }
 
   const enc = new TextEncoder();
 
