@@ -2,7 +2,6 @@ import type { NextRequest } from "next/server";
 import { normalizeUrl } from "@/lib/url";
 import { checkRateLimit, clientIpFrom } from "@/lib/rate-limit";
 import { checkAnalysisQuota } from "@/lib/analysis-guard";
-import { saveAnalyzedUrl } from "@/lib/analyzed-urls-store";
 import { getCached, setCached } from "@/lib/cache";
 import { runAnalysis } from "@/lib/analysis/run";
 import { gateStream, eventsFromResult } from "@/lib/analysis/gate";
@@ -102,29 +101,6 @@ export async function POST(req: NextRequest) {
         429,
       );
     }
-  }
-
-  // URL-Log (unabhängig von Leads): jede tatsächlich gestartete Analyse
-  // festhalten. Bewusst AWAIT (nicht fire-and-forget) — in einer Streaming-
-  // Route läuft eine lose Promise auf Serverless nicht zuverlässig durch.
-  // try/catch: ein Store-Fehler darf die Analyse nie blockieren.
-  try {
-    await saveAnalyzedUrl({
-      url: norm.normalized,
-      at: new Date().toISOString(),
-      industry: ctx.industry,
-      device: ctx.device,
-      channels: ctx.channels,
-      audienceAge: ctx.audienceAge,
-      audienceGender: ctx.audienceGender,
-      audienceTraits: ctx.audienceTraits,
-      challenges: ctx.challenges,
-    });
-  } catch (e) {
-    console.error(
-      "[analyzed-url] save failed:",
-      e instanceof Error ? e.message : e,
-    );
   }
 
   const enc = new TextEncoder();

@@ -223,6 +223,14 @@ export function InputStage({
       setUrlError(true);
       return;
     }
+    // URL-Log: eingegebene URL beim Klick auf „Analysieren" festhalten —
+    // unabhängig davon, ob der Wizard danach abgeschlossen wird.
+    void fetch("/api/track-url", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ url: shopUrl.trim() }),
+      keepalive: true,
+    }).catch(() => {});
     if (discoverResult) {
       applyDiscovery(discoverResult);
     } else if (discovering && discoverPromiseRef.current) {

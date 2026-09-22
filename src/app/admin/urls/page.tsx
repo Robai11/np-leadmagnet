@@ -55,10 +55,6 @@ const navLink: React.CSSProperties = {
   padding: "9px 12px",
 };
 
-function audience(e: AnalyzedUrlEntry): string {
-  return [e.audienceAge, e.audienceGender].filter(Boolean).join(" · ") || "—";
-}
-
 export default async function AnalyzedUrlsPage() {
   const configured = hasUrlStore();
   let entries: AnalyzedUrlEntry[] = [];
@@ -151,10 +147,6 @@ export default async function AnalyzedUrlsPage() {
               <tr>
                 <th style={th}>Zeitpunkt</th>
                 <th style={th}>Shop-URL</th>
-                <th style={th}>Branche</th>
-                <th style={th}>Mobile</th>
-                <th style={th}>Kanäle</th>
-                <th style={th}>Zielgruppe</th>
               </tr>
             </thead>
             <tbody>
@@ -164,12 +156,6 @@ export default async function AnalyzedUrlsPage() {
                     {fmtDate(e.at)}
                   </td>
                   <td style={td}>{e.url}</td>
-                  <td style={td}>{e.industry ?? "—"}</td>
-                  <td style={td}>
-                    {typeof e.device === "number" ? `${e.device}%` : "—"}
-                  </td>
-                  <td style={td}>{e.channels?.join(", ") || "—"}</td>
-                  <td style={td}>{audience(e)}</td>
                 </tr>
               ))}
             </tbody>
