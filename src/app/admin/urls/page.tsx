@@ -1,20 +1,21 @@
 /*
- * Geschützter Lead-Bereich (/admin). Zugriff via Session-Cookie (src/proxy.ts,
- * admin-auth.ts, ADMIN_USER/ADMIN_PASSWORD). Zeigt alle erfassten Leads aus dem
- * privaten Store (leads-store.ts) als Tabelle, neueste zuerst, mit CSV-Export.
- * Ist der Store nicht erreichbar, wird eine klare Fehlermeldung gezeigt statt
- * die ganze Seite abstürzen zu lassen (500).
+ * Geschützter URL-Log (/admin/urls). Chronologische Liste aller gestarteten
+ * Analysen (unabhängig von Leads) aus analyzed-urls-store.ts, neueste zuerst,
+ * mit CSV-Export. Zugriff wie /admin (Session-Cookie via src/proxy.ts).
  */
 
-import { listLeads, hasLeadStore } from "@/lib/leads-store";
-import type { Lead } from "@/lib/lead-sink";
-import { LeadsCsv } from "./LeadsCsv";
+import {
+  listAnalyzedUrls,
+  hasUrlStore,
+  type AnalyzedUrlEntry,
+} from "@/lib/analyzed-urls-store";
+import { UrlsCsv } from "./UrlsCsv";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export const metadata = {
-  title: "Leads — ConversionScan",
+  title: "Analysierte URLs — ConversionScan",
 };
 
 function fmtDate(iso: string): string {
@@ -46,13 +47,24 @@ const td: React.CSSProperties = {
   color: "#092737",
 };
 
-export default async function AdminPage() {
-  const configured = hasLeadStore();
-  let leads: Lead[] = [];
+const navLink: React.CSSProperties = {
+  fontSize: 13,
+  color: "#5a6677",
+  textDecoration: "none",
+  padding: "9px 12px",
+};
+
+function audience(e: AnalyzedUrlEntry): string {
+  return [e.audienceAge, e.audienceGender].filter(Boolean).join(" · ") || "—";
+}
+
+export default async function AnalyzedUrlsPage() {
+  const configured = hasUrlStore();
+  let entries: AnalyzedUrlEntry[] = [];
   let loadError: string | null = null;
   if (configured) {
     try {
-      leads = await listLeads();
+      entries = await listAnalyzedUrls();
     } catch (e) {
       loadError = e instanceof Error ? e.message : String(e);
     }
@@ -78,33 +90,17 @@ export default async function AdminPage() {
         }}
       >
         <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800 }}>
-          Leads{" "}
+          Analysierte URLs{" "}
           <span style={{ color: "#5a6677", fontWeight: 500 }}>
-            ({leads.length})
+            ({entries.length})
           </span>
         </h1>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <LeadsCsv leads={leads} />
-          <a
-            href="/admin/urls"
-            style={{
-              fontSize: 13,
-              color: "#5a6677",
-              textDecoration: "none",
-              padding: "9px 12px",
-            }}
-          >
-            Analysierte URLs →
+          <UrlsCsv entries={entries} />
+          <a href="/admin" style={navLink}>
+            ← Leads
           </a>
-          <a
-            href="/api/admin/logout"
-            style={{
-              fontSize: 13,
-              color: "#5a6677",
-              textDecoration: "none",
-              padding: "9px 12px",
-            }}
-          >
+          <a href="/api/admin/logout" style={navLink}>
             Abmelden
           </a>
         </div>
@@ -121,10 +117,8 @@ export default async function AdminPage() {
             fontSize: 14,
           }}
         >
-          ⚠️ Kein Lead-Store konfiguriert — es fehlen die Env-Variablen
-          <code> KV_REST_API_URL</code> / <code>KV_REST_API_TOKEN</code>. Bis
-          dahin werden Leads nur ins Server-Log geschrieben, nicht hier
-          angezeigt.
+          ⚠️ Kein Store konfiguriert — es fehlen die Env-Variablen
+          <code> KV_REST_API_URL</code> / <code>KV_REST_API_TOKEN</code>.
         </p>
       )}
 
@@ -140,54 +134,42 @@ export default async function AdminPage() {
             marginBottom: 20,
           }}
         >
-          <strong>⚠️ Lead-Store nicht erreichbar.</strong>
-          <br />
-          Die Zugangsdaten sind gesetzt, aber die Verbindung zur Upstash/KV-
-          Datenbank schlägt fehl. Prüfe in Vercel die Upstash-Integration
-          (Datenbank noch aktiv? Token gültig?).
+          <strong>⚠️ Store nicht erreichbar.</strong>
           <br />
           <code style={{ fontSize: 12, opacity: 0.85 }}>{loadError}</code>
         </div>
       )}
 
-      {leads.length === 0 && !loadError ? (
+      {entries.length === 0 && !loadError ? (
         <p style={{ color: "#5a6677", fontSize: 15 }}>
-          Noch keine Leads erfasst.
+          Noch keine Analysen erfasst.
         </p>
-      ) : leads.length === 0 ? null : (
+      ) : entries.length === 0 ? null : (
         <div style={{ overflowX: "auto" }}>
           <table style={{ borderCollapse: "collapse", width: "100%" }}>
             <thead>
               <tr>
-                <th style={th}>Erfasst</th>
-                <th style={th}>Name</th>
-                <th style={th}>E-Mail</th>
-                <th style={th}>Telefon</th>
-                <th style={th}>Shop</th>
+                <th style={th}>Zeitpunkt</th>
+                <th style={th}>Shop-URL</th>
                 <th style={th}>Branche</th>
                 <th style={th}>Mobile</th>
                 <th style={th}>Kanäle</th>
+                <th style={th}>Zielgruppe</th>
               </tr>
             </thead>
             <tbody>
-              {leads.map((l, i) => (
-                <tr key={`${l.email}-${l.capturedAt}-${i}`}>
+              {entries.map((e, i) => (
+                <tr key={`${e.url}-${e.at}-${i}`}>
                   <td style={{ ...td, whiteSpace: "nowrap" }}>
-                    {fmtDate(l.capturedAt)}
+                    {fmtDate(e.at)}
                   </td>
+                  <td style={td}>{e.url}</td>
+                  <td style={td}>{e.industry ?? "—"}</td>
                   <td style={td}>
-                    {`${l.firstName ?? ""} ${l.lastName ?? ""}`.trim() || "—"}
+                    {typeof e.device === "number" ? `${e.device}%` : "—"}
                   </td>
-                  <td style={td}>
-                    <a href={`mailto:${l.email}`} style={{ color: "#0b6" }}>
-                      {l.email}
-                    </a>
-                  </td>
-                  <td style={td}>{l.phone || "—"}</td>
-                  <td style={td}>{l.url}</td>
-                  <td style={td}>{l.industry}</td>
-                  <td style={td}>{l.device}%</td>
-                  <td style={td}>{l.channels.join(", ")}</td>
+                  <td style={td}>{e.channels?.join(", ") || "—"}</td>
+                  <td style={td}>{audience(e)}</td>
                 </tr>
               ))}
             </tbody>

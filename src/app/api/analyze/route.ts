@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { normalizeUrl } from "@/lib/url";
 import { checkRateLimit, clientIpFrom } from "@/lib/rate-limit";
 import { checkAnalysisQuota } from "@/lib/analysis-guard";
+import { saveAnalyzedUrl } from "@/lib/analyzed-urls-store";
 import { getCached, setCached } from "@/lib/cache";
 import { runAnalysis } from "@/lib/analysis/run";
 import { gateStream, eventsFromResult } from "@/lib/analysis/gate";
@@ -102,6 +103,25 @@ export async function POST(req: NextRequest) {
       );
     }
   }
+
+  // URL-Log (unabhängig von Leads): jede tatsächlich gestartete Analyse
+  // festhalten — Fire-and-forget, darf die Analyse nie blockieren.
+  void saveAnalyzedUrl({
+    url: norm.normalized,
+    at: new Date().toISOString(),
+    industry: ctx.industry,
+    device: ctx.device,
+    channels: ctx.channels,
+    audienceAge: ctx.audienceAge,
+    audienceGender: ctx.audienceGender,
+    audienceTraits: ctx.audienceTraits,
+    challenges: ctx.challenges,
+  }).catch((e) =>
+    console.error(
+      "[analyzed-url] save failed:",
+      e instanceof Error ? e.message : e,
+    ),
+  );
 
   const enc = new TextEncoder();
 
