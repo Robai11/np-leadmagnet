@@ -49,6 +49,12 @@ export interface AnalysisContext {
   audienceTraits?: string;
   /** Aktuelle Shop-Herausforderungen (optional, Freitext). */
   challenges?: string;
+  /**
+   * Tracking-ID des LP-Klick-Eintrags (URL-Log). Verknüpft diese abgeschlossene
+   * Analyse mit dem beim LP-Klick angelegten Eintrag, damit der Kontext dort
+   * ergänzt werden kann. Kein Analyse-Input — nur fürs Backend-Log.
+   */
+  trackId?: string;
 }
 
 /** A single conversion lever bound to one real element. */

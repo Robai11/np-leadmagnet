@@ -5,6 +5,13 @@ import type { AnalyzedUrlEntry } from "@/lib/analyzed-urls-store";
 const COLS: { key: keyof AnalyzedUrlEntry; label: string }[] = [
   { key: "at", label: "Zeitpunkt" },
   { key: "url", label: "Shop-URL" },
+  { key: "industry", label: "Branche" },
+  { key: "device", label: "Mobile-Anteil %" },
+  { key: "channels", label: "Kanäle" },
+  { key: "audienceAge", label: "Alter" },
+  { key: "audienceGender", label: "Geschlecht" },
+  { key: "audienceTraits", label: "Merkmale" },
+  { key: "challenges", label: "Herausforderungen" },
 ];
 
 function cell(v: unknown): string {

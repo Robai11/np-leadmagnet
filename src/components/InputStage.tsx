@@ -139,6 +139,9 @@ export function InputStage({
   const transTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
+  // ID des URL-Log-Eintrags (beim LP-Klick erzeugt) — verknüpft ihn mit der
+  // späteren Analyse, damit dort der Kontext ergänzt werden kann.
+  const trackIdRef = useRef<string | null>(null);
 
   // Button-Text einmal wechseln (Warte kurz → Gleich bereit), kein Loop.
   // Der Start-Index wird in runDiscover zurückgesetzt (vermeidet setState im Effect).
@@ -224,11 +227,17 @@ export function InputStage({
       return;
     }
     // URL-Log: eingegebene URL beim Klick auf „Analysieren" festhalten —
-    // unabhängig davon, ob der Wizard danach abgeschlossen wird.
+    // unabhängig davon, ob der Wizard danach abgeschlossen wird. Die ID wird
+    // beim Wizard-Abschluss mitgeschickt, damit der Kontext ergänzt werden kann.
+    const trackId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    trackIdRef.current = trackId;
     void fetch("/api/track-url", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ url: shopUrl.trim() }),
+      body: JSON.stringify({ url: shopUrl.trim(), id: trackId }),
       keepalive: true,
     }).catch(() => {});
     if (discoverResult) {
@@ -270,6 +279,7 @@ export function InputStage({
       audienceGender: genderLabel(genderFemale),
       audienceTraits: audienceTraits.trim() || undefined,
       challenges: challenges.trim() || undefined,
+      trackId: trackIdRef.current ?? undefined,
     });
   };
 

@@ -3,6 +3,7 @@ import { normalizeUrl } from "@/lib/url";
 import { checkRateLimit, clientIpFrom } from "@/lib/rate-limit";
 import { checkAnalysisQuota } from "@/lib/analysis-guard";
 import { getCached, setCached } from "@/lib/cache";
+import { enrichAnalyzedUrl } from "@/lib/analyzed-urls-store";
 import { runAnalysis } from "@/lib/analysis/run";
 import { gateStream, eventsFromResult } from "@/lib/analysis/gate";
 import { encodeEvent, type AnalysisEvent } from "@/lib/analysis/events";
@@ -85,7 +86,34 @@ export async function POST(req: NextRequest) {
     device: body.device,
     channels: body.channels,
     targets: body.targets,
+    audienceAge: body.audienceAge,
+    audienceGender: body.audienceGender,
+    audienceTraits: body.audienceTraits,
+    challenges: body.challenges,
   };
+
+  // URL-Log: den beim LP-Klick angelegten Eintrag um den eingegebenen Kontext
+  // anreichern. Bewusst awaited (fire-and-forget in Streaming-Routes läuft nicht
+  // zuverlässig zu Ende) und fehlertolerant — das Log darf keine Analyse blocken.
+  if (typeof body.trackId === "string" && body.trackId.length > 0) {
+    try {
+      await enrichAnalyzedUrl(body.trackId, {
+        url: norm.normalized,
+        industry: ctx.industry,
+        device: ctx.device,
+        channels: ctx.channels,
+        audienceAge: ctx.audienceAge,
+        audienceGender: ctx.audienceGender,
+        audienceTraits: ctx.audienceTraits,
+        challenges: ctx.challenges,
+      });
+    } catch (e) {
+      console.error(
+        "[analyze] url-log enrich failed:",
+        e instanceof Error ? e.message : e,
+      );
+    }
+  }
 
   const cached = getCached(norm.normalized);
 

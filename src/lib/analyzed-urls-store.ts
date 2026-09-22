@@ -1,11 +1,14 @@
 /*
- * URL-Log — chronologische Liste ALLER gestarteten Analysen (unabhängig von
- * Leads). Zeigt, welche Shop-URLs gescannt wurden, auch wenn kein Lead entstand.
- * Eine Shop-URL ist keine PII → bewusst OHNE IP/personenbezogene Daten.
+ * URL-Log — Einträge aller auf der Landingpage gestarteten Analysen (beim Klick
+ * auf „Analysieren", unabhängig von Leads/Wizard-Abschluss). Ein Eintrag wird
+ * per ID beim LP-Klick angelegt (nur URL + Zeit) und – falls der Nutzer den
+ * Wizard durchläuft – über dieselbe ID mit dem eingegebenen Kontext angereichert.
  *
- * Nutzt denselben privaten KV/Upstash-Store wie die Leads (eigener Key), Env:
- *   KV_REST_API_URL / KV_REST_API_TOKEN  (oder UPSTASH_REDIS_REST_URL / _TOKEN)
- * Ohne diese Variablen ist der Store inaktiv (lokal/Dev) — dann kein Crash.
+ * Speicherung im privaten KV/Upstash (eigene Keys, getrennt von den Leads):
+ *   HASH  analyzed_urls_v2        → id → JSON(Eintrag)
+ *   LIST  analyzed_urls_v2_order  → ids, neueste zuerst (nur fürs Kappen)
+ * Neue Key-Namen (v2), damit es keinen WRONGTYPE-Konflikt mit der früheren
+ * Listen-Variante gibt. Eine Shop-URL ist keine PII → bewusst OHNE IP.
  */
 
 import { Redis } from "@upstash/redis";
@@ -19,17 +22,19 @@ const redis =
     ? new Redis({ url, token, automaticDeserialization: false })
     : null;
 
-const KEY = "analyzed_urls";
-// Log-Länge deckeln (Speicher/Kosten) — die neuesten Einträge bleiben.
-const MAX = 20000;
+const HASH = "analyzed_urls_v2";
+const ORDER = "analyzed_urls_v2_order";
+const MAX = 10000; // Log-Größe deckeln (Speicher/Kosten) — die neuesten bleiben.
 
 export interface AnalyzedUrlEntry {
+  /** Eindeutige ID (Client-generiert beim LP-Klick), verknüpft Eintrag ↔ Analyse. */
+  id: string;
   /** Normalisierte Shop-URL. */
   url: string;
-  /** ISO-Zeitstempel des Analyse-Starts. */
+  /** ISO-Zeitstempel des LP-Klicks. */
   at: string;
+  // ── Kontext (erst vorhanden, wenn der Wizard durchlaufen wurde) ──
   industry?: string;
-  /** Mobile-Anteil in % (Desktop = 100 − device). */
   device?: number;
   channels?: string[];
   audienceAge?: string;
@@ -42,30 +47,77 @@ export function hasUrlStore(): boolean {
   return redis !== null;
 }
 
-/** Einen Analyse-Start protokollieren (neueste zuerst). Wirft bei Store-Fehlern. */
-export async function saveAnalyzedUrl(entry: AnalyzedUrlEntry): Promise<void> {
+/** Ältere Einträge über MAX hinaus aus Reihenfolge-Liste + Hash entfernen. */
+async function prune(): Promise<void> {
   if (!redis) return;
-  await redis.lpush(KEY, JSON.stringify(entry));
-  await redis.ltrim(KEY, 0, MAX - 1);
+  const over = ((await redis.llen(ORDER)) as number) - MAX;
+  if (over <= 0) return;
+  const old = (await redis.lrange(ORDER, MAX, -1)) as string[];
+  await redis.ltrim(ORDER, 0, MAX - 1);
+  if (old.length) await redis.hdel(HASH, ...old);
 }
 
-/** Alle protokollierten URLs, neueste zuerst. */
+/** Beim LP-Klick: neuen Eintrag (nur URL + Zeit) anlegen. */
+export async function createAnalyzedUrl(entry: {
+  id: string;
+  url: string;
+  at: string;
+}): Promise<void> {
+  if (!redis) return;
+  await redis.hset(HASH, { [entry.id]: JSON.stringify(entry) });
+  await redis.lpush(ORDER, entry.id);
+  await prune();
+}
+
+/**
+ * Beim Analyse-Start (Wizard abgeschlossen): denselben Eintrag um den Kontext
+ * anreichern. Fehlt der Eintrag (Track-Call verpasst), wird er neu angelegt,
+ * damit nichts verloren geht.
+ */
+export async function enrichAnalyzedUrl(
+  id: string,
+  patch: Partial<AnalyzedUrlEntry> & { url: string },
+): Promise<void> {
+  if (!redis) return;
+  const existingRaw = (await redis.hget(HASH, id)) as string | null;
+  let base: AnalyzedUrlEntry;
+  if (existingRaw) {
+    try {
+      base = JSON.parse(existingRaw) as AnalyzedUrlEntry;
+    } catch {
+      base = { id, url: patch.url, at: new Date().toISOString() };
+    }
+  } else {
+    base = { id, url: patch.url, at: new Date().toISOString() };
+    await redis.lpush(ORDER, id);
+  }
+  const merged: AnalyzedUrlEntry = {
+    ...base,
+    ...patch,
+    id,
+    url: base.url || patch.url,
+  };
+  await redis.hset(HASH, { [id]: JSON.stringify(merged) });
+  await prune();
+}
+
+/** Alle Einträge, neueste zuerst. */
 export async function listAnalyzedUrls(
   limit = 2000,
 ): Promise<AnalyzedUrlEntry[]> {
   if (!redis) return [];
-  const raw = (await redis.lrange(KEY, 0, limit - 1)) as unknown[];
+  const all = (await redis.hgetall(HASH)) as Record<string, string> | null;
+  if (!all) return [];
   const out: AnalyzedUrlEntry[] = [];
-  for (const r of raw) {
+  for (const v of Object.values(all)) {
     try {
       out.push(
-        typeof r === "string"
-          ? (JSON.parse(r) as AnalyzedUrlEntry)
-          : (r as AnalyzedUrlEntry),
+        typeof v === "string" ? (JSON.parse(v) as AnalyzedUrlEntry) : v,
       );
     } catch {
       // fehlerhaften Eintrag überspringen
     }
   }
-  return out;
+  out.sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0));
+  return out.slice(0, limit);
 }

@@ -10,6 +10,7 @@ import {
   type AnalyzedUrlEntry,
 } from "@/lib/analyzed-urls-store";
 import { UrlsCsv } from "./UrlsCsv";
+import { UrlsTable } from "./UrlsTable";
 import { AdminTabs } from "../AdminTabs";
 
 export const dynamic = "force-dynamic";
@@ -17,35 +18,6 @@ export const runtime = "nodejs";
 
 export const metadata = {
   title: "Analysierte URLs — ConversionScan",
-};
-
-function fmtDate(iso: string): string {
-  try {
-    return new Intl.DateTimeFormat("de-DE", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
-}
-
-const th: React.CSSProperties = {
-  textAlign: "left",
-  padding: "8px 14px",
-  fontSize: 11,
-  letterSpacing: "0.05em",
-  textTransform: "uppercase",
-  color: "#5a6677",
-  borderBottom: "1px solid #e1e4ea",
-  whiteSpace: "nowrap",
-};
-const td: React.CSSProperties = {
-  padding: "10px 14px",
-  fontSize: 14,
-  borderTop: "1px solid #eef2f8",
-  verticalAlign: "top",
-  color: "#092737",
 };
 
 const navLink: React.CSSProperties = {
@@ -141,26 +113,20 @@ export default async function AnalyzedUrlsPage() {
           Noch keine Analysen erfasst.
         </p>
       ) : entries.length === 0 ? null : (
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ borderCollapse: "collapse", width: "100%" }}>
-            <thead>
-              <tr>
-                <th style={th}>Zeitpunkt</th>
-                <th style={th}>Shop-URL</th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map((e, i) => (
-                <tr key={`${e.url}-${e.at}-${i}`}>
-                  <td style={{ ...td, whiteSpace: "nowrap" }}>
-                    {fmtDate(e.at)}
-                  </td>
-                  <td style={td}>{e.url}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <p
+            style={{
+              color: "#5a6677",
+              fontSize: 13,
+              margin: "0 0 12px",
+            }}
+          >
+            Grünes <strong style={{ color: "#1f7a5c" }}>Kontext</strong>-Badge =
+            Analyse wurde durchlaufen und Angaben liegen vor. Zeile anklicken,
+            um die Details aufzuklappen.
+          </p>
+          <UrlsTable entries={entries} />
+        </>
       )}
     </main>
   );
