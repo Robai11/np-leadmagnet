@@ -9,6 +9,7 @@
 import { listLeads, hasLeadStore } from "@/lib/leads-store";
 import type { Lead } from "@/lib/lead-sink";
 import { LeadsCsv } from "./LeadsCsv";
+import { AdminTabs } from "./AdminTabs";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -68,6 +69,8 @@ export default async function AdminPage() {
         color: "#092737",
       }}
     >
+      <AdminTabs active="leads" />
+
       <div
         style={{
           display: "flex",
@@ -85,17 +88,6 @@ export default async function AdminPage() {
         </h1>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <LeadsCsv leads={leads} />
-          <a
-            href="/admin/urls"
-            style={{
-              fontSize: 13,
-              color: "#5a6677",
-              textDecoration: "none",
-              padding: "9px 12px",
-            }}
-          >
-            Analysierte URLs →
-          </a>
           <a
             href="/api/admin/logout"
             style={{

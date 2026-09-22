@@ -10,6 +10,7 @@ import {
   type AnalyzedUrlEntry,
 } from "@/lib/analyzed-urls-store";
 import { UrlsCsv } from "./UrlsCsv";
+import { AdminTabs } from "../AdminTabs";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -80,6 +81,8 @@ export default async function AnalyzedUrlsPage() {
         color: "#092737",
       }}
     >
+      <AdminTabs active="urls" />
+
       <div
         style={{
           display: "flex",
@@ -97,9 +100,6 @@ export default async function AnalyzedUrlsPage() {
         </h1>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <UrlsCsv entries={entries} />
-          <a href="/admin" style={navLink}>
-            ← Leads
-          </a>
           <a href="/api/admin/logout" style={navLink}>
             Abmelden
           </a>
