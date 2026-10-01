@@ -43,7 +43,7 @@ export function App() {
   // Transition gekoppelt: `done`, sobald der Stream fertig ist. Hier auf App-
   // Ebene, weil die LoadingStage beim Abschluss gegen die ReportStage getauscht
   // (unmountet) wird — App bleibt durchgehend gemountet.
-  const { arm, muted, toggleMuted } = useReturnNudge(state.status === "done");
+  const { arm } = useReturnNudge(state.status === "done");
 
   // Gate OFF → always "unlocked" (every lever visible, no email field).
   const unlocked = !GATE_ENABLED || full !== null;
@@ -124,8 +124,6 @@ export function App() {
           }
           progressPct={state.progress.pct}
           done={false}
-          muted={muted}
-          onToggleMuted={toggleMuted}
         />
       )}
 

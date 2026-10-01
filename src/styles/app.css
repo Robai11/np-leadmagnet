@@ -4086,6 +4086,220 @@ h3.fstep-title {
 .aload-progress .aload-count {
   margin: 0;
 }
+
+/* ── Warte-Screen: zusammengeführte Box (Funde + E-Mail-Abfrage) ───────────
+ * Ersetzt das frühere Hinweis-Subhead + Ton-Toggle. Oben die (an den echten
+ * Fortschritt gekoppelte) Fund-Liste, darunter die auffällige Mail-Abfrage mit
+ * Fake-Timer. Eine Box, grün abgesetzt. */
+.aload-lead {
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto;
+  background: rgba(61, 192, 145, 0.1);
+  border: 1px solid rgba(61, 192, 145, 0.4);
+  border-radius: 12px;
+  padding: 18px 20px;
+  text-align: left;
+}
+.aload-finds-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.aload-finds-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-body);
+}
+.aload-finds-total {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: #06241a;
+  background: var(--color-accent);
+  padding: 2px 11px;
+  border-radius: 999px;
+}
+.aload-finds-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.aload-find {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+}
+.aload-find.is-running {
+  color: rgba(255, 255, 255, 0.6);
+}
+.aload-find.is-pending {
+  color: rgba(255, 255, 255, 0.4);
+}
+.aload-find-l {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.aload-find-l svg {
+  color: var(--color-accent);
+  flex: 0 0 auto;
+}
+.aload-find.is-pending .aload-find-l svg {
+  color: rgba(255, 255, 255, 0.4);
+}
+.aload-find-dot {
+  width: 7px;
+  height: 7px;
+  margin: 0 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  display: inline-block;
+}
+.aload-find-v {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.aload-lead-divider {
+  border-top: 1px solid rgba(61, 192, 145, 0.3);
+  margin: 16px 0 14px;
+}
+.aload-mailhead-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.aload-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: #aef0d6;
+  flex: 0 0 auto;
+}
+.aload-mailhead {
+  margin: 0;
+  flex: 1 1 240px;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.25;
+  color: #fff;
+}
+.aload-mailrow {
+  display: flex;
+  gap: 8px;
+}
+.aload-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  padding: 0 14px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color 150ms ease;
+}
+.aload-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+.aload-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+.aload-send {
+  flex: 0 0 auto;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-accent);
+  color: #06241a;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+.aload-send:hover:not(:disabled) {
+  background: var(--color-accent-deep);
+}
+.aload-send:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.aload-microcopy {
+  margin: 11px 0 0;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.65);
+}
+.aload-mail-err {
+  margin: 8px 0 0;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #ffb4a8;
+}
+.aload-mail-ok {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.45;
+  color: #aef0d6;
+}
+.aload-mail-ok svg {
+  color: var(--color-accent);
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+.aload-mail-ok strong {
+  color: #fff;
+  font-weight: 700;
+}
+@media (max-width: 600px) {
+  .aload-lead {
+    padding: 15px 15px;
+    text-align: left;
+  }
+  .aload-mailrow {
+    flex-direction: column;
+  }
+  .aload-send {
+    width: 100%;
+    height: 46px;
+  }
+  .aload-input {
+    height: 46px;
+    font-size: 15px;
+  }
+}
+
 @media (max-width: 640px) {
   .aload-statement-row {
     flex-direction: column;
