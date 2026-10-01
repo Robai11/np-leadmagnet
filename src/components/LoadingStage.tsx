@@ -61,6 +61,7 @@ export function LoadingStage({
 
   // E-Mail-Erfassung.
   const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
   const [mailState, setMailState] = useState<
     "idle" | "sending" | "done" | "error"
   >("idle");
@@ -74,6 +75,10 @@ export function LoadingStage({
       setMailErr("Bitte gib eine gültige E-Mail-Adresse ein.");
       return;
     }
+    if (!consent) {
+      setMailErr("Bitte stimme der Verarbeitung zu, damit wir dir den Report schicken dürfen.");
+      return;
+    }
     setMailErr("");
     setMailState("sending");
     try {
@@ -82,6 +87,8 @@ export function LoadingStage({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           email: value,
+          consent: true,
+          trackId: ctx.trackId,
           url: ctx.url,
           industry: ctx.industry,
           device: ctx.device,
@@ -258,6 +265,28 @@ export function LoadingStage({
                       {mailState === "sending" ? "Sende …" : "Zuschicken"}
                     </button>
                   </form>
+                  <label className="aload-consent">
+                    <input
+                      type="checkbox"
+                      checked={consent}
+                      onChange={(e) => {
+                        setConsent(e.target.checked);
+                        if (mailErr) setMailErr("");
+                      }}
+                    />
+                    <span>
+                      Ich bin einverstanden, dass meine E-Mail-Adresse zur
+                      Zusendung des Reports verarbeitet wird. Mehr dazu in der{" "}
+                      <a
+                        href="https://www.netzproduzenten.de/datenschutz"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Datenschutzerklärung
+                      </a>
+                      .
+                    </span>
+                  </label>
                   {mailErr ? (
                     <p className="aload-mail-err">{mailErr}</p>
                   ) : (

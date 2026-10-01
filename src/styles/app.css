@@ -4249,6 +4249,32 @@ h3.fstep-title {
   opacity: 0.6;
   cursor: default;
 }
+.aload-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 12px 0 0;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.72);
+}
+.aload-consent input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  margin-top: 1px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+.aload-consent a {
+  color: #aef0d6;
+  text-decoration: underline;
+}
+.aload-consent a:hover {
+  color: #fff;
+}
 .aload-microcopy {
   margin: 11px 0 0;
   font-family: var(--font-body);

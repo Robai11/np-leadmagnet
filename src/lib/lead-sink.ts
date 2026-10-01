@@ -24,6 +24,8 @@ export interface Lead {
   channels: string[];
   /** ISO-8601 timestamp, supplied by the caller. */
   capturedAt: string;
+  /** DSGVO-Einwilligung erteilt am (ISO-8601) — nur bei Opt-in-Erfassung gesetzt. */
+  consentAt?: string;
 }
 
 export interface LeadSink {

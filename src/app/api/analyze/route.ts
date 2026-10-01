@@ -1,13 +1,16 @@
 import type { NextRequest } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { normalizeUrl } from "@/lib/url";
 import { checkRateLimit, clientIpFrom } from "@/lib/rate-limit";
 import { checkAnalysisQuota } from "@/lib/analysis-guard";
 import { getCached, setCached } from "@/lib/cache";
 import { enrichAnalyzedUrl } from "@/lib/analyzed-urls-store";
+import { saveReport } from "@/lib/report-store";
+import { originFrom, deliverReport } from "@/lib/report-deliver";
 import { runAnalysis } from "@/lib/analysis/run";
 import { gateStream, eventsFromResult } from "@/lib/analysis/gate";
 import { encodeEvent, type AnalysisEvent } from "@/lib/analysis/events";
-import type { AnalysisContext } from "@/lib/types";
+import type { AnalysisContext, AnalysisResult } from "@/lib/types";
 
 // Vollständige Funnel-Analyse (Browserbase + Claude Vision + Checkout-Agent) läuft
 // mehrere Minuten. Node-Runtime (kein Edge — braucht Playwright/Stagehand/sharp).
@@ -133,10 +136,37 @@ export async function POST(req: NextRequest) {
 
   const enc = new TextEncoder();
 
+  // Für die serverseitige Zustellung: öffentliche Basis-URL + Report-Token
+  // (= trackId der Analyse) vor dem Stream festhalten.
+  const origin = originFrom(req.headers);
+  const reportToken = typeof body.trackId === "string" ? body.trackId : "";
+
+  // Das volle Ergebnis wird beim Abschluss vom Gate geliefert; wir halten es
+  // fest, um es NACH dem Stream dauerhaft zu speichern + die Mail zuzustellen.
+  let fullResult: AnalysisResult | null = null;
+  const onComplete = (full: AnalysisResult) => {
+    fullResult = full;
+    setCached(norm.normalized, full);
+  };
+
+  // Läuft (dank waitUntil) auch zu Ende, wenn der Nutzer die Seite verlässt.
+  let resolveDone: () => void = () => {};
+  const done = new Promise<void>((r) => {
+    resolveDone = r;
+  });
+
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
-      const send = (e: AnalysisEvent) =>
-        controller.enqueue(enc.encode(encodeEvent(e)));
+      // Fehlertolerant: bricht der Client ab, schlägt enqueue fehl — wir fahren
+      // trotzdem fort, damit Analyse, Speicherung und Mail serverseitig
+      // vollständig durchlaufen.
+      const send = (e: AnalysisEvent) => {
+        try {
+          controller.enqueue(enc.encode(encodeEvent(e)));
+        } catch {
+          // Client weg — ignorieren, Pipeline läuft weiter.
+        }
+      };
 
       try {
         // Cached → replay as events; live → run the pipeline. Both flow through
@@ -145,9 +175,7 @@ export async function POST(req: NextRequest) {
           ? eventsFromResult(cached)
           : runAnalysis(ctx, norm.normalized);
 
-        for await (const e of gateStream(source, (full) =>
-          setCached(norm.normalized, full),
-        )) {
+        for await (const e of gateStream(source, onComplete)) {
           send(e);
         }
       } catch (err) {
@@ -157,10 +185,37 @@ export async function POST(req: NextRequest) {
             err instanceof Error ? err.message : "Analyse fehlgeschlagen.",
         });
       } finally {
-        controller.close();
+        try {
+          controller.close();
+        } catch {
+          // bereits geschlossen
+        }
+        // Report dauerhaft sichern + (falls E-Mail hinterlegt) Mail zustellen.
+        // Bewusst awaited und fehlertolerant — darf die Analyse nie brechen.
+        try {
+          if (fullResult && reportToken) {
+            await saveReport(reportToken, fullResult);
+            await deliverReport(reportToken, origin);
+          }
+        } catch (e) {
+          console.error(
+            "[analyze] report persist/deliver failed:",
+            e instanceof Error ? e.message : e,
+          );
+        }
+        resolveDone();
       }
     },
   });
+
+  // Vercel die Instanz am Leben halten, bis die Pipeline (inkl. Speichern +
+  // Mail) fertig ist — auch wenn der Browser längst weg ist. Lokal/ohne
+  // Vercel-Kontext kein Problem (der Stream läuft ohnehin zu Ende).
+  try {
+    waitUntil(done);
+  } catch {
+    // kein Vercel-Kontext (z. B. lokal) — ignorieren
+  }
 
   return new Response(stream, {
     headers: {
