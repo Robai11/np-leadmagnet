@@ -5,7 +5,6 @@ import { Check, Clock, Loader2 } from "lucide-react";
 import type { AnalysisContext } from "@/lib/types";
 import { isValidEmail } from "@/lib/email";
 import { HeroWall } from "@/components/HeroWall";
-import { BotJourney } from "@/components/BotJourney";
 
 const PAGE_IDS = ["home", "plp", "pdp", "cart", "checkout"];
 
@@ -183,7 +182,7 @@ export function LoadingStage({
             <div className="aload-lead">
               <div className="aload-finds-head">
                 <span className="aload-finds-label">
-                  Gefundene Optimierungen
+                  Gefundene Conversion-Schwachstellen
                 </span>
                 <span className="aload-finds-total">{foundTotal}</span>
               </div>
@@ -298,8 +297,6 @@ export function LoadingStage({
                 </>
               )}
             </div>
-
-            <BotJourney />
           </div>
         </div>
       </div>

@@ -14,4 +14,7 @@
  */
 export const GATE_ENABLED = false;
 
-export const LEAD_GATE_ENABLED = true;
+// Aus: Die E-Mail wird bereits auf dem Warte-Screen (LoadingStage) erfasst, der
+// Report wird zusätzlich per Mail zugestellt. Deshalb KEIN zweites Formular mehr
+// im Report — der Besucher sieht nach der Analyse sofort alle Seiten.
+export const LEAD_GATE_ENABLED = false;
