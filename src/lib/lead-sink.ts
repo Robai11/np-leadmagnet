@@ -6,7 +6,9 @@
  *     damit er im geschützten /admin-Bereich sichtbar ist;
  *  2) optional per E-Mail (Resend) sofort zugestellt, wenn RESEND_API_KEY +
  *     LEAD_NOTIFY_TO gesetzt sind;
- *  3) immer ins Server-Log geschrieben (Fallback / Nachvollziehbarkeit).
+ *  3) optional an n8n weitergereicht (Webhook → HubSpot-Contact-Upsert),
+ *     wenn N8N_LEAD_WEBHOOK_URL + N8N_WEBHOOK_SECRET gesetzt sind;
+ *  4) immer ins Server-Log geschrieben (Fallback / Nachvollziehbarkeit).
  * Keiner dieser Schritte darf den Reveal-Flow brechen (alles best-effort).
  */
 
@@ -93,6 +95,36 @@ async function emailLead(lead: Lead): Promise<void> {
   }
 }
 
+/**
+ * Optionale Weiterleitung an n8n (Webhook → HubSpot-Contact-Upsert, siehe
+ * n8n-Workflow "ConversionScan Leads"). Header-Auth per geteiltem Secret
+ * (gleicher Wert wie in der n8n-Credential "Header Auth account").
+ */
+async function pushToN8n(lead: Lead): Promise<void> {
+  const url = process.env.N8N_LEAD_WEBHOOK_URL;
+  const secret = process.env.N8N_WEBHOOK_SECRET;
+  if (!url || !secret) return;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "X-ConversionScan-Secret": secret,
+      },
+      body: JSON.stringify(lead),
+    });
+    if (!res.ok) {
+      console.error(
+        "[lead] n8n webhook failed",
+        res.status,
+        await res.text().catch(() => ""),
+      );
+    }
+  } catch (err) {
+    console.error("[lead] n8n webhook error", err);
+  }
+}
+
 class DefaultLeadSink implements LeadSink {
   async capture(lead: Lead): Promise<void> {
     console.log("[lead]", JSON.stringify(lead));
@@ -102,6 +134,7 @@ class DefaultLeadSink implements LeadSink {
       console.error("[lead] store persist failed", err);
     }
     await emailLead(lead);
+    await pushToN8n(lead);
   }
 }
 
